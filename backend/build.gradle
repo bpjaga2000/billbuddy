@@ -28,6 +28,7 @@ dependencies {
 	runtimeOnly 'org.postgresql:postgresql'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
+	implementation 'com.github.0xshamil:java-xid:1.0.0'
 }
 
 tasks.withType(KotlinCompile) {
