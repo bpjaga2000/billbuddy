@@ -1,6 +1,7 @@
 package dev.bpj4.billbuddy.controller
 
 import dev.bpj4.billbuddy.dto.LoginDto
+import dev.bpj4.billbuddy.dto.LogoutDto
 import dev.bpj4.billbuddy.dto.RegisterDto
 import dev.bpj4.billbuddy.service.AuthenticationService
 import org.springframework.http.HttpStatus
@@ -28,7 +29,14 @@ class AuthenticationController(
     fun login(@RequestBody loginDto: LoginDto): ResponseEntity<Any> {
         return authenticationService.verifyUser(loginDto)?.let {
             ResponseEntity(it, HttpStatus.CREATED)
-        } ?: ResponseEntity("Username already taken", HttpStatus.BAD_REQUEST)
+        } ?: ResponseEntity("Username does not exist", HttpStatus.BAD_REQUEST)
+    }
+
+    @PostMapping("logout")
+    fun logout(@RequestBody logoutDto: LogoutDto): ResponseEntity<Any> {
+        return authenticationService.logoutUser(logoutDto)?.let {
+            ResponseEntity("Logged out successfully", HttpStatus.CREATED)
+        } ?: ResponseEntity("Invalid User", HttpStatus.BAD_REQUEST)
     }
 
 }

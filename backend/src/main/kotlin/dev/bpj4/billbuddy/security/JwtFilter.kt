@@ -1,5 +1,6 @@
 package dev.bpj4.billbuddy.security
 
+import dev.bpj4.billbuddy.service.AuthenticationService
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -20,10 +21,13 @@ class JwtFilter : OncePerRequestFilter() {
     @Autowired
     private lateinit var userDetailsService: AuthService
 
+    @Autowired
+    private lateinit var authenticationService: AuthenticationService
+
     override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain) {
 
         request.getHeader("Authentication").takeIf { !it.isNullOrBlank() }?.drop(7)?.let { token ->
-            if (jwtGenerator.validateToken(token)) {
+            if (jwtGenerator.validateToken(token) && !authenticationService.isTokenBlackListed(token)) {
                 val userDetails = userDetailsService.loadUserByUsername(jwtGenerator.getUserNameFromJwt(token))
                 val authentication = UsernamePasswordAuthenticationToken(userDetails.username, userDetails.password, userDetails.authorities)
                 authentication.details = WebAuthenticationDetailsSource().buildDetails(request)

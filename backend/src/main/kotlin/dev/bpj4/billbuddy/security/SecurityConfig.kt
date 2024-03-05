@@ -21,6 +21,7 @@ class SecurityConfig(
     @Throws(Exception::class)
     fun filterChain(httpSecurity: HttpSecurity): SecurityFilterChain {
         httpSecurity
+                .csrf { it.disable() }
                 .authorizeHttpRequests { it.requestMatchers("/api/auth/**").permitAll().anyRequest().authenticated() }
                 .httpBasic { it.authenticationEntryPoint(authEntryPoint) }
                 .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
@@ -40,10 +41,7 @@ class SecurityConfig(
     @Bean
     fun jwtFilter() = JwtFilter()
 
-
-    companion object {
-        @Bean
-        fun jwtGenerator() = JwtGenerator()
-    }
+    @Bean
+    fun jwtGenerator() = JwtGenerator()
 
 }

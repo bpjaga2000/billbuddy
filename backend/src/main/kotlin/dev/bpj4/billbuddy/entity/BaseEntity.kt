@@ -5,7 +5,6 @@ import jakarta.persistence.*
 @MappedSuperclass
 abstract class BaseEntity<T>(
         @Id
-        @GeneratedValue(strategy = GenerationType.UUID)
         open val id: T,
 
         @Column(name = "created_at_frontend")
