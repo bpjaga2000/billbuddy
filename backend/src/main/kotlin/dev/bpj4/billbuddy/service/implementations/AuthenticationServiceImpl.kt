@@ -20,11 +20,11 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class AuthenticationServiceImpl(
-        val userRepository: UserRepository,
-        val tokenBlacklistRepository: TokenBlacklistRepository,
-        val jwtGenerator: JwtGenerator,
-        var authManager: AuthenticationManager,
-        val passwordEncoder: BCryptPasswordEncoder
+        private val userRepository: UserRepository,
+        private val tokenBlacklistRepository: TokenBlacklistRepository,
+        private val jwtGenerator: JwtGenerator,
+        private var authManager: AuthenticationManager,
+        private val passwordEncoder: BCryptPasswordEncoder
 ) : AuthenticationService {
 
     @Transactional

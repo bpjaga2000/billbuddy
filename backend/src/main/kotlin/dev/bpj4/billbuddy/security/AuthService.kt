@@ -11,7 +11,7 @@ import java.util.*
 
 @Service
 class AuthService(
-        val userRepository: UserRepository
+        private val userRepository: UserRepository
 ) : UserDetailsService {
 
     @Throws(UsernameNotFoundException::class)
