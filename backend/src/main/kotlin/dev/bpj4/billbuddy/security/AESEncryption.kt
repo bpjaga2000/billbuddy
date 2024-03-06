@@ -22,7 +22,7 @@ class AESEncryption(
     private val algorithm = "AES/CBC/PKCS5Padding"
     var keySpec: SecretKeySpec = SecretKeySpec(
             key.toByteArray(),
-            "HmacSHA256"
+            "AES"
     )
     var ivSpec: IvParameterSpec = IvParameterSpec(iv.toByteArray())
 

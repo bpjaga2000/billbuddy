@@ -26,7 +26,7 @@ class JwtFilter : OncePerRequestFilter() {
 
     override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain) {
 
-        request.getHeader("Authentication").takeIf { !it.isNullOrBlank() }?.drop(7)?.let { token ->
+        request.getHeader("Authorization").takeIf { !it.isNullOrBlank() }?.drop(7)?.let { token ->
             if (jwtGenerator.validateToken(token) && !authenticationService.isTokenBlackListed(token)) {
                 val userDetails = userDetailsService.loadUserByUsername(jwtGenerator.getUserNameFromJwt(token))
                 val authentication = UsernamePasswordAuthenticationToken(userDetails.username, userDetails.password, userDetails.authorities)

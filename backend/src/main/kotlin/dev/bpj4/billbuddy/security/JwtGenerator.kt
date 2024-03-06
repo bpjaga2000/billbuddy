@@ -35,7 +35,7 @@ class JwtGenerator {
             return Jwts.parser().verifyWith(key).build()
                     .parseSignedClaims(token).payload.let {
                         it.issuer == MethodHandles.lookup().lookupClass().getPackage().name &&
-                                it.expiration < Date()
+                                it.expiration >= Date()
                     }
         } catch (e: Exception) {
             throw AuthenticationCredentialsNotFoundException("Token expired/invalid")
