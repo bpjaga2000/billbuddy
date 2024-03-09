@@ -21,6 +21,6 @@ data class UserEntity(
         val role: String = UserRoles.FREE,
 
         @Column(name = "default_group_id")
-        val defaultGroupId: String? = null
+        var defaultGroupId: String? = null
 
 ) : BaseEntity<String>(Xid.string())

@@ -8,11 +8,13 @@ import dev.bpj4.billbuddy.mappings.mapToGroupMembersDto
 import dev.bpj4.billbuddy.mappings.mapToGroupResponseDto
 import dev.bpj4.billbuddy.repository.GroupMemberRepository
 import dev.bpj4.billbuddy.repository.GroupRepository
+import dev.bpj4.billbuddy.repository.UserRepository
 import dev.bpj4.billbuddy.service.GroupService
 import org.springframework.stereotype.Service
 
 @Service
 class GroupServiceImpl(
+        val userRepository: UserRepository,
         val groupRepository: GroupRepository,
         val groupMemberRepository: GroupMemberRepository
 ) : GroupService {
@@ -22,6 +24,12 @@ class GroupServiceImpl(
             groupOwnerId = groupDto.userId
             createdBy = groupDto.userId
         })
+        val user = userRepository.findById(groupDto.userId).get()
+        if(user.defaultGroupId.isNullOrBlank())
+            userRepository.save(user.apply {
+                defaultGroupId = group.id
+                updatedAt = System.currentTimeMillis() / 1000
+            })
         val member = groupMemberRepository.save(GroupMembersEntity(group.groupOwnerId, group.id, group.groupOwnerId, group.groupOwnerId, null)).mapToGroupMembersDto()
         return group.mapToGroupResponseDto(listOf(member))
     }
