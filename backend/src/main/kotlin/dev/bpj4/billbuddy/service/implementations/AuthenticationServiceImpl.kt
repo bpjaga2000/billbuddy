@@ -1,7 +1,6 @@
 package dev.bpj4.billbuddy.service.implementations
 
 import dev.bpj4.billbuddy.dto.LoginDto
-import dev.bpj4.billbuddy.dto.LogoutDto
 import dev.bpj4.billbuddy.dto.RegisterDto
 import dev.bpj4.billbuddy.dto.UserDto
 import dev.bpj4.billbuddy.entity.TokenBlacklistEntity
@@ -56,9 +55,9 @@ class AuthenticationServiceImpl(
     }
 
     @Transactional
-    override fun logoutUser(logoutDto: LogoutDto): String? {
-        return if (userRepository.existsByEmail(logoutDto.email)) {
-            tokenBlacklistRepository.save(TokenBlacklistEntity(token = logoutDto.token))
+    override fun logoutUser(token: String, id: String): String? {
+        return if (userRepository.existsById(id)) {
+            tokenBlacklistRepository.save(TokenBlacklistEntity(token = token.drop(7)))
             "saved"
         } else
             null

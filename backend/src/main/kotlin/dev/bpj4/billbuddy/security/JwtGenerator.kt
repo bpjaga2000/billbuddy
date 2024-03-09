@@ -17,15 +17,14 @@ class JwtGenerator {
             "HmacSHA256"
     )//todo try Asymmetric
 
-    fun generateJwToken(authentication: Authentication): String = "Bearer " +
-            Jwts
-                    .builder()
-                    .issuer(MethodHandles.lookup().lookupClass().getPackage().name)
-                    .issuedAt(Date())
-                    .expiration(Date(Date().time + SecurityConstants.EXPIRATION))
-                    .subject(authentication.name)
-                    .signWith(key)
-                    .compact()
+    fun generateJwToken(authentication: Authentication): String = Jwts
+            .builder()
+            .issuer(MethodHandles.lookup().lookupClass().getPackage().name)
+            .issuedAt(Date())
+            .expiration(Date(Date().time + SecurityConstants.EXPIRATION))
+            .subject(authentication.name)
+            .signWith(key)
+            .compact()
 
     fun getUserNameFromJwt(token: String): String? = Jwts.parser().verifyWith(key).build()
             .parseSignedClaims(token).payload.subject

@@ -20,7 +20,7 @@ class SecurityConfig {
     fun filterChain(httpSecurity: HttpSecurity): SecurityFilterChain {
         httpSecurity
                 .csrf { it.disable() }
-                .authorizeHttpRequests { it.requestMatchers("/api/v1/auth/**").permitAll().anyRequest().authenticated() }
+                .authorizeHttpRequests { it.requestMatchers("/api/v1/auth/**").permitAll().requestMatchers("/api/v1/auth/logout").authenticated().anyRequest ().authenticated() }
                 .httpBasic { it.authenticationEntryPoint(authEntryPoint()) }
                 .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
 
