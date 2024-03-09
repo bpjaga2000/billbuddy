@@ -29,14 +29,15 @@ class GroupMemberServiceImpl(
 
     override fun removeGroupMembers(id: String, userIds: UserIdListDto): GroupResponseDto {
         if (groupRepository.existsById(id)) {
-            val existingMembers = groupMemberRepository.findAllByGroupId(id)
-            val removedMembers = existingMembers
+            val users = groupMemberRepository.findMemberRecordsForGroup(userIds.ids, id)
+            val removedMembers = users
                     .onEach {
                         it.deletedBy = userIds.requesterId
                         it.deletedAt = System.currentTimeMillis() / 1000
+                        it.deletedAtFrontend = System.currentTimeMillis() / 1000
                         it.updatedBy = userIds.requesterId
                         it.updatedAt = System.currentTimeMillis() / 1000
-                        it.deletedAtFrontend = System.currentTimeMillis() / 1000
+                        it.updatedAtFrontend = System.currentTimeMillis() / 1000
                     }
             groupMemberRepository.saveAll(removedMembers)
             return groupRepository.save(groupRepository.findById(id).get()).mapToGroupResponseDto(groupMemberRepository.findAllByGroupId(id).map { it.mapToGroupMembersDto() })

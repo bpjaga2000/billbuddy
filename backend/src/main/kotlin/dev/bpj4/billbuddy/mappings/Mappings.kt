@@ -61,7 +61,7 @@ fun GroupEntity.mapToGroupSyncResponseDto() = GroupSyncResponseDto(
 )
 
 fun GroupMembersEntity.mapToGroupMembersDto() = GroupMembersDto(
-        id, userId, groupId, createdAt, createdBy
+        id, userId, groupId, createdAt, createdBy, updatedAt, updatedBy, deletedAt, deletedBy
 )
 
 fun SpendEntity.mapToSpendDto() = SpendDto(

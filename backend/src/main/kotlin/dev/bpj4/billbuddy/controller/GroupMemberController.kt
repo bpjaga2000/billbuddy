@@ -14,12 +14,12 @@ class GroupMemberController(
 ) {
 
     @PostMapping("add/{id}")
-    fun addMembersToGroup(@PathVariable id: String, @RequestBody userIds: UserIdListDto): ResponseEntity<GroupResponseDto> {
+    fun addMembersToGroup(@PathVariable("id") id: String, @RequestBody userIds: UserIdListDto): ResponseEntity<GroupResponseDto> {
         return ResponseEntity(groupMemberService.addGroupMembers(id, userIds), HttpStatus.ACCEPTED)
     }
 
     @PostMapping("remove/{id}")
-    fun removeMembersFromGroup(@PathVariable id: String, @RequestBody userIds: UserIdListDto): ResponseEntity<GroupResponseDto> {
+    fun removeMembersFromGroup(@PathVariable("id") id: String, @RequestBody userIds: UserIdListDto): ResponseEntity<GroupResponseDto> {
         return ResponseEntity(groupMemberService.removeGroupMembers(id, userIds), HttpStatus.ACCEPTED)
     }
 

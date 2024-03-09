@@ -10,8 +10,13 @@ interface GroupMemberRepository : JpaRepository<GroupMembersEntity, String> {
     @Query(nativeQuery = true, value = "Select * from group_members where group_id = :groupId")
     fun findAllByGroupId(groupId: String): List<GroupMembersEntity>
 
+    @Query(nativeQuery = true, value = "Select * from group_members where user_id in :userIds and group_id = :groupId")
+    fun findMemberRecordsForGroup(userIds: List<String>, groupId: String): List<GroupMembersEntity>
+
     @Query(nativeQuery = true, value = "Select * from group_members where group_id in :groupIds")
     fun findAllByGroupId(groupIds: List<String>): List<GroupMembersEntity>
+
+    @Query(nativeQuery = true, value = "Select * from group_members where group_id = :userId")
     fun findAllByUserId(userId: String): List<GroupMembersEntity>
 
     @Query(nativeQuery = true, value = "Select distinct(user_id) as user_id from group_members where group_id in (Select group_id from group_members where user_id = :userId)")
