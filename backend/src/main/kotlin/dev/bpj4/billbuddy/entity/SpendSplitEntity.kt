@@ -21,5 +21,14 @@ abstract class SpendSplitEntity(
         open val splitType: Int = SplitType.EQUAL,
 
         @Column(name = "value")
-        open val value: Float = 0f
+        open val value: Float = 0f,
+
+        @Column(name = "created_by")
+        open val createdBy: String = "",
+
+        @Column(name = "updated_by")
+        open val updatedBy: String = "",
+
+        @Column(name = "deleted_by")
+        open val deletedBy: String? = null
 ) : BaseEntity<String>(Xid.string())

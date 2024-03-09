@@ -1,11 +1,10 @@
 package dev.bpj4.billbuddy.mappings
 
-import dev.bpj4.billbuddy.dto.ProfileDto
-import dev.bpj4.billbuddy.dto.ProfileUpdateDto
-import dev.bpj4.billbuddy.dto.RegisterDto
-import dev.bpj4.billbuddy.entity.UserEntity
+import dev.bpj4.billbuddy.dto.*
+import dev.bpj4.billbuddy.entity.*
 
-fun RegisterDto.mapToUserEntityForRegistration(encodedPassword: String): UserEntity = UserEntity(email = this.email, password = encodedPassword)
+fun RegisterDto.mapToUserEntityForRegistration(encodedPassword: String): UserEntity =
+        UserEntity(email = this.email, password = encodedPassword)
 
 fun UserEntity.mapToProfileDto() = ProfileDto(
         id,
@@ -33,3 +32,69 @@ fun ProfileUpdateDto.mapToUserEntity(existingUserEntity: UserEntity) = UserEntit
     updatedAtFrontend = this@mapToUserEntity.updatedAtFrontend
     deletedAtFrontend = existingUserEntity.deletedAtFrontend
 }
+
+fun GroupDto.mapToGroupEntity() = GroupEntity(
+        name, tag, ownerId
+)
+
+fun GroupDto.mapToGroupEntity(groupEntity: GroupEntity) = GroupEntity(
+        name, tag, ownerId, groupEntity.createdBy, groupEntity.updatedBy, groupEntity.deletedBy
+).apply {
+    id = groupEntity.id
+    createdAt = groupEntity.createdAt
+    deletedAt = groupEntity.deletedAt
+    createdAtFrontend = groupEntity.createdAtFrontend
+    updatedAtFrontend = groupEntity.updatedAtFrontend
+    deletedAtFrontend = groupEntity.deletedAtFrontend
+}
+
+fun GroupEntity.mapToGroupDto() = GroupDto(
+        name, tag, groupOwnerId
+)
+
+fun GroupEntity.mapToGroupResponseDto(list: List<GroupMembersDto>) = GroupResponseDto(
+        id, name, tag, groupOwnerId, list
+)
+
+fun GroupEntity.mapToGroupSyncResponseDto() = GroupSyncResponseDto(
+        id, name, tag, groupOwnerId, createdAtFrontend, updatedAtFrontend, deletedAtFrontend, createdAt, updatedAt, deletedAt
+)
+
+fun GroupMembersEntity.mapToGroupMembersDto() = GroupMembersDto(
+        id, userId, groupId, createdAt, createdBy
+)
+
+fun SpendEntity.mapToSpendDto() = SpendDto(
+        id,
+        totalAmount,
+        isPayback,
+        tag,
+        groupId,
+        createdBy,
+        updatedBy,
+        deletedBy,
+        createdAtFrontend,
+        updatedAtFrontend,
+        deletedAtFrontend,
+        createdAt,
+        updatedAt,
+        deletedAt
+)
+
+fun SpendSplitEntity.mapToSpendSplitDto() = SpendSplitDto(
+        id,
+        userId,
+        spendId,
+        lentOrBorrowed,
+        splitType,
+        value,
+        createdBy,
+        updatedBy,
+        deletedBy,
+        createdAtFrontend,
+        updatedAtFrontend,
+        deletedAtFrontend,
+        createdAt,
+        updatedAt,
+        deletedAt
+)

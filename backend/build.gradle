@@ -30,6 +30,8 @@ dependencies {
 	testImplementation 'org.springframework.security:spring-security-test'
 	implementation 'com.github.0xshamil:java-xid:1.0.0'
 	implementation 'io.jsonwebtoken:jjwt:0.12.5'
+	implementation 'io.springfox:springfox-boot-starter:3.0.0'
+	implementation "io.springfox:springfox-swagger-ui:3.0.0"
 }
 
 tasks.withType(KotlinCompile) {

@@ -10,8 +10,18 @@ import jakarta.persistence.Table
 data class GroupMembersEntity(
 
         @Column(name = "user_id")
-        val userId: String = Xid.string(),
+        val userId: String = "",
 
         @Column(name = "group_id")
-        val groupId: String = Xid.string()
+        val groupId: String = "",
+
+        @Column(name = "created_by")
+        val createdBy: String = "",
+
+        @Column(name = "updated_by")
+        var updatedBy: String = "",
+
+        @Column(name = "deleted_by")
+        var deletedBy: String? = null
+
 ) : BaseEntity<String>(Xid.string())

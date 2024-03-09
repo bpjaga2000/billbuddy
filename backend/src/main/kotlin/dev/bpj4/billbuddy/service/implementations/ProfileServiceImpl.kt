@@ -36,8 +36,8 @@ class ProfileServiceImpl(
         return if (userRepository.existsById(id)) {
             userRepository.save(
                     userRepository.findById(id).get().apply {
-                        deletedAt = System.currentTimeMillis()
-                        deletedAtFrontend = System.currentTimeMillis()
+                        deletedAt = System.currentTimeMillis() / 1000
+                        deletedAtFrontend = System.currentTimeMillis() / 1000
                     }
             )
             "deleted successfully"

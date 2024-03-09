@@ -20,8 +20,7 @@ data class UserEntity(
 
         val role: String = UserRoles.FREE,
 
-        @ManyToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
-        @JoinTable(name = "group_members", joinColumns = [JoinColumn(name = "user_id", referencedColumnName = "id")], inverseJoinColumns = [JoinColumn(name = "group_id", referencedColumnName = "id")])
-        val groups: MutableList<GroupEntity> = mutableListOf()
+        @Column(name = "default_group_id")
+        val defaultGroupId: String? = null
 
 ) : BaseEntity<String>(Xid.string())
