@@ -12,7 +12,7 @@ interface UserRepository : JpaRepository<UserEntity, String> {
     fun findByEmail(username: String?): Optional<UserEntity>
     fun existsByEmail(username: String?): Boolean
 
-    @Query(nativeQuery = true, value = "Select * from users where name like '%:query%' or email like '%:query%'")// or phone like '%:query%') TODO
+    @Query(nativeQuery = true, value = "Select * from users where name like '%'||:query||'%' or email like '%'||:query||'%'")// or phone like '%:query%') TODO
     fun search(@Param("query") query: String): List<UserEntity>
 
     @Query(nativeQuery = true, value = "Select * from users where id in :ids and updated_at > :timeInSecs")

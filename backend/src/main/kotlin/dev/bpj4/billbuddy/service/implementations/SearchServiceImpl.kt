@@ -11,7 +11,7 @@ class SearchServiceImpl(
         val userRepository: UserRepository
 ) : SearchService {
 
-    override fun search(query: String): List<ProfileDto> {
+    override fun search(query: String): List<ProfileDto> {//todo fuzzy logic
         return userRepository.search(query).map { it.mapToProfileDto() }
     }
 
