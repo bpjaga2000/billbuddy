@@ -5,5 +5,5 @@ import dev.bpj4.billbuddy.entity.GroupTags
 data class GroupDto(
         val name:String,
         val tag: GroupTags,
-        val ownerId: String
+        val userId: String
 )

@@ -7,5 +7,5 @@ import dev.bpj4.billbuddy.dto.UserIdListDto
 interface GroupService {
     fun createGroup(groupDto: GroupDto): GroupResponseDto
     fun updateGroup(id: String, groupDto: GroupDto): GroupResponseDto
-    fun deleteGroup(id: String): String
+    fun deleteGroup(id: String, groupDto: GroupDto): String
 }

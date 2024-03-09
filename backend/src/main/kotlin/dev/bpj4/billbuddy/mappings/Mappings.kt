@@ -33,12 +33,12 @@ fun ProfileUpdateDto.mapToUserEntity(existingUserEntity: UserEntity) = UserEntit
     deletedAtFrontend = existingUserEntity.deletedAtFrontend
 }
 
-fun GroupDto.mapToGroupEntity() = GroupEntity(
-        name, tag, ownerId
+fun GroupDto.mapToGroupEntity(updatedBy: String = userId) = GroupEntity(
+        name, tag, updatedBy = updatedBy
 )
 
 fun GroupDto.mapToGroupEntity(groupEntity: GroupEntity) = GroupEntity(
-        name, tag, ownerId, groupEntity.createdBy, groupEntity.updatedBy, groupEntity.deletedBy
+        name, tag, userId, groupEntity.createdBy, groupEntity.updatedBy, groupEntity.deletedBy
 ).apply {
     id = groupEntity.id
     createdAt = groupEntity.createdAt

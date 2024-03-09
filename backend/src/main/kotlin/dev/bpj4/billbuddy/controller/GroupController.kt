@@ -25,8 +25,8 @@ class GroupController(
     }
 
     @DeleteMapping("{id}")
-    fun deleteGroup(@PathVariable id: String, @RequestBody userIds: UserIdListDto): ResponseEntity<String> {
-        return ResponseEntity(groupService.deleteGroup(id), HttpStatus.NO_CONTENT)
+    fun deleteGroup(@PathVariable id: String, @RequestBody groupDto: GroupDto): ResponseEntity<String> {
+        return ResponseEntity(groupService.deleteGroup(id, groupDto), HttpStatus.OK)
     }
 
 }
