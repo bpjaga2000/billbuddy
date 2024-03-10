@@ -81,6 +81,24 @@ fun SpendEntity.mapToSpendDto() = SpendDto(
         deletedAt
 )
 
+fun SpendDto.mapToSpendEntity() = SpendEntity(
+        totalAmount,
+        isPayback,
+        tag,
+        groupId,
+        createdBy,
+        updatedBy,
+        deletedBy
+).also {
+    it.id = id
+    it.createdAtFrontend = createdAtFrontend
+    it.updatedAtFrontend = updatedAtFrontend
+    it.deletedAtFrontend = deletedAtFrontend
+    it.createdAt = createdAt
+    it.updatedAt = updatedAt
+    it.deletedAt = deletedAt
+}
+
 fun SpendSplitEntity.mapToSpendSplitDto() = SpendSplitDto(
         id,
         userId,
@@ -98,3 +116,25 @@ fun SpendSplitEntity.mapToSpendSplitDto() = SpendSplitDto(
         updatedAt,
         deletedAt
 )
+
+fun SpendSplitDto.mapToSpendSplitEntity() = SpendSplitEntity(
+        userId,
+        spendId,
+        lentOrBorrowed,
+        splitType,
+        value,
+        createdBy,
+        updatedBy,
+        deletedBy
+).also {
+    it.id = id
+    it.createdBy = createdBy
+    it.updatedBy = updatedBy
+    it.deletedBy = deletedBy
+    it.createdAtFrontend = createdAtFrontend
+    it.updatedAtFrontend = updatedAtFrontend
+    it.deletedAtFrontend = deletedAtFrontend
+    it.createdAt = createdAt
+    it.updatedAt = updatedAt
+    it.deletedAt = deletedAt
+}

@@ -19,7 +19,7 @@ class GroupServiceImpl(
         val groupMemberRepository: GroupMemberRepository
 ) : GroupService {
 
-    override fun createGroup(groupDto: GroupDto): GroupResponseDto {
+    override fun createGroup(groupDto: GroupDto): GroupResponseDto {    
         val group = groupRepository.save(groupDto.mapToGroupEntity().apply {
             groupOwnerId = groupDto.userId
             createdBy = groupDto.userId

@@ -21,7 +21,7 @@ data class SpendEntity(
         val groupId: String,
 
         @Column(name = "created_by")
-        val createdBy: String = "",
+        var createdBy: String = "",
 
         @Column(name = "updated_by")
         var updatedBy: String = "",

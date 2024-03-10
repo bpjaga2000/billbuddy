@@ -7,7 +7,7 @@ import jakarta.persistence.*
 @Table(name = "spend_splits")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "lent_or_borrowed", discriminatorType = DiscriminatorType.INTEGER)
-abstract class SpendSplitEntity(
+open class SpendSplitEntity(
         @Column(name = "user_id")
         open val userId: String = Xid.string(),
 
@@ -24,11 +24,11 @@ abstract class SpendSplitEntity(
         open val value: Float = 0f,
 
         @Column(name = "created_by")
-        open val createdBy: String = "",
+        open var createdBy: String = "",
 
         @Column(name = "updated_by")
-        open val updatedBy: String = "",
+        open var updatedBy: String = "",
 
         @Column(name = "deleted_by")
-        open val deletedBy: String? = null
+        open var deletedBy: String? = null
 ) : BaseEntity<String>(Xid.string())

@@ -6,7 +6,7 @@ data class SpendDto(
         val id: String,
         val totalAmount: Float,
         val isPayback: Boolean,
-        val tags: SpendTags,
+        val tag: SpendTags,
         val groupId: String,
         val createdBy: String,
         val updatedBy: String,
