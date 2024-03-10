@@ -22,7 +22,7 @@ class ProfileController(
     @DeleteMapping("{id}")
     fun deleteProfile(@PathVariable("id") id: String): ResponseEntity<String> = ResponseEntity(profileService.deleteProfile(id), HttpStatus.NO_CONTENT)
 
-    @DeleteMapping("perm\\{id}")
+    @DeleteMapping("perm/{id}")
     fun permanentlyDeleteProfile(@PathVariable("id") id: String): ResponseEntity<String> = ResponseEntity(profileService.permanentlyDeleteProfile(id), HttpStatus.NO_CONTENT)
 
 }
