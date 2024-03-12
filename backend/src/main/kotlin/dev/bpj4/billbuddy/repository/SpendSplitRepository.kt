@@ -8,6 +8,6 @@ interface SpendSplitRepository : JpaRepository<SpendSplitEntity, String> {
     @Query(nativeQuery = true, value = "Select * from spend_splits where spend_id = :spendId")
     fun findAllBySpendId(spendId: List<String>): List<SpendSplitEntity>
 
-    @Query(nativeQuery = true, value = "Select * from spends where id in :ids and updated_at < :timeInSecs")
+    @Query(nativeQuery = true, value = "Select * from spend_splits where id in :ids and updated_at >= :timeInSecs")
     fun findAllUpdatedRecordsBySpendId(timeInSecs: Long, ids: List<String>): List<SpendSplitEntity>
 }

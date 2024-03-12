@@ -10,6 +10,6 @@ interface SpendRepository : JpaRepository<SpendEntity, String> {
     @Query(nativeQuery = true, value = "Select * from spends ")
     fun findAllByGroupId(groupIds: List<String>): List<SpendEntity>
 
-    @Query(nativeQuery = true, value = "Select * from spends where id in :ids and updated_at < :timeInSecs")
+    @Query(nativeQuery = true, value = "Select * from spends where id in :ids and updated_at >= :timeInSecs")
     fun findAllUpdatedRecordsByGroupIds(timeInSecs: Long, ids: List<String>): List<SpendEntity>
 }

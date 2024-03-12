@@ -8,7 +8,7 @@ import java.util.*
 
 @Repository
 interface GroupRepository : JpaRepository<GroupEntity, String> {
-    @Query(nativeQuery = true, value = "Select * from groups where id in :ids and updated_at < :timeInSecs")
+    @Query(nativeQuery = true, value = "Select * from groups where id in :ids and updated_at >= :timeInSecs")
     fun findAllUpdatedRecordsById(timeInSecs: Long, ids: List<String>): List<GroupEntity>
 
 }

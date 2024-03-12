@@ -15,6 +15,6 @@ interface UserRepository : JpaRepository<UserEntity, String> {
     @Query(nativeQuery = true, value = "Select * from users where name like '%'||:query||'%' or email like '%'||:query||'%'")// or phone like '%:query%') TODO
     fun search(@Param("query") query: String): List<UserEntity>
 
-    @Query(nativeQuery = true, value = "Select * from users where id in :ids and updated_at > :timeInSecs")
+    @Query(nativeQuery = true, value = "Select * from users where id in :ids and updated_at >= :timeInSecs")
     fun findAllUpdatedRecordsById(timeInSecs: Long, ids: List<String>): List<UserEntity>
 }
