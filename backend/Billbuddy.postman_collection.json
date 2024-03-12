@@ -1,0 +1,540 @@
+{
+	"info": {
+		"_postman_id": "aea0c9a5-3330-445b-a0ee-471008d02f3e",
+		"name": "Billbuddy",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "11399221"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var json = JSON.parse(responseBody)",
+									"pm.collectionVariables.set('token', json.token)",
+									"pm.collectionVariables.set('userid', json.id)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"abc123@xyz.com\",\n    \"password\" : \"12345678\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/auth/register",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Log In",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var json = JSON.parse(responseBody)",
+									"pm.collectionVariables.set('token', json.token)",
+									"pm.collectionVariables.set('userid', json.id)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"abc@xyz.com\",\n    \"password\" : \"12345678\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/auth/login",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Log Out",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/auth/logout/{{userid}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"auth",
+								"logout",
+								"{{userid}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Group",
+			"item": [
+				{
+					"name": "Create Group",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var json = JSON.parse(responseBody)",
+									"pm.collectionVariables.set('groupid', json.id)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"test\",\n    \"tag\": \"OTHER\",\n    \"userId\": \"{{userid}}\"\n\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/group",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"group"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Group",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"testyi\",\n    \"tag\": \"OTHER\",\n    \"userId\": \"{{userid}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/group/{{groupid}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"group",
+								"{{groupid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Group",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"testyi\",\n    \"tag\": \"OTHER\",\n    \"userId\": \"{{userid}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/group/{{groupid}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"group",
+								"{{groupid}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Group Members",
+			"item": [
+				{
+					"name": "Add members",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"ids\": [\"cnm7u3c1u4a41gc0c9qg\"],\n    \"requesterId\": \"{{userid}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/group/manage/add/{{groupid}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"group",
+								"manage",
+								"add",
+								"{{groupid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remove Members",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"ids\": [\"cnm7u3c1u4a41gc0c9qg\"],\n    \"requesterId\": \"{{userid}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/group/manage/remove/{{groupid}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"group",
+								"manage",
+								"remove",
+								"{{groupid}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Search",
+			"item": [
+				{
+					"name": "Search",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/search?query=1",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"search"
+							],
+							"query": [
+								{
+									"key": "query",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Profile",
+			"item": [
+				{
+					"name": "Get Profile Details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/profile/{{userid}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"profile",
+								"{{userid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile Details",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\":\"{{userid}}\",\n    \"name\":\"tri\",\n    \"mobileCountryCode\":\"+91\",\n    \"phone\":\"3265897410\",\n    \"updatedAtFrontend\":\"12345685\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/profile/{{userid}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"profile",
+								"{{userid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Profile Details",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/profile/{{userid}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"profile",
+								"{{userid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete profile permanently",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/profile/perm/{{userid}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"profile",
+								"perm",
+								"{{userid}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Sync",
+			"item": [
+				{
+					"name": "Fetch All Data",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/sync?id={{userid}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"sync"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{userid}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Data",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/sync?id={{userid}}&lastSyncTime=1710000000",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"sync"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "{{userid}}"
+								},
+								{
+									"key": "lastSyncTime",
+									"value": "1710000000"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Fetch Data Copy",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/sync",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"sync"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "url",
+			"value": "localhost:8080/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userid",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "groupid",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
