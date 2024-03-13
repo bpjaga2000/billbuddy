@@ -17,6 +17,7 @@ class SyncServiceImpl(
 ) : SyncService {
     override fun fetchAllData(id: String): SyncDto {
         val friendDetails = userRepository.findAllById(groupMemberRepository.fetchUserFriendIds(id)).map { it.mapToProfileDto() }
+                .plus(userRepository.findById(id).get().mapToProfileDto())
         val groups = groupRepository.findAllById(groupMemberRepository.findAllByUserId(id).map { it.groupId }).map { it.mapToGroupSyncResponseDto() }
         val groupMembers = groupMemberRepository.findAllByGroupId(groups.map { it.id }).map { it.mapToGroupMembersDto() }
         val spends = spendRepository.findAllByGroupId(groups.map { it.id }).map { it.mapToSpendDto() }
@@ -29,6 +30,7 @@ class SyncServiceImpl(
     override fun fetchData(id: String, timeInSecs: Long): SyncDto {
 
         val friendDetails = userRepository.findAllUpdatedRecordsById(timeInSecs, groupMemberRepository.fetchUserFriendIds(id)).map { it.mapToProfileDto() }
+                .plus(userRepository.findById(id).get().mapToProfileDto())
         val groups = groupRepository.findAllUpdatedRecordsById(timeInSecs, groupMemberRepository.findAllByUserId(id).map { it.groupId }).map { it.mapToGroupSyncResponseDto() }
         val groupMembers = groupMemberRepository.findAllUpdatedRecordsByGroupIds(timeInSecs, groups.map { it.id }).map { it.mapToGroupMembersDto() }
         val spends = spendRepository.findAllUpdatedRecordsByGroupIds(timeInSecs, groups.map { it.id }).map { it.mapToSpendDto() }

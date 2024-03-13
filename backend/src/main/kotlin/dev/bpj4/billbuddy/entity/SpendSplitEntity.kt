@@ -1,6 +1,6 @@
 package dev.bpj4.billbuddy.entity
 
-import com.github.shamil.Xid
+
 import jakarta.persistence.*
 
 @Entity
@@ -9,10 +9,10 @@ import jakarta.persistence.*
 @DiscriminatorColumn(name = "lent_or_borrowed", discriminatorType = DiscriminatorType.INTEGER)
 open class SpendSplitEntity(
         @Column(name = "user_id")
-        open val userId: String = Xid.string(),
+        open val userId: String = diglol.id.Id.generate().encodeToString(),
 
         @Column(name = "spend_id")
-        open val spendId: String = Xid.string(),
+        open val spendId: String = diglol.id.Id.generate().encodeToString(),
 
         @Column(name = "lent_or_borrowed", insertable = false, updatable = false)
         open val lentOrBorrowed: Int = LentOrBorrowed.LENT,
@@ -31,4 +31,4 @@ open class SpendSplitEntity(
 
         @Column(name = "deleted_by")
         open var deletedBy: String? = null
-) : BaseEntity<String>(Xid.string())
+) : BaseEntity<String>(diglol.id.Id.generate().encodeToString())

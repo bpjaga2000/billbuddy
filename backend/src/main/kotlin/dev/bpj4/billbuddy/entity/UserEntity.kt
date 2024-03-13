@@ -1,6 +1,6 @@
 package dev.bpj4.billbuddy.entity
 
-import com.github.shamil.Xid
+import diglol.id.Id
 import jakarta.persistence.*
 
 @Entity
@@ -23,4 +23,4 @@ data class UserEntity(
         @Column(name = "default_group_id")
         var defaultGroupId: String? = null
 
-) : BaseEntity<String>(Xid.string())
+) : BaseEntity<String>(Id.generate().encodeToString())

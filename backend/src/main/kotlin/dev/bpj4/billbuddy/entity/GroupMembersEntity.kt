@@ -1,6 +1,6 @@
 package dev.bpj4.billbuddy.entity
 
-import com.github.shamil.Xid
+import diglol.id.Id
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
@@ -24,4 +24,4 @@ data class GroupMembersEntity(
         @Column(name = "deleted_by")
         var deletedBy: String? = null
 
-) : BaseEntity<String>(Xid.string())
+) : BaseEntity<String>(Id.generate().encodeToString())
