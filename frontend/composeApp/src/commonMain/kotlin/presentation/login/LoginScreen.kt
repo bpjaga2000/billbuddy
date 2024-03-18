@@ -23,9 +23,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text2.BasicSecureTextField
-import androidx.compose.foundation.text2.BasicTextField2
-import androidx.compose.foundation.text2.input.rememberTextFieldState
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -48,8 +46,10 @@ import org.jetbrains.compose.resources.painterResource
 @OptIn(ExperimentalFoundationApi::class, ExperimentalResourceApi::class)
 @Composable
 fun LoginScreen(modifier: Modifier = Modifier) {
-    var email = rememberTextFieldState("")
-    var password = rememberTextFieldState("")
+
+    LogInViewModel()
+    var email = remember { "" }
+    var password = remember { "" }
     val focusRequester = remember { FocusRequester() }
     val coroutine = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
@@ -108,10 +108,11 @@ fun LoginScreen(modifier: Modifier = Modifier) {
 
             Spacer(modifier = Modifier.weight(0.2f))
 
-            BasicTextField2(
-                email,
-                decorator = {
-                    AnimatedVisibility(email.text.isBlank()) {
+            BasicTextField(
+                value = email,
+                onValueChange = { email = it },
+                decorationBox = {
+                    AnimatedVisibility(email.isBlank()) {
                         Text(
                             "Enter your email",
                             color = Color.Blue,
@@ -131,10 +132,11 @@ fun LoginScreen(modifier: Modifier = Modifier) {
 
             Spacer(modifier = Modifier.weight(0.1f))
 
-            BasicSecureTextField(
-                password,
-                decorator = {
-                    AnimatedVisibility(password.text.isEmpty()) {
+            BasicTextField(
+                value = password,
+                onValueChange = { password = it },
+                decorationBox = {
+                    AnimatedVisibility(password.isEmpty()) {
                         Text("Enter your password")
                     }
                     it()

@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.0-Beta4"
     id("de.jensklingenberg.ktorfit") version "1.12.0"
     id("app.cash.sqldelight") version "2.0.1"
 }
@@ -54,7 +55,9 @@ kotlin {
             implementation(libs.compose.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.kotlinx.coroutines.android)
+            implementation(libs.ktor.client.okhttp)
             implementation(libs.koin.android)
+            implementation(libs.decompose)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -66,17 +69,18 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.cio)
             implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.kotlinx.serialization.json)
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.runtime)
             implementation(libs.id)
             implementation(libs.insert.koin.koin.core)
-            implementation(libs.voyager.navigator)
-            implementation(libs.voyager.screenmodel)
-            implementation(libs.voyager.bottom.sheet.navigator)
-            implementation(libs.voyager.tab.navigator)
-            implementation(libs.voyager.transitions)
+            implementation(libs.ktor.client.logging)
+            implementation(libs.slf4j.simple)
             api(libs.image.loader)
+            implementation(libs.mvvm.core)
+            implementation(libs.decompose)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
