@@ -1,4 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -10,7 +12,7 @@ plugins {
 }
 
 kotlin {
-    /*@OptIn(ExperimentalWasmDsl::class)
+    @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         moduleName = "composeApp"
         browser {
@@ -25,7 +27,7 @@ kotlin {
             }
         }
         binaries.executable()
-    }*/
+    }
 
     androidTarget {
         compilations.all {
@@ -58,6 +60,7 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.koin.android)
             implementation(libs.decompose)
+            implementation(libs.android.driver)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -85,9 +88,11 @@ kotlin {
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.sqlite.driver)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
+            implementation(libs.native.driver)
         }
     }
 }
@@ -142,9 +147,10 @@ compose.experimental {
     web.application {}
 }
 
-/*
 sqldelight {
-    databases("BillBuddyDatabase") { // This will be the name of the generated database class.
-        packageName = "dev.bpj4.billbuddy.database"
+    databases {
+        create("BillBuddyDatabase") { // This will be the name of the generated database class.
+            packageName = "dev.bpj4.billbuddy"
+        }
     }
-}*/
+}
