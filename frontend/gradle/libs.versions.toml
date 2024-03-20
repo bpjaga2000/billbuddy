@@ -25,6 +25,7 @@ sqlDelightVersion = "1.5.5"
 
 [libraries]
 android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "androidDriverVersion" }
+androidx-paging3-extensions = { module = "app.cash.sqldelight:androidx-paging3-extensions", version.ref = "androidDriverVersion" }
 decompose = { module = "com.arkivanov.decompose:decompose", version.ref = "decompose" }
 id = { module = "com.diglol.id:id", version.ref = "id" }
 image-loader = { module = "io.github.qdsfdhvh:image-loader", version.ref = "imageLoader" }

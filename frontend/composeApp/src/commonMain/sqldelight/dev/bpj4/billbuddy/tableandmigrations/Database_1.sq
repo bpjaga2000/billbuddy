@@ -1,0 +1,78 @@
+import data.model.entity.GroupTags;
+import data.model.entity.SpendTags;
+import kotlin.Boolean;
+import kotlin.Float;
+import kotlin.Int;
+
+CREATE TABLE Users (
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    password TEXT NOT NULL,
+    email TEXT NOT NULL,
+    mobileCountryCode TEXT,
+    phone INTEGER,
+    role TEXT NOT NULL ,
+    defaultGroupId TEXT,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL,
+    deletedAt INTEGER,
+    status INTEGER AS Int DEFAULT 0
+);
+
+CREATE TABLE Groups (
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    tag TEXT AS GroupTags NOT NULL,
+    groupOwnerId TEXT NOT NULL,
+    createdBy TEXT NOT NULL,
+    updatedBy TEXT NOT NULL,
+    deletedBy TEXT,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL,
+    deletedAt INTEGER,
+    status INTEGER AS Int DEFAULT 0
+);
+
+CREATE TABLE GroupMembers (
+    id TEXT PRIMARY KEY NOT NULL,
+    userId TEXT NOT NULL,
+    groupId TEXT NOT NULL,
+    createdBy TEXT NOT NULL,
+    updatedBy TEXT NOT NULL,
+    deletedBy TEXT,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL,
+    deletedAt INTEGER,
+    status INTEGER AS Int DEFAULT 0
+);
+
+CREATE TABLE Spends (
+    id TEXT PRIMARY KEY NOT NULL,
+    totalAmount REAL AS Float NOT NULL,
+    isPayback INTEGER AS Boolean NOT NULL DEFAULT 0,
+    tag TEXT AS SpendTags NOT NULL,
+    groupId TEXT NOT NULL,
+    createdBy TEXT NOT NULL,
+    updatedBy TEXT NOT NULL,
+    deletedBy TEXT,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL,
+    deletedAt INTEGER,
+    status INTEGER AS Int DEFAULT 0
+);
+
+CREATE TABLE SpendSplits (
+    id TEXT PRIMARY KEY NOT NULL,
+    userId TEXT NOT NULL,
+    spendId TEXT NOT NULL,
+    lentOrBorrowed INTEGER NOT NULL,
+    splitType INTEGER NOT NULL,
+    value REAL AS Float NOT NULL,
+    createdBy TEXT NOT NULL,
+    updatedBy TEXT NOT NULL,
+    deletedBy TEXT,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL,
+    deletedAt INTEGER,
+    status INTEGER AS Int DEFAULT 0
+);
