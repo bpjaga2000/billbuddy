@@ -17,7 +17,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Preview
 @Composable
-fun RegisterScreen(modifier: Modifier = Modifier) {
+fun RegisterScreen(component: RegisterComponent, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier.then(
             Modifier.fillMaxSize().background(MaterialTheme.colors.background)

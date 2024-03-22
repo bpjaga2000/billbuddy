@@ -45,7 +45,7 @@ import org.jetbrains.compose.resources.painterResource
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalResourceApi::class)
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier) {
+fun LoginScreen(component: LoginComponent, modifier: Modifier = Modifier) {
 
     LogInViewModel()
     var email = remember { "" }
@@ -156,11 +156,15 @@ fun LoginScreen(modifier: Modifier = Modifier) {
                 horizontalArrangement = Arrangement.spacedBy(20.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Button(onClick = {}) {
+                Button(onClick = {
+                    component.onRegisterClicked()
+                }) {
                     Text("Register")
                 }
 
-                Button(onClick = {}) {
+                Button(onClick = {
+                    component.onLoginClicked(email, password)
+                }) {
                     Text("Sign In")
                 }
             }

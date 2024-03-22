@@ -1,4 +1,4 @@
-package data.model.entity
+package data
 
 enum class GroupTags { TRAVEL, HOME, OTHER }
 

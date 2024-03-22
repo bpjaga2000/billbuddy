@@ -1,5 +1,5 @@
-import data.model.entity.GroupTags;
-import data.model.entity.SpendTags;
+import data.GroupTags;
+import data.SpendTags;
 import kotlin.Boolean;
 import kotlin.Float;
 import kotlin.Int;

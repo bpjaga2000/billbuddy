@@ -82,6 +82,7 @@ kotlin {
             api(libs.image.loader)
             implementation(libs.mvvm.core)
             implementation(libs.decompose)
+            implementation("com.arkivanov.decompose:extensions-compose:${libs.versions.decompose.get()}")
             implementation(libs.androidx.paging3.extensions)
         }
         desktopMain.dependencies {

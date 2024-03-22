@@ -13,11 +13,11 @@ class LogInViewModel: ViewModel() {
     private var _userResponse = MutableStateFlow<UserDto?>(null)
     val userResponse = _userResponse.asStateFlow()
 
-    init{
+    fun logIn(email: String, password: String) {
         viewModelScope.launch {
-           RepositoryImpl().logIn("abc@xyz.com", "12345678").collect{
-               _userResponse.value = it.body()
-           }
+            RepositoryImpl().logIn(email, password).collect {
+                _userResponse.value = it.body()
+            }
         }
     }
 
