@@ -10,6 +10,8 @@ import jakarta.persistence.Table
 @Table(name = "spends")
 data class SpendEntity(
 
+        val name: String = "",
+
         @Column(name = "total_amount")
         val totalAmount: Float = 0f,
 

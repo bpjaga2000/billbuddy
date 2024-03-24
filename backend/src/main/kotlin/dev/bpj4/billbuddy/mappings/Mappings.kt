@@ -66,6 +66,7 @@ fun GroupMembersEntity.mapToGroupMembersDto() = GroupMembersDto(
 
 fun SpendEntity.mapToSpendDto() = SpendDto(
         id,
+        name,
         totalAmount,
         isPayback,
         tag,
@@ -82,6 +83,7 @@ fun SpendEntity.mapToSpendDto() = SpendDto(
 )
 
 fun SpendDto.mapToSpendEntity() = SpendEntity(
+        name,
         totalAmount,
         isPayback,
         tag,
