@@ -23,6 +23,9 @@ data class SpendEntity(
         @Column(name = "group_id")
         val groupId: String,
 
+        @Column(name = "spent_at")
+        var spentAt: Long = 0L,
+
         @Column(name = "created_by")
         var createdBy: String = "",
 

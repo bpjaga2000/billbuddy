@@ -71,6 +71,7 @@ fun SpendEntity.mapToSpendDto() = SpendDto(
         isPayback,
         tag,
         groupId,
+        spentAt,
         createdBy,
         updatedBy,
         deletedBy,
@@ -88,6 +89,7 @@ fun SpendDto.mapToSpendEntity() = SpendEntity(
         isPayback,
         tag,
         groupId,
+        spentAt,
         createdBy,
         updatedBy,
         deletedBy
