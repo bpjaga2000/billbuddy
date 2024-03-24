@@ -7,10 +7,12 @@ import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.push
+import com.arkivanov.decompose.router.stack.replaceAll
 import com.arkivanov.decompose.value.Value
 import kotlinx.serialization.Serializable
+import presentation.bottomnavigation.BottomNavigationComponent
+import presentation.bottomnavigation.DefaultBottomNavigationComponent
 import presentation.login.DefaultLoginComponent
-import presentation.login.LogInViewModel
 import presentation.login.LoginComponent
 import presentation.register.DefaultRegisterComponent
 import presentation.register.RegisterComponent
@@ -19,10 +21,10 @@ interface RootComponent {
     val childStack: Value<ChildStack<*, Child>>
 
     sealed class Child {
-        data class LoginChild(val component: LoginComponent) : Child()
+        class LoginChild(val component: LoginComponent) : Child()
 
-        data class RegisterChild(val component: RegisterComponent) : Child()
-        class HomeChild : Child()
+        class RegisterChild(val component: RegisterComponent) : Child()
+        class BottomNavigationChild(val component: BottomNavigationComponent) : Child()
     }
 }
 
@@ -44,21 +46,30 @@ class DefaultRootComponent(
         componentContext: ComponentContext
     ): RootComponent.Child {
         return when (config) {
-            is Config.Login -> RootComponent.Child.LoginChild(DefaultLoginComponent(
-                componentContext.childContext(key = "login"),
-                LogInViewModel()
-            ) {
-                navigation.push(Config.Register)
-            })
+            is Config.Login -> RootComponent.Child.LoginChild(
+                DefaultLoginComponent(
+                    componentContext.childContext(key = "login"), {
+                        navigation.replaceAll(Config.BottomNavigation)
+                    }
+                ) {
+                    navigation.push(Config.Register)
+                }
+            )
 
             is Config.Register -> RootComponent.Child.RegisterChild(
                 DefaultRegisterComponent(
-                    componentContext.childContext(key = "register")
+                    componentContext.childContext(key = "register"), {
+                        navigation.replaceAll(Config.BottomNavigation)
+                    }
                 ) {
                     navigation.pop()
                 })
 
-            is Config.Home -> RootComponent.Child.HomeChild()//todo
+            is Config.BottomNavigation -> RootComponent.Child.BottomNavigationChild(
+                DefaultBottomNavigationComponent(
+                    componentContext.childContext(key = "bottomNavigation")
+                )
+            )
         }
     }
 
@@ -71,7 +82,7 @@ class DefaultRootComponent(
         data object Register : Config()
 
         @Serializable
-        data object Home : Config()
+        data object BottomNavigation : Config()
     }
 
 }

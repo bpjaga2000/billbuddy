@@ -59,6 +59,7 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.decompose)
             implementation(libs.android.driver)
+            implementation("org.jetbrains.compose.ui:ui-tooling-preview:${libs.versions.compose.plugin.get()}")
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -82,13 +83,16 @@ kotlin {
             api(libs.image.loader)
             implementation(libs.mvvm.core)
             implementation(libs.decompose)
+            implementation(libs.multiplatform.settings)
             implementation("com.arkivanov.decompose:extensions-compose:${libs.versions.decompose.get()}")
+            implementation(libs.sonner)
             implementation(libs.androidx.paging3.extensions)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqlite.driver)
+            implementation("org.jetbrains.compose.ui:ui-tooling-preview:${libs.versions.compose.plugin.get()}")
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

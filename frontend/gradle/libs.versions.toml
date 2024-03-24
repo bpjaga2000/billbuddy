@@ -19,8 +19,10 @@ koinCore = "3.5.3"
 kotlin = "1.9.22"
 kotlinxSerializationJson = "1.6.3"
 ktorVersion = "2.3.9"
+multiplatformSettings = "1.1.1"
 mvvmCore = "0.16.1"
 slf4jSimple = "2.0.9"
+sonner = "0.3.5"
 sqlDelightVersion = "1.5.5"
 
 [libraries]
@@ -46,11 +48,13 @@ ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorVer
 ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktorVersion" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktorVersion" }
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktorVersion" }
+multiplatform-settings = { module = "com.russhwolf:multiplatform-settings", version.ref = "multiplatformSettings" }
 mvvm-core = { module = "dev.icerock.moko:mvvm-core", version.ref = "mvvmCore" }
 native-driver = { module = "app.cash.sqldelight:native-driver", version.ref = "androidDriverVersion" }
 runtime = { module = "com.squareup.sqldelight:runtime", version.ref = "sqlDelightVersion" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorVersion" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4jSimple" }
+sonner = { module = "io.github.dokar3:sonner", version.ref = "sonner" }
 sqlite-driver = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "androidDriverVersion" }
 
 [plugins]

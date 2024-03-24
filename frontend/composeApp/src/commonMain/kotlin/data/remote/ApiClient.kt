@@ -14,7 +14,6 @@ object ApiClient {
 
     val httpClient = HttpClient(CIO) {
         install(ContentNegotiation) {
-
             json(Json {
                 prettyPrint = true
                 isLenient = true

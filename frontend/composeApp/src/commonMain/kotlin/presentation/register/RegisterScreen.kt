@@ -15,9 +15,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
-@Preview
 @Composable
-fun RegisterScreen(component: RegisterComponent, modifier: Modifier = Modifier) {
+fun RegisterScreen(component: RegisterComponent? = null, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier.then(
             Modifier.fillMaxSize().background(MaterialTheme.colors.background)
@@ -36,6 +35,8 @@ fun RegisterScreen(component: RegisterComponent, modifier: Modifier = Modifier) 
                 shape = RoundedCornerShape(topStart = 50.dp, topEnd = 50.dp)
             ),
             horizontalAlignment = Alignment.CenterHorizontally,
-        ) {}
+        ) {
+
+        }
     }
 }

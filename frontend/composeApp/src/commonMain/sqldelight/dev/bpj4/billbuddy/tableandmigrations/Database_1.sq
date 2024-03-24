@@ -48,6 +48,7 @@ CREATE TABLE GroupMembers (
 
 CREATE TABLE Spends (
     id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
     totalAmount REAL AS Float NOT NULL,
     isPayback INTEGER AS Boolean NOT NULL DEFAULT 0,
     tag TEXT AS SpendTags NOT NULL,
