@@ -44,6 +44,7 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import presentation.common.GroupListItem
 import presentation.common.SpendListItem
+import utils.DataStore
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalResourceApi::class)
 @Composable
@@ -163,7 +164,7 @@ fun LoginScreen(component: LoginComponent, modifier: Modifier = Modifier) {
                             .padding(vertical = 8.dp, horizontal = 30.dp)
                             .height(40.dp)
                     )
-
+                    DataStore.check()
                     Row(
                         modifier = Modifier
                             .wrapContentWidth()
@@ -183,9 +184,6 @@ fun LoginScreen(component: LoginComponent, modifier: Modifier = Modifier) {
                             Text("Sign In")
                         }
                     }
-                    GroupListItem()
-
-                    SpendListItem()
 
                     Spacer(modifier = Modifier.weight(0.2f))
                 }

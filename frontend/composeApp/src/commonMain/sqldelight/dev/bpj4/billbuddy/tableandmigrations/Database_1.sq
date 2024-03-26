@@ -53,6 +53,7 @@ CREATE TABLE Spends (
     isPayback INTEGER AS Boolean NOT NULL DEFAULT 0,
     tag TEXT AS SpendTags NOT NULL,
     groupId TEXT NOT NULL,
+    spentAt INTEGER NOT NULL,
     createdBy TEXT NOT NULL,
     updatedBy TEXT NOT NULL,
     deletedBy TEXT,

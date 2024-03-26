@@ -59,7 +59,7 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.decompose)
             implementation(libs.android.driver)
-            implementation("org.jetbrains.compose.ui:ui-tooling-preview:${libs.versions.compose.plugin.get()}")
+            implementation(libs.androidx.security.crypto.ktx)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -92,7 +92,6 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqlite.driver)
-            implementation("org.jetbrains.compose.ui:ui-tooling-preview:${libs.versions.compose.plugin.get()}")
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)

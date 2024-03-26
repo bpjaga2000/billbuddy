@@ -3,8 +3,10 @@ package presentation.common
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
@@ -22,37 +24,44 @@ fun SpendListItem(modifier: Modifier = Modifier/*, spend: Spends*/, involved: Bo
     ) {
         Row(
             modifier = Modifier.padding(15.dp),
-            horizontalArrangement = Arrangement.spacedBy(5.dp)
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
                 modifier = Modifier.weight(0.1f),
                 horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.spacedBy(5.dp)
+                verticalArrangement = Arrangement.Center
             ) {
-                Text(text = GMTDate(/*spend.updatedAt*/).month.value)
-                Text(text = GMTDate(/*spend.updatedAt*/).dayOfMonth.toString())
+                Text(
+                    text = GMTDate(/*spend.updatedAt*/).month.value,
+                    modifier = Modifier.padding(5.dp)
+                )
+                Text(
+                    text = GMTDate(/*spend.updatedAt*/).dayOfMonth.toString(),
+                    modifier = Modifier.padding(5.dp)
+                )
             }
             Column(
                 modifier = Modifier.weight(0.6f),
                 horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.spacedBy(5.dp)
+                verticalArrangement = Arrangement.Center
             ) {
-                Text(text = "title")
+                Text(text = "title", modifier = Modifier.padding(5.dp))
                 if (involved)
-                    Text(text = "mr.a paid 200")
+                    Text(text = "mr.a paid 200", modifier = Modifier.padding(5.dp))
                 else
-                    Text("You are not involved")
+                    Text("You are not involved", modifier = Modifier.padding(5.dp))
             }
             Column(
                 modifier = Modifier.weight(0.2f),
                 horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.spacedBy(5.dp)
+                verticalArrangement = Arrangement.Center
             ) {
                 if (involved) {
-                    Text(text = "your share")
-                    Text(text = "200")
+                    Text(text = "your share", modifier = Modifier.padding(5.dp))
+                    Text(text = "200", modifier = Modifier.padding(5.dp))
                 } else
-                    Text(text = "not involved")
+                    Text(text = "not involved", modifier = Modifier.padding(5.dp))
             }
         }
     }

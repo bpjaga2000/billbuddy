@@ -63,7 +63,8 @@ class DefaultRootComponent(
                     }
                 ) {
                     navigation.pop()
-                })
+                }
+            )
 
             is Config.BottomNavigation -> RootComponent.Child.BottomNavigationChild(
                 DefaultBottomNavigationComponent(
