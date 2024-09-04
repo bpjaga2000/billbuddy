@@ -23,7 +23,7 @@ class RepositoryImpl : Repository {
         }
         emit(ApiResult.loading())
         with(ApiClient.httpClient.post {
-            url("http:////192.168.0.104:8090/api/v1/auth/login")
+            url("http:////192.168.229.230:8090/api/v1/auth/login")
             contentType(ContentType.Application.Json)
             setBody(LoginDto(email, password))
         }) {
@@ -37,7 +37,7 @@ class RepositoryImpl : Repository {
     override suspend fun register(email: String, password: String) = flow<ApiResult<UserDto>> {
         emit(ApiResult.loading())
         with(ApiClient.httpClient.post {
-            url("http:////192.168.0.104:8090/api/v1/auth/register")
+            url("http:////192.168.229.230:8090/api/v1/auth/register")
             contentType(ContentType.Application.Json)
             setBody(LoginDto(email, password))
         }) {

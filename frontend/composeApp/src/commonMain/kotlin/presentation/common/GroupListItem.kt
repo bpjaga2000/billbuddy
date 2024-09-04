@@ -1,6 +1,6 @@
 package presentation.common
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,17 +19,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun GroupListItem(modifier: Modifier = Modifier) {
+fun GroupListItem(onGroupClicked: () -> Unit, modifier: Modifier = Modifier) {
     val balance by remember { mutableIntStateOf(1) }
     Card(
         shape = RoundedCornerShape(20.dp),
-        modifier = modifier.then(Modifier.padding(20.dp).wrapContentSize()),
+        modifier = modifier.then(
+            Modifier.padding(vertical = 8.dp).wrapContentSize().clickable { onGroupClicked() }),
     ) {
         Row(
             modifier = Modifier.padding(20.dp).fillMaxWidth()
         ) {
             Column {
-                Text("Title")
+                Text("Group name")
                 Spacer(modifier = Modifier.height(10.dp).fillMaxWidth())
                 if (balance > 0)
                     Text("You owe $100")

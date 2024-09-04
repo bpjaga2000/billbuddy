@@ -8,6 +8,6 @@ object DataStore {
     val settings: Settings = createSettings()
 
     fun check() {
-        settings["w"] = 1
+        settings["token"] = "1"
     }
 }

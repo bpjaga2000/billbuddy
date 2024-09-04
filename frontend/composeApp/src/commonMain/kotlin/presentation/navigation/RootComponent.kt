@@ -16,6 +16,7 @@ import presentation.login.DefaultLoginComponent
 import presentation.login.LoginComponent
 import presentation.register.DefaultRegisterComponent
 import presentation.register.RegisterComponent
+import utils.DataStore
 
 interface RootComponent {
     val childStack: Value<ChildStack<*, Child>>
@@ -36,7 +37,10 @@ class DefaultRootComponent(
     override val childStack: Value<ChildStack<*, RootComponent.Child>> = childStack(
         source = navigation,
         serializer = Config.serializer(),
-        initialConfiguration = Config.Login,
+        initialConfiguration = if (!(DataStore.settings.getStringOrNull("token").isNullOrEmpty()))
+            Config.BottomNavigation
+        else
+            Config.Login,
         handleBackButton = true,
         childFactory = ::childFactory
     )

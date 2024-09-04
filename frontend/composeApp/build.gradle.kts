@@ -87,6 +87,7 @@ kotlin {
             implementation("com.arkivanov.decompose:extensions-compose:${libs.versions.decompose.get()}")
             implementation(libs.sonner)
             implementation(libs.androidx.paging3.extensions)
+            implementation(libs.primitive.adapters)
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)

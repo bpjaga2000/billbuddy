@@ -1,6 +1,7 @@
 package presentation.login
 
 import com.arkivanov.decompose.ComponentContext
+import com.russhwolf.settings.set
 import data.model.dto.UserDto
 import data.remote.ApiResult
 import data.repository.RepositoryImpl
@@ -8,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import utils.DataStore
 import utils.DispatcherUtils.componentCoroutineScope
 
 interface LoginComponent {
@@ -31,7 +33,16 @@ class DefaultLoginComponent(
     override fun onLoginClicked(email: String, password: String) {
         coroutineScope.launch {
             RepositoryImpl().logIn(email, password).collect {
-                _userLoginResponse.value = it
+                when (it) {
+                    is ApiResult.Success -> {
+                        _userLoginResponse.value = it
+                        DataStore.settings["token"] = it.data.token
+                        DataStore.settings["email"] = it.data.email
+                        DataStore.settings["id"] = it.data.id
+                    }
+
+                    else -> {}
+                }
             }
         }
     }

@@ -1,2 +1,5 @@
 selectAll:
 SELECT * FROM Users;
+
+selectCurrentUser:
+SELECT * FROM Users WHERE id = :id;

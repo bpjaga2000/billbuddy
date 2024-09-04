@@ -8,10 +8,9 @@ import androidx.compose.runtime.Composable
 fun BillBuddyTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
-) {
+)  =
     MaterialTheme(
         colors = MaterialTheme.colors,
         typography = MaterialTheme.typography,
         content = content
     )
-}

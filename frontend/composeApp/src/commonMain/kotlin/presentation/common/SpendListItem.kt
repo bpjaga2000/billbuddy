@@ -17,10 +17,10 @@ import androidx.compose.ui.unit.dp
 import io.ktor.util.date.GMTDate
 
 @Composable
-fun SpendListItem(modifier: Modifier = Modifier/*, spend: Spends*/, involved: Boolean = false) {
+fun SpendListItem(onSpendClick: () -> Unit,modifier: Modifier = Modifier/*, spend: Spends*/, involved: Boolean = false) {
     Card(
         shape = RoundedCornerShape(10.dp),
-        modifier = modifier.then(Modifier.padding(15.dp).fillMaxWidth())
+        modifier = modifier.then(Modifier.padding(vertical = 8.dp).fillMaxWidth())
     ) {
         Row(
             modifier = Modifier.padding(15.dp),
@@ -46,7 +46,7 @@ fun SpendListItem(modifier: Modifier = Modifier/*, spend: Spends*/, involved: Bo
                 horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.Center
             ) {
-                Text(text = "title", modifier = Modifier.padding(5.dp))
+                Text(text = "for hotel - ", modifier = Modifier.padding(5.dp))
                 if (involved)
                     Text(text = "mr.a paid 200", modifier = Modifier.padding(5.dp))
                 else

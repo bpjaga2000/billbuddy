@@ -8,6 +8,7 @@ import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
 import presentation.bottomnavigation.BottomNavigationScreen
 import presentation.login.LoginScreen
 import presentation.register.RegisterScreen
+import utils.DataStore
 
 @Composable
 fun RootContent(component: RootComponent, modifier: Modifier = Modifier) {
@@ -17,6 +18,7 @@ fun RootContent(component: RootComponent, modifier: Modifier = Modifier) {
         modifier = modifier,
         animation = stackAnimation(fade())
     ) {
+        DataStore.check()
         when (val child = it.instance) {
             is RootComponent.Child.LoginChild -> LoginScreen(child.component)
             is RootComponent.Child.BottomNavigationChild -> BottomNavigationScreen(child.component)

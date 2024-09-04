@@ -42,8 +42,6 @@ import kotlinproject.composeapp.generated.resources.compose_multiplatform
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
-import presentation.common.GroupListItem
-import presentation.common.SpendListItem
 import utils.DataStore
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalResourceApi::class)
