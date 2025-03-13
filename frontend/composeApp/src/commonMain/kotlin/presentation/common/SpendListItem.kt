@@ -3,10 +3,8 @@ package presentation.common
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.Text
@@ -17,10 +15,15 @@ import androidx.compose.ui.unit.dp
 import io.ktor.util.date.GMTDate
 
 @Composable
-fun SpendListItem(onSpendClick: () -> Unit,modifier: Modifier = Modifier/*, spend: Spends*/, involved: Boolean = false) {
+fun SpendListItem(
+    onSpendClick: () -> Unit,
+    modifier: Modifier = Modifier,/*, spend: Spends*/
+    involved: Boolean = false,
+) {
     Card(
         shape = RoundedCornerShape(10.dp),
-        modifier = modifier.then(Modifier.padding(vertical = 8.dp).fillMaxWidth())
+        modifier = modifier.then(Modifier.padding(vertical = 8.dp).fillMaxWidth()),
+        onClick = onSpendClick
     ) {
         Row(
             modifier = Modifier.padding(15.dp),

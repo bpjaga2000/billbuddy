@@ -13,8 +13,8 @@ object UserRoles {
 
 object SplitType {
     const val EQUAL = 1
-    const val RATIO = 2
+    const val AMOUNT = 2
     const val SHARE = 3
-    const val AMOUNT = 4
+    const val RATIO = 4
     const val DIFFERENCE = 5
 }
