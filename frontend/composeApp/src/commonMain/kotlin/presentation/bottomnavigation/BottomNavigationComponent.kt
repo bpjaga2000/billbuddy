@@ -14,14 +14,18 @@ import com.arkivanov.decompose.value.Value
 import data.model.Balance
 import dev.bpj4.billbuddy.tableandmigrations.Users
 import kotlinx.serialization.Serializable
+import presentation.addfriends.AddFriendsComponent
+import presentation.addfriends.DefaultAddFriendsComponent
 import presentation.balances.BalancesComponent
 import presentation.balances.DefaultBalancesComponent
+import presentation.bottomnavigation.BottomNavigationComponent.Child.AddFriends
 import presentation.bottomnavigation.BottomNavigationComponent.Child.Balances
 import presentation.bottomnavigation.BottomNavigationComponent.Child.EditSpends
 import presentation.bottomnavigation.BottomNavigationComponent.Child.GroupSettings
 import presentation.bottomnavigation.BottomNavigationComponent.Child.GroupSpends
 import presentation.bottomnavigation.BottomNavigationComponent.Child.Home
 import presentation.bottomnavigation.BottomNavigationComponent.Child.Profile
+import presentation.bottomnavigation.BottomNavigationComponent.Child.Search
 import presentation.bottomnavigation.BottomNavigationComponent.Child.SettleUp
 import presentation.bottomnavigation.BottomNavigationComponent.Child.SpendDetails
 import presentation.bottomnavigation.BottomNavigationComponent.Child.Totals
@@ -35,6 +39,8 @@ import presentation.home.DefaultHomeComponent
 import presentation.home.HomeComponent
 import presentation.profile.DefaultProfileComponent
 import presentation.profile.ProfileComponent
+import presentation.search.DefaultSearchComponent
+import presentation.search.SearchComponent
 import presentation.settleup.DefaultSettleUpComponent
 import presentation.settleup.SettleUpComponent
 import presentation.spenddetails.DefaultSpendDetailsComponent
@@ -62,6 +68,8 @@ interface BottomNavigationComponent {
         class Totals(val component: TotalsComponent) : Child()
         class Balances(val component: BalancesComponent) : Child()
         class SettleUp(val component: SettleUpComponent) : Child()
+        class Search(val component: SearchComponent) : Child()
+        class AddFriends(val component: AddFriendsComponent) : Child()
     }
 }
 
@@ -115,15 +123,17 @@ class DefaultBottomNavigationComponent(
         Config.GroupSpends -> GroupSpends(
             DefaultGroupSpendsComponent(
                 componentContext.childContext(key = "groupSpends"),
-                { navigation.push(Config.SpendDetails) }
-            ) { navigation.push(Config.EditSpends) }
+                { navigation.push(Config.SpendDetails) },
+                { navigation.push(Config.EditSpends) }
+            ) { navigation.push(Config.GroupSettings) }
         )
 
         Config.GroupSettings -> GroupSettings(
             DefaultGroupSettingsComponent(
                 componentContext.childContext(key = "groupSettings"),
-                ""
-            )
+                "",
+                { navigation.push(Config.Search) }
+            ) { navigation.pop() }
         )
 
         Config.EditSpends -> EditSpends(
@@ -165,6 +175,26 @@ class DefaultBottomNavigationComponent(
             }
         )
 
+        Config.Search -> Search(
+            DefaultSearchComponent(
+                componentContext.childContext("search"),
+                {
+                    navigation.push(Config.AddFriends)
+                }
+            ) {
+                navigation.pop()
+
+            }
+        )
+
+        Config.AddFriends -> AddFriends(
+            DefaultAddFriendsComponent(
+                componentContext.childContext("addFriends")
+            ) {
+                navigation.pop()
+            }
+        )
+
     }
 
     @Serializable
@@ -195,6 +225,12 @@ class DefaultBottomNavigationComponent(
 
         @Serializable
         data object SettleUp : Config()
+
+        @Serializable
+        data object Search : Config()
+
+        @Serializable
+        data object AddFriends : Config()
     }
 
 }

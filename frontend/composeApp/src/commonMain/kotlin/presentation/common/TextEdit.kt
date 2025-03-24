@@ -18,7 +18,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun TextEdit(text: MutableState<String>, placeholder: String = "", editable: Boolean = true) {
+fun TextEdit(
+    text: MutableState<String>,
+    placeholder: String = "",
+    editable: Boolean = true,
+    modifier: Modifier = Modifier,
+) {
     BasicTextField(
         value = text.value,
         onValueChange = { text.value = it },
@@ -34,13 +39,15 @@ fun TextEdit(text: MutableState<String>, placeholder: String = "", editable: Boo
                 it()
             }
         },
-        modifier = Modifier
-            .border(
-                BorderStroke(1.dp, Color.Gray),
-                shape = RoundedCornerShape(50.dp)
-            )
-            .width(300.dp)
-            .padding(vertical = 8.dp, horizontal = 30.dp)
-            .height(40.dp)
+        modifier = modifier.then(
+            Modifier
+                .border(
+                    BorderStroke(1.dp, Color.Gray),
+                    shape = RoundedCornerShape(50.dp)
+                )
+                .width(300.dp)
+                .padding(vertical = 8.dp, horizontal = 30.dp)
+                .height(40.dp)
+        )
     )
 }

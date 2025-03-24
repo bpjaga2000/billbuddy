@@ -32,12 +32,14 @@ import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.stack.animation.fade
 import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
 import constants.Constants
+import presentation.addfriends.AddFriendsScreen
 import presentation.balances.BalancesScreen
 import presentation.editspends.EditSpendsScreen
 import presentation.groupsettings.GroupSettingsScreen
 import presentation.groupspends.GroupSpendsScreen
 import presentation.home.HomeScreen
 import presentation.profile.ProfileScreen
+import presentation.search.SearchScreen
 import presentation.settleup.SettleUpScreen
 import presentation.spenddetails.SpendDetailsScreen
 import presentation.totals.TotalsScreen
@@ -75,30 +77,56 @@ fun BottomNavigationScreen(component: BottomNavigationComponent, modifier: Modif
                         }
                     } else null,
                 actions = {
-                    when (childStack.value.instance) {
+                    when (val instance = childStack.value.instance) {
 
                         is BottomNavigationComponent.Child.GroupSpends -> {
-                            Icon(
-                                modifier = Modifier.size(24.dp),
-                                imageVector = Icons.Outlined.Settings,
-                                contentDescription = "settings"
-                            )
+                            IconButton(onClick = { instance.component.onGroupSpendSettingsClicked() }) {
+                                Icon(
+                                    modifier = Modifier.size(24.dp),
+                                    imageVector = Icons.Outlined.Settings,
+                                    contentDescription = "settings"
+                                )
+                            }
                         }
 
                         is BottomNavigationComponent.Child.EditSpends -> {
-                            Icon(
-                                modifier = Modifier.size(24.dp),
-                                imageVector = Icons.Filled.Check,
-                                contentDescription = "save"
-                            )
+                            IconButton(onClick = { instance.component.onSaveClicked() }) {
+                                Icon(
+                                    modifier = Modifier.size(24.dp),
+                                    imageVector = Icons.Filled.Check,
+                                    contentDescription = "save"
+                                )
+                            }
                         }
 
                         is BottomNavigationComponent.Child.GroupSettings -> {
-                            Icon(
-                                modifier = Modifier.size(24.dp),
-                                imageVector = Icons.Filled.Check,
-                                contentDescription = "save"
-                            )
+                            IconButton(onClick = { instance.component.onSaveClicked() }) {
+                                Icon(
+                                    modifier = Modifier.size(24.dp),
+                                    imageVector = Icons.Filled.Check,
+                                    contentDescription = "save"
+                                )
+                            }
+                        }
+
+                        is BottomNavigationComponent.Child.Search -> {
+                            IconButton(onClick = { instance.component.onDoneClicked() }) {
+                                Icon(
+                                    modifier = Modifier.size(24.dp),
+                                    imageVector = Icons.Filled.Check,
+                                    contentDescription = "done"
+                                )
+                            }
+                        }
+
+                        is BottomNavigationComponent.Child.AddFriends -> {
+                            IconButton(onClick = { instance.component.onDoneClicked() }) {
+                                Icon(
+                                    modifier = Modifier.size(24.dp),
+                                    imageVector = Icons.Filled.Check,
+                                    contentDescription = "done"
+                                )
+                            }
                         }
 
                         else -> {}
@@ -188,6 +216,16 @@ fun BottomNavigationScreen(component: BottomNavigationComponent, modifier: Modif
                 is BottomNavigationComponent.Child.Totals -> {
                     title = "Totals"
                     TotalsScreen(child.component)
+                }
+
+                is BottomNavigationComponent.Child.Search -> {
+                    title = "Search"
+                    SearchScreen(child.component)
+                }
+
+                is BottomNavigationComponent.Child.AddFriends -> {
+                    title = "Add Friends"
+                    AddFriendsScreen(child.component)
                 }
             }
         }
