@@ -18,7 +18,6 @@ fun RootContent(component: RootComponent, modifier: Modifier = Modifier) {
         modifier = modifier,
         animation = stackAnimation(fade())
     ) {
-        DataStore.check()
         when (val child = it.instance) {
             is RootComponent.Child.LoginChild -> LoginScreen(child.component)
             is RootComponent.Child.BottomNavigationChild -> BottomNavigationScreen(child.component)

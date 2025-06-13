@@ -36,15 +36,18 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import data.remote.ApiResult
 import kotlinproject.composeapp.generated.resources.Res
 import kotlinproject.composeapp.generated.resources.compose_multiplatform
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import utils.DataStore
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalResourceApi::class)
 @Composable
 fun LoginScreen(component: LoginComponent, modifier: Modifier = Modifier) {
 
@@ -54,137 +57,141 @@ fun LoginScreen(component: LoginComponent, modifier: Modifier = Modifier) {
     val coroutine = rememberCoroutineScope()
     val pageSize = 4
     val pagerState = rememberPagerState { pageSize }
-    Box {
-        if (component.userLoginResponse is ApiResult.Loading<*>)
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center).size(100.dp))
-        else
-            Column(
-                modifier = modifier.then(
-                    Modifier.fillMaxSize().background(MaterialTheme.colors.background)
-                ),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(20.dp)
-            ) {
-                Box(
-                    modifier = Modifier.weight(0.3f)
-                ) {
-                    HorizontalPager(
-                        pagerState,
-                    ) {
+    val isLoading = remember { mutableStateOf(false) }
 
-                        Image(
-                            painter = painterResource(Res.drawable.compose_multiplatform),
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize().align(Alignment.Center)
+    coroutine.launch {
+        component.userLoginResponse.collectLatest {
+            isLoading.value = it is ApiResult.Loading
+        }
+    }
+
+    Box(modifier.then(Modifier.fillMaxSize())) {
+        Column(
+            modifier = Modifier.fillMaxSize().background(MaterialTheme.colors.background),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            Box(
+                modifier = Modifier.weight(0.3f)
+            ) {
+                HorizontalPager(
+                    pagerState,
+                ) {
+
+                    Image(
+                        painter = painterResource(Res.drawable.compose_multiplatform),
+                        contentDescription = null,
+                        modifier = Modifier.fillMaxSize().align(Alignment.Center)
+                    )
+                }
+                Row(
+                    modifier = Modifier.align(Alignment.BottomCenter),//.padding(10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    repeat(pageSize) {
+                        Spacer(
+                            modifier = Modifier.size(10.dp)
+                                .border(
+                                    BorderStroke(
+                                        5.dp,
+                                        if (it == pagerState.currentPage) Color.Black else Color.LightGray
+                                    ),
+                                    shape = RoundedCornerShape(50.dp)
+                                ).clickable {
+                                    coroutine.launch {
+                                        pagerState.animateScrollToPage(it)
+                                    }
+                                }
                         )
                     }
-                    Row(
-                        modifier = Modifier.align(Alignment.BottomCenter),//.padding(10.dp),
-                        horizontalArrangement = Arrangement.spacedBy(5.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        repeat(pageSize) {
-                            Spacer(
-                                modifier = Modifier.size(10.dp)
-                                    .border(
-                                        BorderStroke(
-                                            5.dp,
-                                            if (it == pagerState.currentPage) Color.Black else Color.LightGray
-                                        ),
-                                        shape = RoundedCornerShape(50.dp)
-                                    ).clickable {
-                                        coroutine.launch {
-                                            pagerState.animateScrollToPage(it)
-                                        }
-                                    }
-                            )
-                        }
-                    }
-                }
-                Column(
-                    modifier = Modifier.fillMaxWidth().weight(0.7f).background(
-                        color = Color.LightGray,
-                        shape = RoundedCornerShape(topStart = 50.dp, topEnd = 50.dp)
-                    ),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-
-                    Spacer(modifier = Modifier.weight(0.2f))
-
-                    BasicTextField(
-                        value = email.value,
-                        onValueChange = { email.value = it },
-                        decorationBox = {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.CenterStart
-                            ) {
-                                if (email.value.isEmpty()) {
-                                    Text("Enter your email")
-                                }
-                                it()
-                            }
-                        },
-                        modifier = Modifier
-                            .focusRequester(focusRequester)
-                            .border(
-                                BorderStroke(1.dp, Color.Gray),
-                                shape = RoundedCornerShape(50.dp)
-                            )
-                            .width(300.dp)
-                            .padding(vertical = 8.dp, horizontal = 30.dp)
-                            .height(40.dp)
-                    )
-
-                    Spacer(modifier = Modifier.weight(0.1f))
-
-                    BasicTextField(
-                        value = password.value,
-                        onValueChange = { password.value = it },
-                        decorationBox = {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.CenterStart
-                            ) {
-                                if (password.value.isEmpty()) {
-                                    Text("Enter your password")
-                                }
-                                it()
-                            }
-                        },
-                        modifier = Modifier
-                            .focusRequester(focusRequester)
-                            .border(
-                                BorderStroke(1.dp, Color.Gray),
-                                shape = RoundedCornerShape(50.dp)
-                            )
-                            .width(300.dp)
-                            .padding(vertical = 8.dp, horizontal = 30.dp)
-                            .height(40.dp)
-                    )
-                    DataStore.check()
-                    Row(
-                        modifier = Modifier
-                            .wrapContentWidth()
-                            .weight(0.3f),
-                        horizontalArrangement = Arrangement.spacedBy(20.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Button(onClick = {
-                            component.onRegisterClicked()
-                        }) {
-                            Text("Register")
-                        }
-
-                        Button(onClick = {
-                            component.onLoginClicked(email.value, password.value)
-                        }) {
-                            Text("Sign In")
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.weight(0.2f))
                 }
             }
+            Column(
+                modifier = Modifier.fillMaxWidth().weight(0.7f).background(
+                    color = Color.LightGray,
+                    shape = RoundedCornerShape(topStart = 50.dp, topEnd = 50.dp)
+                ),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+
+                Spacer(modifier = Modifier.weight(0.2f))
+
+                BasicTextField(
+                    value = email.value,
+                    onValueChange = { email.value = it },
+                    decorationBox = {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            if (email.value.isEmpty()) {
+                                Text("Enter your email")
+                            }
+                            it()
+                        }
+                    },
+                    modifier = Modifier
+                        .focusRequester(focusRequester)
+                        .border(
+                            BorderStroke(1.dp, Color.Gray),
+                            shape = RoundedCornerShape(50.dp)
+                        )
+                        .width(300.dp)
+                        .padding(vertical = 8.dp, horizontal = 30.dp)
+                        .height(40.dp)
+                )
+
+                Spacer(modifier = Modifier.weight(0.1f))
+
+                BasicTextField(
+                    value = password.value,
+                    onValueChange = { password.value = it },
+                    decorationBox = {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            if (password.value.isEmpty()) {
+                                Text("Enter your password")
+                            }
+                            it()
+                        }
+                    },
+                    modifier = Modifier
+                        .focusRequester(focusRequester)
+                        .border(
+                            BorderStroke(1.dp, Color.Gray),
+                            shape = RoundedCornerShape(50.dp)
+                        )
+                        .width(300.dp)
+                        .padding(vertical = 8.dp, horizontal = 30.dp)
+                        .height(40.dp)
+                )
+                Row(
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .weight(0.3f),
+                    horizontalArrangement = Arrangement.spacedBy(20.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Button(onClick = {
+                        component.onRegisterClicked()
+                    }) {
+                        Text("Register")
+                    }
+
+                    Button(onClick = {
+                        component.onLoginClicked(email.value, password.value)
+                    }) {
+                        Text("Sign In")
+                    }
+                }
+
+                Spacer(modifier = Modifier.weight(0.2f))
+            }
+        }
+        if (isLoading.value)
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center).size(50.dp))
     }
 }

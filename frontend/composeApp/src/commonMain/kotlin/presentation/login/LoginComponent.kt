@@ -5,18 +5,20 @@ import com.russhwolf.settings.set
 import data.model.dto.UserDto
 import data.remote.ApiResult
 import data.repository.RepositoryImpl
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import utils.DataStore
 import utils.DispatcherUtils.componentCoroutineScope
 
 interface LoginComponent {
     val userLoginResponse: StateFlow<ApiResult<UserDto>?>
-
     fun onLoginClicked(email: String, password: String)
-    fun onLoginSuccessful()
     fun onRegisterClicked()
 }
 
@@ -31,24 +33,24 @@ class DefaultLoginComponent(
 
     private val coroutineScope = componentContext.componentCoroutineScope()
     override fun onLoginClicked(email: String, password: String) {
-        coroutineScope.launch {
+        _userLoginResponse.value = ApiResult.loading()
+        coroutineScope.launch(Dispatchers.IO) {
             RepositoryImpl().logIn(email, password).collect {
                 when (it) {
                     is ApiResult.Success -> {
-                        _userLoginResponse.value = it
-                        DataStore.settings["token"] = it.data.token
-                        DataStore.settings["email"] = it.data.email
-                        DataStore.settings["id"] = it.data.id
+                        withContext(Dispatchers.Main) {
+                            _userLoginResponse.value = it
+                            DataStore.settings["token"] = it.data.token
+                            DataStore.settings["email"] = it.data.email
+                            DataStore.settings["id"] = it.data.id
+                            onLoginSuccessful()
+                        }
                     }
 
                     else -> {}
                 }
             }
         }
-    }
-
-    override fun onLoginSuccessful() {
-        onLoginSuccessful.invoke()
     }
 
     override fun onRegisterClicked() {
