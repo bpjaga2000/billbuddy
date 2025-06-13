@@ -15,7 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.ExperimentalDecomposeApi
-import com.arkivanov.decompose.extensions.compose.pages.Pages
+import com.arkivanov.decompose.extensions.compose.pages.ChildPages
 import com.arkivanov.decompose.extensions.compose.pages.PagesScrollAnimation
 import presentation.common.TextEdit
 import presentation.editspends.editspendstab.EditSpendsTab
@@ -47,7 +47,7 @@ fun EditSpendsScreen(component: EditSpendsComponent, modifier: Modifier = Modifi
                 )
             }
         }
-        Pages(
+        ChildPages(
             pages = component.pageStack,
             onPageSelected = component::onPageSelected,
             scrollAnimation = PagesScrollAnimation.Default

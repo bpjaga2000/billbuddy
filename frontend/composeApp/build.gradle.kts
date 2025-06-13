@@ -4,9 +4,10 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.0-Beta4"
-    id("de.jensklingenberg.ktorfit") version "1.12.0"
-    id("app.cash.sqldelight") version "2.0.1"
+    alias(libs.plugins.compose.compiler)
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.21"
+    id("de.jensklingenberg.ktorfit") version "2.5.2"
+    id("app.cash.sqldelight") version "2.1.0"
 }
 
 kotlin {
@@ -60,6 +61,7 @@ kotlin {
             implementation(libs.decompose)
             implementation(libs.android.driver)
             implementation(libs.androidx.security.crypto.ktx)
+            implementation(libs.androidx.multidex)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -115,6 +117,7 @@ android {
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
+        multiDexEnabled = true
     }
     packaging {
         resources {
