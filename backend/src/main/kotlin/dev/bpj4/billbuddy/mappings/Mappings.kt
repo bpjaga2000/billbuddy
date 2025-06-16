@@ -98,7 +98,7 @@ fun SpendDto.mapToSpendEntity() = SpendEntity(
     it.createdAtFrontend = createdAtFrontend
     it.updatedAtFrontend = updatedAtFrontend
     it.deletedAtFrontend = deletedAtFrontend
-    it.createdAt = createdAt
+    it.createdAt = if (createdAt != 0L) createdAt else System.currentTimeMillis()
     it.updatedAt = updatedAt
     it.deletedAt = deletedAt
 }
@@ -138,7 +138,7 @@ fun SpendSplitDto.mapToSpendSplitEntity() = SpendSplitEntity(
     it.createdAtFrontend = createdAtFrontend
     it.updatedAtFrontend = updatedAtFrontend
     it.deletedAtFrontend = deletedAtFrontend
-    it.createdAt = createdAt
+    it.createdAt = if (createdAt != 0L) createdAt else System.currentTimeMillis()
     it.updatedAt = updatedAt
     it.deletedAt = deletedAt
 }
