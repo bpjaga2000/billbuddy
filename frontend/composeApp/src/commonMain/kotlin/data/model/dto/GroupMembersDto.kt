@@ -1,5 +1,8 @@
 package data.model.dto
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class GroupMembersDto(
         val id: String,
         val userId: String,

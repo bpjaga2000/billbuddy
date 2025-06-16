@@ -1,13 +1,17 @@
 package data.model.dto
 
 import data.SpendTags
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class SpendDto(
     val id: String,
+    val name: String,
     val totalAmount: Float,
     val isPayback: Boolean,
     val tag: SpendTags,
     val groupId: String,
+    val spentAt: Long,
     val createdBy: String,
     val updatedBy: String,
     val deletedBy: String?,

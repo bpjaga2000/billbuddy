@@ -31,7 +31,6 @@ class DefaultRegisterComponent(
     private val coroutineScope = componentContext.componentCoroutineScope()
     override fun onRegisterClicked(email: String, password: String) {
         coroutineScope.launch {
-            _userRegisterResponse.value = ApiResult.loading()
             RepositoryImpl().register(email, password).collect{
                 _userRegisterResponse.value = it
                 when(it) {

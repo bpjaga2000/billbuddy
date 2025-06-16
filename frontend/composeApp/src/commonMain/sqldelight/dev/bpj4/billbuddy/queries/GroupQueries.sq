@@ -1,3 +1,5 @@
 selectAllGroups:
 SELECT * FROM Groups;
 
+insertGroups:
+INSERT INTO Groups VALUES (?,?,?,?,?,?,?,?,?,?,?);

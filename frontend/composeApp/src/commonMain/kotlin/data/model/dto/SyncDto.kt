@@ -5,7 +5,9 @@ import data.model.dto.GroupSyncResponseDto
 import data.model.dto.ProfileDto
 import data.model.dto.SpendDto
 import data.model.dto.SpendSplitDto
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class SyncDto(
     val users: List<ProfileDto>,
     val groups: List<GroupSyncResponseDto>,

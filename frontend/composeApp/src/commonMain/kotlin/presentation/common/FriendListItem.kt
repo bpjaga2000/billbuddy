@@ -10,9 +10,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import data.model.Balance
 
 @Composable
-fun FriendListItem(modifier: Modifier = Modifier) {
+fun FriendListItem(balance: Balance, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier.then(
             Modifier.padding(4.dp)
@@ -21,7 +22,7 @@ fun FriendListItem(modifier: Modifier = Modifier) {
         ), horizontalAlignment = Alignment.CenterHorizontally
     ) {
 //        Icon(Icons.Default.Person, contentDescription = null)
-        Text("Friend")
-        Text("Owes/owed $100")
+        Text(balance.name)
+        Text(balance.amount)
     }
 }

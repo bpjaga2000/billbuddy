@@ -1,5 +1,6 @@
 package data.remote
 
+import com.russhwolf.settings.get
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -7,8 +8,13 @@ import io.ktor.client.plugins.logging.DEFAULT
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.http.URLProtocol
+import io.ktor.http.buildUrl
+import io.ktor.http.encodedPath
+import io.ktor.http.headers
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import utils.DataStore
 
 object ApiClient {
 
@@ -19,6 +25,19 @@ object ApiClient {
                 isLenient = true
                 ignoreUnknownKeys = true
             })
+            buildUrl {
+                protocol = URLProtocol.HTTP
+                host = "92.119.126.127"
+                port = 8090
+                encodedPath = "api/v1"
+            }
+            headers {
+                append("Content-Type", "application/json")
+                print("Bearer ${DataStore.settings["token"] ?: ""}")
+                DataStore.settings.get<String>("token")?.let {
+                    append("Authorization", "Bearer $it")
+                }
+            }
         }
         Logging {
             logger = Logger.DEFAULT

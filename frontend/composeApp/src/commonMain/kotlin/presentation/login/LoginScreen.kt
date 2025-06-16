@@ -27,9 +27,11 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -57,11 +59,11 @@ fun LoginScreen(component: LoginComponent, modifier: Modifier = Modifier) {
     val coroutine = rememberCoroutineScope()
     val pageSize = 4
     val pagerState = rememberPagerState { pageSize }
-    val isLoading = remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
 
     coroutine.launch {
-        component.userLoginResponse.collectLatest {
-            isLoading.value = it is ApiResult.Loading
+        component.isLoading.collectLatest {
+            isLoading = it
         }
     }
 
@@ -191,7 +193,7 @@ fun LoginScreen(component: LoginComponent, modifier: Modifier = Modifier) {
                 Spacer(modifier = Modifier.weight(0.2f))
             }
         }
-        if (isLoading.value)
+        if (isLoading)
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center).size(50.dp))
     }
 }
