@@ -2,24 +2,26 @@ package presentation.bottomnavigation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.IconButton
-import androidx.compose.material.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemColors
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +49,7 @@ import presentation.spenddetails.SpendDetailsScreen
 import presentation.totals.TotalsScreen
 import utils.DataStore
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomNavigationScreen(component: BottomNavigationComponent, modifier: Modifier = Modifier) {
 
@@ -65,8 +68,8 @@ fun BottomNavigationScreen(component: BottomNavigationComponent, modifier: Modif
                 modifier = Modifier.fillMaxWidth(),
                 title = { Text(title) },
                 navigationIcon =
-                    if (childStack.value.instance !is BottomNavigationComponent.Child.Home && childStack.value.instance !is BottomNavigationComponent.Child.Profile) {
-                        @Composable {
+                    @Composable {
+                        if (childStack.value.instance !is BottomNavigationComponent.Child.Home && childStack.value.instance !is BottomNavigationComponent.Child.Profile) {
                             IconButton(
                                 onClick = component::onBackClicked,
                             ) {
@@ -76,8 +79,8 @@ fun BottomNavigationScreen(component: BottomNavigationComponent, modifier: Modif
                                     contentDescription = "back",
                                 )
                             }
-                        }
-                    } else null,
+                        } else null
+                    },
                 actions = {
                     when (val instance = childStack.value.instance) {
 
@@ -131,6 +134,26 @@ fun BottomNavigationScreen(component: BottomNavigationComponent, modifier: Modif
                             }
                         }
 
+                        is BottomNavigationComponent.Child.Home -> {
+                            IconButton(onClick = { instance.component.onLogoutClick() }) {
+                                Icon(
+                                    modifier = Modifier.size(24.dp),
+                                    imageVector = Icons.Outlined.Logout,
+                                    contentDescription = "done"
+                                )
+                            }
+                        }
+
+                        is BottomNavigationComponent.Child.Profile -> {
+                            IconButton(onClick = { instance.component.onLogoutClick() }) {
+                                Icon(
+                                    modifier = Modifier.size(24.dp),
+                                    imageVector = Icons.Outlined.Logout,
+                                    contentDescription = "done"
+                                )
+                            }
+                        }
+
                         else -> {}
 
                     }
@@ -140,7 +163,7 @@ fun BottomNavigationScreen(component: BottomNavigationComponent, modifier: Modif
         bottomBar = {
             BottomAppBar(modifier = Modifier.background(Color.White)) {
                 repeat(configs.size) {
-                    BottomNavigationItem(
+                    NavigationBarItem(
                         selected = selectedItem == it,
                         icon = @Composable {
                             Column(
@@ -161,8 +184,11 @@ fun BottomNavigationScreen(component: BottomNavigationComponent, modifier: Modif
                             }
                             selectedItem = it
                         },
-                        selectedContentColor = Color.Blue,
-                        unselectedContentColor = Color.Gray
+                        colors = NavigationBarItemColors(
+                            Color.Blue, Color.Blue, Color.Cyan,
+                            Color.Gray, Color.Gray,
+                            Color.Black, Color.Black
+                        )
                     )
                 }
             }

@@ -87,6 +87,7 @@ kotlin {
             implementation(libs.decompose)
             implementation(libs.multiplatform.settings)
             implementation("com.arkivanov.decompose:extensions-compose:${libs.versions.decompose.get()}")
+            implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
             implementation(libs.sonner)
             implementation(libs.androidx.paging3.extensions)
             implementation(libs.primitive.adapters)

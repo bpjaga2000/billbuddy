@@ -22,13 +22,14 @@ interface HomeComponent {
 
     fun onGroupClick(groupId: String)
     fun onCreateGroupClicked()
-
+    fun onLogoutClick()
 }
 
 class DefaultHomeComponent(
     val componentContext: ComponentContext,
     private val onSpendClicked: (groupId: String) -> Unit,
-    private val onCreateGroupClicked: () -> Unit
+    private val onCreateGroupClicked: () -> Unit,
+    val onLogoutClick: () -> Unit
 ) : HomeComponent, ComponentContext by componentContext {
 
     override var groups: MutableValue<List<Groups>> = MutableValue(listOf())
@@ -43,7 +44,7 @@ class DefaultHomeComponent(
                             if (isDone) {
 //                                    _isLoading.value = false
                                 RepositoryImpl().getGroups().collect { g ->
-                                    groups.update { g  }
+                                    groups.update { g }
                                 }
 
                                 RepositoryImpl().getFriendBalances().collect { f ->
@@ -71,6 +72,23 @@ class DefaultHomeComponent(
 
     override fun onCreateGroupClicked() {
         onCreateGroupClicked.invoke()
+    }
+
+    override fun onLogoutClick() {
+        componentContext.componentCoroutineScope().launch {
+            RepositoryImpl().logout().collect {
+                when (it) {
+                    is ApiResult.Success -> {
+                        withContext(Dispatchers.Main) {
+                            DataStore.settings.clear()
+                            onLogoutClick.invoke()
+                        }
+                    }
+
+                    else -> {}
+                }
+            }
+        }
     }
 
 }

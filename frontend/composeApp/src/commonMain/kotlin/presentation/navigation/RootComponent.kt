@@ -9,7 +9,6 @@ import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.push
 import com.arkivanov.decompose.router.stack.replaceAll
 import com.arkivanov.decompose.value.Value
-import com.russhwolf.settings.get
 import com.russhwolf.settings.set
 import kotlinx.serialization.Serializable
 import presentation.bottomnavigation.BottomNavigationComponent
@@ -65,7 +64,7 @@ class DefaultRootComponent(
                 DefaultRegisterComponent(
                     componentContext.childContext(key = "register"), {
                         DataStore.settings["token"] =
-                        navigation.replaceAll(Config.BottomNavigation)
+                            navigation.replaceAll(Config.BottomNavigation)
                     }
                 ) {
                     navigation.pop()
@@ -75,7 +74,9 @@ class DefaultRootComponent(
             is Config.BottomNavigation -> RootComponent.Child.BottomNavigationChild(
                 DefaultBottomNavigationComponent(
                     componentContext.childContext(key = "bottomNavigation")
-                )
+                ) {
+                    navigation.replaceAll(Config.Login)
+                }
             )
         }
     }

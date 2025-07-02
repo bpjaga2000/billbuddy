@@ -1,7 +1,7 @@
 package ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 
 @Composable
@@ -10,7 +10,7 @@ fun BillBuddyTheme(
     content: @Composable () -> Unit
 )  =
     MaterialTheme(
-        colors = MaterialTheme.colors,
+        colorScheme = MaterialTheme.colorScheme,
         typography = MaterialTheme.typography,
         content = content
     )

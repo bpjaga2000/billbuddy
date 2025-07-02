@@ -79,6 +79,7 @@ interface BottomNavigationComponent {
 
 class DefaultBottomNavigationComponent(
     private val componentContext: ComponentContext,
+    private val onLogout: () -> Unit
 ) : BottomNavigationComponent, ComponentContext by componentContext {
     private val navigation = StackNavigation<Config>()
     override val childStack: Value<ChildStack<*, BottomNavigationComponent.Child>> = childStack(
@@ -115,16 +116,20 @@ class DefaultBottomNavigationComponent(
         Config.Home -> Home(
             DefaultHomeComponent(
                 componentContext = componentContext.childContext(key = "home"),
-                { navigation.push(Config.GroupSpends(it)) }
-            ) {
-                navigation.push(Config.CreateGroup)
+                { navigation.push(Config.GroupSpends(it)) },
+                {
+                    navigation.push(Config.CreateGroup)
+                }) {
+                onLogout()
             }
         )
 
         Config.Profile -> Profile(
             DefaultProfileComponent(
                 componentContext = componentContext.childContext(key = "profile")
-            )
+            ) {
+                onLogout()
+            }
         )
 
         is Config.GroupSpends -> GroupSpends(

@@ -4,6 +4,7 @@ import app.cash.sqldelight.EnumColumnAdapter
 import app.cash.sqldelight.adapter.primitive.FloatColumnAdapter
 import app.cash.sqldelight.adapter.primitive.IntColumnAdapter
 import com.russhwolf.settings.get
+import com.russhwolf.settings.set
 import constants.UserRoles
 import data.GroupTags
 import data.Repository
@@ -15,6 +16,7 @@ import data.model.dto.GroupDto
 import data.model.dto.GroupResponseDto
 import data.model.dto.LoginDto
 import data.model.dto.ProfileDto
+import data.model.dto.ProfileUpdateDto
 import data.model.dto.SyncDto
 import data.model.dto.UserDto
 import data.model.dto.UserIdListDto
@@ -44,6 +46,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
 import utils.DataStore
 import utils.getSqlDriver
+import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
@@ -82,7 +85,7 @@ class RepositoryImpl : Repository {
         }
     }
 
-    override suspend fun sync(userId: String, lastSyncTime: Long?) = flow<ApiResult<SyncDto>> {
+    override suspend fun sync(userId: String) = flow<ApiResult<SyncDto>> {
         emit(ApiResult.loading())
         with(ApiClient.httpClient.get {
             headers {
@@ -91,13 +94,14 @@ class RepositoryImpl : Repository {
             contentType(ContentType.Application.Json)
             url("http", "92.119.126.127", 8090, "api/v1/sync") {
                 parameters.append("id", userId)
-                if (lastSyncTime != null)
+                DataStore.settings.get<Long>("lastSyncTime")?.let { lastSyncTime ->
                     parameters.append("lastSyncTime", lastSyncTime.toString())
+                }
             }
         }) {
             if (status.value in 200..299) {
                 emit(ApiResult.success(body()))
-//                DataStore.settings["lastSyncTime"] TODO
+                DataStore.settings.set<Long>("lastSyncTime", Clock.System.now().epochSeconds)
             } else
                 emit(ApiResult.error(body() as String?))
         }
@@ -335,39 +339,41 @@ class RepositoryImpl : Repository {
         })
     }
 
-    override suspend fun removeMemberFromGroup(userIds: List<String>, groupId: String) = flow<ApiResult<GroupResponseDto>> {
-        emit(ApiResult.loading())
-        with(ApiClient.httpClient.post {
-            headers {
-                append(
-                    HttpHeaders.Authorization,
-                    "Bearer ${DataStore.settings["token"] ?: " "}"
-                )
-            }
-            contentType(ContentType.Application.Json)
-            url("http", "92.119.126.127", 8090, "api/v1/group/manage/remove/$groupId")
-            setBody(UserIdListDto(userIds, DataStore.settings.get<String>("id") ?: ""))
-        }) {
-            if (status.value in 200..299) {
-                val body = body<GroupResponseDto>()
-                body.members.forEach {
-                    GroupMemberQueriesQueries(db).insertGroupMembers(
-                        it.id,
-                        it.userId,
-                        it.groupId,
-                        it.createdBy,
-                        it.updatedBy,
-                        it.deletedBy,
-                        it.createdAt,
-                        it.updatedAt,
-                        it.deletedAt
+    override suspend fun removeMemberFromGroup(userIds: List<String>, groupId: String) =
+        flow<ApiResult<GroupResponseDto>> {
+            emit(ApiResult.loading())
+            with(ApiClient.httpClient.post {
+                headers {
+                    append(
+                        HttpHeaders.Authorization,
+                        "Bearer ${DataStore.settings["token"] ?: " "}"
                     )
                 }
-                emit(ApiResult.success(body))
-            } else
-                emit(ApiResult.error(body() as String?))
+                contentType(ContentType.Application.Json)
+                url("http", "92.119.126.127", 8090, "api/v1/group/manage/remove/$groupId")
+                setBody(UserIdListDto(userIds, DataStore.settings.get<String>("id") ?: ""))
+            }) {
+                if (status.value in 200..299) {
+                    val body = body<GroupResponseDto>()
+                    body.members.forEach {
+                        GroupMemberQueriesQueries(db).insertGroupMembers(
+                            it.id,
+                            it.userId,
+                            it.groupId,
+                            it.createdBy,
+                            it.updatedBy,
+                            it.deletedBy,
+                            it.createdAt,
+                            it.updatedAt,
+                            it.deletedAt
+                        )
+                    }
+                    emit(ApiResult.success(body))
+                } else
+                    emit(ApiResult.error(body() as String?))
+            }
         }
-    }
+
     override suspend fun searchFriends(searchTag: String) = flow<List<ProfileDto>> {
         emit(UserQueriesQueries(db).searchUsers(searchTag).executeAsList().map {
             ProfileDto(
@@ -458,6 +464,73 @@ class RepositoryImpl : Repository {
                         it.deletedAt
                     )
                 }
+                emit(ApiResult.success(body))
+            } else
+                emit(ApiResult.error(body() as String?))
+        }
+    }
+
+    override suspend fun getCurrentUser() = flow {
+        emit(
+            UserQueriesQueries(db).getUserFromId(DataStore.settings.get<String>("id") ?: "")
+                .executeAsOne()
+        )
+    }
+
+    override suspend fun updateProfile(profileUpdateDto: ProfileUpdateDto) =
+        flow<ApiResult<ProfileDto>> {
+            emit(ApiResult.loading())
+            with(ApiClient.httpClient.post {
+                headers {
+                    append(
+                        HttpHeaders.Authorization,
+                        "Bearer ${DataStore.settings["token"] ?: " "}"
+                    )
+                }
+                contentType(ContentType.Application.Json)
+                url("http", "92.119.126.127", 8090, "api/v1/profile/${profileUpdateDto.id}")
+                setBody(profileUpdateDto)
+            }) {
+                if (status.value in 200..299) {
+                    val body = body<ProfileDto>()
+                    UserQueriesQueries(db).insertUsers(
+                        body.id,
+                        body.name,
+                        "",
+                        body.email,
+                        body.mobileCountryCode,
+                        body.phone,
+                        UserRoles.FREE,
+                        "",
+                        body.createdAt,
+                        body.updatedAt,
+                        body.deletedAt
+                    )
+                    emit(ApiResult.success(body))
+                } else
+                    emit(ApiResult.error(body() as String?))
+            }
+        }
+
+    override suspend fun logout() = flow<ApiResult<Unit>> {
+        emit(ApiResult.loading())
+        with(ApiClient.httpClient.get {
+            headers {
+                append(
+                    HttpHeaders.Authorization,
+                    "Bearer ${DataStore.settings["token"] ?: " "}"
+                )
+            }
+            contentType(ContentType.Application.Json)
+            url(
+                "http",
+                "92.119.126.127",
+                8090,
+                "api/v1/auth/logout/${DataStore.settings["id"] ?: " "}"
+            )
+        }) {
+            if (status.value in 200..299) {
+                val body = body<Unit>()
                 emit(ApiResult.success(body))
             } else
                 emit(ApiResult.error(body() as String?))

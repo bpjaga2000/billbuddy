@@ -10,13 +10,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.sharp.Edit
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,10 +38,7 @@ import presentation.common.TextEdit
 fun ProfileScreen(component: ProfileComponent, modifier: Modifier = Modifier) {
 
     var editable by remember { mutableStateOf(false) }
-    val name = remember { mutableStateOf("") }
-    val email = remember { mutableStateOf("") }
-    val password = remember { mutableStateOf("") }
-    val phone = remember { mutableStateOf("") }
+
 
     Box(
         modifier = modifier.then(Modifier.fillMaxSize()),
@@ -67,10 +64,10 @@ fun ProfileScreen(component: ProfileComponent, modifier: Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(35.dp)
         ) {
-            TextEdit(name, "Name", editable)
-            TextEdit(email, "Email", editable)
-            TextEdit(password, "Password", editable)
-            TextEdit(phone, "Phone", editable)
+            TextEdit(component.name, "Name", editable = editable)
+            TextEdit(component.email, "Email", editable = false)
+            TextEdit(component.password, "Password", editable = false)
+            TextEdit(component.phone, "Phone", editable = editable)
         }
 
         if (!editable)
@@ -91,7 +88,7 @@ fun ProfileScreen(component: ProfileComponent, modifier: Modifier = Modifier) {
                     .background(Color.Cyan, RoundedCornerShape(24.dp)).fillMaxWidth(),
                 onClick = {
                     editable = false
-//                    component.onEdit()
+                    component.onSaveClick()
                 },
                 content = {
                     Text("Save")

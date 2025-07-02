@@ -11,9 +11,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -41,7 +41,7 @@ fun CreateGroupScreen(component: CreateGroupComponent, modifier: Modifier = Modi
             verticalArrangement = Arrangement.SpaceEvenly,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            TextEdit(groupName, "Group Name", true)
+            TextEdit(groupName, "Group Name", editable = true)
             Column {
                 Text(
                     modifier = modifier
@@ -59,12 +59,15 @@ fun CreateGroupScreen(component: CreateGroupComponent, modifier: Modifier = Modi
                     expansion = false
                 }) {
                     repeat(GroupTags.entries.size) {
-                        DropdownMenuItem(onClick = {
-                            groupTag = GroupTags.entries[it]
-                            expansion = false
-                        }) {
-                            Text(GroupTags.entries[it].toString())
-                        }
+                        DropdownMenuItem(
+                            {
+                                Text(GroupTags.entries[it].toString())
+                            },
+                            {
+                                groupTag = GroupTags.entries[it]
+                                expansion = false
+                            }
+                        )
                     }
                 }
             }

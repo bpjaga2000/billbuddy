@@ -6,16 +6,18 @@ import data.model.SpendWithSplit
 import data.model.dto.GroupDto
 import data.model.dto.GroupResponseDto
 import data.model.dto.ProfileDto
+import data.model.dto.ProfileUpdateDto
 import data.model.dto.SyncDto
 import data.model.dto.UserDto
 import data.remote.ApiResult
 import dev.bpj4.billbuddy.tableandmigrations.Groups
+import dev.bpj4.billbuddy.tableandmigrations.Users
 import kotlinx.coroutines.flow.Flow
 
 interface Repository {
     suspend fun logIn(email: String, password: String): Flow<ApiResult<UserDto>>
     suspend fun register(email: String, password: String): Flow<ApiResult<UserDto>>
-    suspend fun sync(userId: String, lastSyncTime: Long? = null): Flow<ApiResult<SyncDto>>
+    suspend fun sync(userId: String): Flow<ApiResult<SyncDto>>
     suspend fun saveSyncData(data: SyncDto): Flow<Boolean>
     suspend fun getGroups(): Flow<List<Groups>>
     suspend fun getFriendBalances(): Flow<List<Balance>>
@@ -37,4 +39,8 @@ interface Repository {
         userIds: List<String>,
         groupId: String
     ): Flow<ApiResult<GroupResponseDto>>
+
+    suspend fun getCurrentUser(): Flow<Users>
+    suspend fun updateProfile(profileUpdateDto: ProfileUpdateDto): Flow<ApiResult<ProfileDto>>
+    suspend fun logout(): Flow<ApiResult<Unit>>
 }

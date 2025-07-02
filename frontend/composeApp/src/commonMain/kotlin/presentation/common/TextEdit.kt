@@ -21,8 +21,8 @@ import androidx.compose.ui.unit.dp
 fun TextEdit(
     text: MutableState<String>,
     placeholder: String = "",
-    editable: Boolean = true,
     onValueChange: (String) -> Unit = {},
+    editable: Boolean = true,
     modifier: Modifier = Modifier,
 ) {
     BasicTextField(
