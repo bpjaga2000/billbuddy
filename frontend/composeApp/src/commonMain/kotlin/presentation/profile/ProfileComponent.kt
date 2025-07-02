@@ -74,6 +74,7 @@ class DefaultProfileComponent(
                 when (it) {
                     is ApiResult.Success -> {
                         withContext(Dispatchers.Main) {
+                            RepositoryImpl().clearDb()
                             DataStore.settings.clear()
                             onLogoutClick.invoke()
                         }

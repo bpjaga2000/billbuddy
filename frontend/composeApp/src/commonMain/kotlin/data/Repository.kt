@@ -43,4 +43,5 @@ interface Repository {
     suspend fun getCurrentUser(): Flow<Users>
     suspend fun updateProfile(profileUpdateDto: ProfileUpdateDto): Flow<ApiResult<ProfileDto>>
     suspend fun logout(): Flow<ApiResult<Unit>>
+    suspend fun clearDb()
 }

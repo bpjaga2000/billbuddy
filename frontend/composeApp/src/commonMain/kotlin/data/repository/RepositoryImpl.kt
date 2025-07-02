@@ -24,6 +24,7 @@ import data.remote.ApiClient
 import data.remote.ApiResult
 import dev.bpj4.billbuddy.queries.GroupMemberQueriesQueries
 import dev.bpj4.billbuddy.queries.GroupQueriesQueries
+import dev.bpj4.billbuddy.queries.MiscQueriesQueries
 import dev.bpj4.billbuddy.queries.SpendQueriesQueries
 import dev.bpj4.billbuddy.queries.SpendSplitQueriesQueries
 import dev.bpj4.billbuddy.queries.UserQueriesQueries
@@ -535,6 +536,10 @@ class RepositoryImpl : Repository {
             } else
                 emit(ApiResult.error(body() as String?))
         }
+    }
+
+    override suspend fun clearDb() {
+        MiscQueriesQueries(db).clearData()
     }
 
 

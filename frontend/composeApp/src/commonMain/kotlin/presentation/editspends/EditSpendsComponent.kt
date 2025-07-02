@@ -31,12 +31,11 @@ interface EditSpendsComponent {
 class DefaultEditSpendsComponent(
     private val componentContext: ComponentContext,
     override var selection: MutableState<Int> = mutableStateOf(0),
-    val onSaved: () -> Unit,
-    private val groupMembers: List<GroupMemberSplit> = listOf(GroupMemberSplit("abc", "abcdf", false, 0f), GroupMemberSplit("def", "dafsa", false, 0f)),
+    val onSaved: () -> Unit
 ) : EditSpendsComponent, ComponentContext by componentContext {
 
     override val amount = mutableStateOf("")
-
+    private val groupMembers: List<GroupMemberSplit> = listOf()
     private val navigation = PagesNavigation<Config>()
 
     override val pageStack: Value<ChildPages<*, EditSpendsTabComponent>> = childPages(

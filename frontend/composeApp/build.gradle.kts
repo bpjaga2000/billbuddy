@@ -99,7 +99,12 @@ kotlin {
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
-            implementation(libs.native.driver)
+        }
+        nativeMain.dependencies {
+            implementation("app.cash.sqldelight:native-driver:${libs.versions.androidDriverVersion.get()}")
+        }
+        jvmMain.dependencies {
+            implementation("app.cash.sqldelight:sqlite-driver:${libs.versions.androidDriverVersion.get()}")
         }
     }
 }
