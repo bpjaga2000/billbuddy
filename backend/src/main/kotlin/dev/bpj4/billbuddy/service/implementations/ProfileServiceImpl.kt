@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class ProfileServiceImpl(
-        private val userRepository: UserRepository
+    private val userRepository: UserRepository
 ) : ProfileService {
 
     override fun getProfile(id: String): ProfileDto {
@@ -22,23 +22,24 @@ class ProfileServiceImpl(
     }
 
     override fun updateProfile(profileUpdateDto: ProfileUpdateDto): ProfileDto {
-        if (userRepository.existsById(profileUpdateDto.id))
+        if (userRepository.existsById(profileUpdateDto.id)) {
+
             return userRepository.save(
-                    profileUpdateDto.mapToUserEntity(
-                            userRepository.findById(profileUpdateDto.id).get()
-                    )
+                profileUpdateDto.mapToUserEntity(
+                    userRepository.findById(profileUpdateDto.id).get()
+                )
             ).mapToProfileDto()
-        else
+        } else
             throw UsernameNotFoundException("Invalid User")
     }
 
     override fun deleteProfile(id: String): String {
         return if (userRepository.existsById(id)) {
             userRepository.save(
-                    userRepository.findById(id).get().apply {
-                        deletedAt = System.currentTimeMillis() / 1000
-                        deletedAtFrontend = System.currentTimeMillis() / 1000
-                    }
+                userRepository.findById(id).get().apply {
+                    deletedAt = System.currentTimeMillis() / 1000
+                    deletedAtFrontend = System.currentTimeMillis() / 1000
+                }
             )
             "deleted successfully"
         } else
