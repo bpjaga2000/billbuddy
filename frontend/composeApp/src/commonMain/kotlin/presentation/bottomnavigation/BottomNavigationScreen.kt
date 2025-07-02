@@ -2,15 +2,15 @@ package presentation.bottomnavigation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.BottomAppBar
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,6 +35,7 @@ import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
 import constants.Constants
 import presentation.addfriends.AddFriendsScreen
 import presentation.balances.BalancesScreen
+import presentation.creategroup.CreateGroupScreen
 import presentation.editspends.EditSpendsScreen
 import presentation.groupsettings.GroupSettingsScreen
 import presentation.groupspends.GroupSpendsScreen
@@ -226,6 +228,11 @@ fun BottomNavigationScreen(component: BottomNavigationComponent, modifier: Modif
                 is BottomNavigationComponent.Child.AddFriends -> {
                     title = "Add Friends"
                     AddFriendsScreen(child.component)
+                }
+
+                is BottomNavigationComponent.Child.CreateGroup -> {
+                    title = "Create Group"
+                    CreateGroupScreen(child.component)
                 }
             }
         }

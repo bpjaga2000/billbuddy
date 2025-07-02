@@ -17,9 +17,10 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import dev.bpj4.billbuddy.tableandmigrations.Groups
 
 @Composable
-fun GroupListItem(onGroupClicked: () -> Unit, modifier: Modifier = Modifier) {
+fun GroupListItem(group: Groups, onGroupClicked: () -> Unit, modifier: Modifier = Modifier) {
     val balance by remember { mutableIntStateOf(1) }
     Card(
         shape = RoundedCornerShape(20.dp),
@@ -30,7 +31,7 @@ fun GroupListItem(onGroupClicked: () -> Unit, modifier: Modifier = Modifier) {
             modifier = Modifier.padding(20.dp).fillMaxWidth()
         ) {
             Column {
-                Text("Group name")
+                Text(group.id)
                 Spacer(modifier = Modifier.height(10.dp).fillMaxWidth())
                 if (balance > 0)
                     Text("You owe $100")

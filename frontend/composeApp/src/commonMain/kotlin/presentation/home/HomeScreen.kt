@@ -1,6 +1,7 @@
 package presentation.home
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -8,13 +9,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
-import androidx.compose.material.Text
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import data.model.Balance
 import dev.bpj4.billbuddy.tableandmigrations.Groups
 import presentation.common.FriendListItem
@@ -33,30 +36,40 @@ fun HomeScreen(component: HomeComponent, modifier: Modifier = Modifier) {
         friendBalances.clear()
         friendBalances.addAll(it)
     }
-    Column(
-        modifier = modifier.then(Modifier.fillMaxSize().padding(horizontal = 16.dp)),
-        verticalArrangement = Arrangement.Top
-    ) {
-        Text("Balances")
-        LazyHorizontalGrid(
-            GridCells.Fixed(2),
-            modifier = Modifier.height(120.dp),
-            verticalArrangement = Arrangement.SpaceAround,
-            horizontalArrangement = Arrangement.SpaceAround
+    Box {
+        Column(
+            modifier = modifier.then(Modifier.fillMaxSize().padding(horizontal = 16.dp)),
+            verticalArrangement = Arrangement.Top
         ) {
-            repeat(friendBalances.size) {
-                item {
-                    FriendListItem(friendBalances[it])
+            Text("Balances")
+            LazyHorizontalGrid(
+                GridCells.Fixed(2),
+                modifier = Modifier.height(120.dp),
+                verticalArrangement = Arrangement.SpaceAround,
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                repeat(friendBalances.size) {
+                    item {
+                        FriendListItem(friendBalances[it])
+                    }
+                }
+            }
+            Text("Groups")
+            LazyColumn {
+                repeat(groups.size) {
+                    item {
+                        groups[it].let { group ->
+                            GroupListItem(group, { component.onGroupClick(group.id) })
+                        }
+                    }
                 }
             }
         }
-        Text("Groups")
-        LazyColumn {
-            repeat(groups.size) {
-                item {
-                    GroupListItem({ component.onGroupClick(null) })
-                }
-            }
+        FloatingActionButton(
+            { component.onCreateGroupClicked() },
+            modifier = Modifier.align(Alignment.BottomEnd).padding(12.dp)
+        ) {
+            Text("+", fontSize = 32.sp)
         }
     }
 }

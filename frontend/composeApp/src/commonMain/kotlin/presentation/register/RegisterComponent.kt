@@ -6,6 +6,8 @@ import data.model.dto.UserDto
 import data.remote.ApiResult
 import data.repository.RepositoryImpl
 import io.ktor.util.reflect.instanceOf
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,7 +32,7 @@ class DefaultRegisterComponent(
 
     private val coroutineScope = componentContext.componentCoroutineScope()
     override fun onRegisterClicked(email: String, password: String) {
-        coroutineScope.launch {
+        coroutineScope.launch(Dispatchers.IO) {
             RepositoryImpl().register(email, password).collect{
                 _userRegisterResponse.value = it
                 when(it) {

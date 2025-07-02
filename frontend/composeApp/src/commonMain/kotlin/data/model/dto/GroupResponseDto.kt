@@ -1,7 +1,9 @@
 package data.model.dto
 
 import data.GroupTags
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class GroupResponseDto(
     val id: String,
     val name: String,

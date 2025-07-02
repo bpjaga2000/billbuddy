@@ -15,8 +15,7 @@ CREATE TABLE Users (
     defaultGroupId TEXT,
     createdAt INTEGER NOT NULL,
     updatedAt INTEGER NOT NULL,
-    deletedAt INTEGER,
-    status INTEGER AS Int DEFAULT 0
+    deletedAt INTEGER
 );
 
 CREATE TABLE Groups (
@@ -29,8 +28,7 @@ CREATE TABLE Groups (
     deletedBy TEXT,
     createdAt INTEGER NOT NULL,
     updatedAt INTEGER NOT NULL,
-    deletedAt INTEGER,
-    status INTEGER AS Int DEFAULT 0
+    deletedAt INTEGER
 );
 
 CREATE TABLE GroupMembers (
@@ -42,8 +40,7 @@ CREATE TABLE GroupMembers (
     deletedBy TEXT,
     createdAt INTEGER NOT NULL,
     updatedAt INTEGER NOT NULL,
-    deletedAt INTEGER,
-    status INTEGER AS Int DEFAULT 0
+    deletedAt INTEGER
 );
 
 CREATE TABLE Spends (
@@ -53,6 +50,7 @@ CREATE TABLE Spends (
     isPayback INTEGER AS Boolean NOT NULL DEFAULT 0,
     tag TEXT AS SpendTags NOT NULL,
     groupId TEXT NOT NULL,
+    spentBy TEXT NOT NULL,
     spentAt INTEGER NOT NULL,
     createdBy TEXT NOT NULL,
     updatedBy TEXT NOT NULL,

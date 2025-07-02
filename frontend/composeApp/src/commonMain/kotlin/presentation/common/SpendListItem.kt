@@ -12,13 +12,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import data.model.SpendWithSplit
 import io.ktor.util.date.GMTDate
 
 @Composable
 fun SpendListItem(
+    spendWithSplit: SpendWithSplit,
     onSpendClick: () -> Unit,
-    modifier: Modifier = Modifier,/*, spend: Spends*/
+    spentBy: String,
     involved: Boolean = false,
+    modifier: Modifier = Modifier,
 ) {
     Card(
         shape = RoundedCornerShape(10.dp),
@@ -49,9 +52,12 @@ fun SpendListItem(
                 horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.Center
             ) {
-                Text(text = "for hotel - ", modifier = Modifier.padding(5.dp))
+                Text(text = spendWithSplit.spend.name, modifier = Modifier.padding(5.dp))
                 if (involved)
-                    Text(text = "mr.a paid 200", modifier = Modifier.padding(5.dp))
+                    Text(
+                        text = "$spentBy paid ${spendWithSplit.spend.totalAmount}",
+                        modifier = Modifier.padding(5.dp)
+                    )
                 else
                     Text("You are not involved", modifier = Modifier.padding(5.dp))
             }

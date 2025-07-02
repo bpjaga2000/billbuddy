@@ -2,24 +2,27 @@ package presentation.search
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import presentation.common.GroupMemberItem
+import presentation.common.SearchMemberItem
 import presentation.common.TextEdit
 
 @Composable
 fun SearchScreen(component: SearchComponent, modifier: Modifier = Modifier) {
 
     Column(modifier = modifier) {
-        TextEdit(component.searchString)
+        TextEdit(
+            component.searchString,
+            onValueChange = { component.onSearchClicked(it) }
+        )
         LazyColumn {
             items(
                 component.searchResults.value.size,
-                { it -> component.searchResults.value[it].userId }) { it ->
-                GroupMemberItem(component.searchResults.value[it]) {
-                    component.onSearchResultTapped(it)
+                { it -> component.searchResults.value[it].id }) { it ->
+                SearchMemberItem(component.searchResults.value[it]) { it, isChecked ->
+                    component.onSearchResultTapped(it, isChecked)
                 }
             }
         }

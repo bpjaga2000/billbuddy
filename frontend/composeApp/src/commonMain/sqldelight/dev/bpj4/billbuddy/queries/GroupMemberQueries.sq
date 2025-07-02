@@ -1,2 +1,8 @@
 insertGroupMembers:
-INSERT INTO GroupMembers VALUES (?,?,?,?,?,?,?,?,?,?);
+INSERT OR REPLACE INTO GroupMembers VALUES (?,?,?,?,?,?,?,?,?);
+
+getMembersOfGroup:
+SELECT * FROM GroupMembers WHERE groupId = ?;
+
+removeMemberFromGroup:
+UPDATE GroupMembers SET deletedBy = ?, deletedAt = ? WHERE id = ?;

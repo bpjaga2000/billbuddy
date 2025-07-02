@@ -20,6 +20,7 @@ import presentation.balances.BalancesComponent
 import presentation.balances.DefaultBalancesComponent
 import presentation.bottomnavigation.BottomNavigationComponent.Child.AddFriends
 import presentation.bottomnavigation.BottomNavigationComponent.Child.Balances
+import presentation.bottomnavigation.BottomNavigationComponent.Child.CreateGroup
 import presentation.bottomnavigation.BottomNavigationComponent.Child.EditSpends
 import presentation.bottomnavigation.BottomNavigationComponent.Child.GroupSettings
 import presentation.bottomnavigation.BottomNavigationComponent.Child.GroupSpends
@@ -29,6 +30,8 @@ import presentation.bottomnavigation.BottomNavigationComponent.Child.Search
 import presentation.bottomnavigation.BottomNavigationComponent.Child.SettleUp
 import presentation.bottomnavigation.BottomNavigationComponent.Child.SpendDetails
 import presentation.bottomnavigation.BottomNavigationComponent.Child.Totals
+import presentation.creategroup.CreateGroupComponent
+import presentation.creategroup.DefaultCreateGroupComponent
 import presentation.editspends.DefaultEditSpendsComponent
 import presentation.editspends.EditSpendsComponent
 import presentation.groupsettings.DefaultGroupSettingsComponent
@@ -70,6 +73,7 @@ interface BottomNavigationComponent {
         class SettleUp(val component: SettleUpComponent) : Child()
         class Search(val component: SearchComponent) : Child()
         class AddFriends(val component: AddFriendsComponent) : Child()
+        class CreateGroup(val component: CreateGroupComponent) : Child()
     }
 }
 
@@ -110,8 +114,11 @@ class DefaultBottomNavigationComponent(
     ): BottomNavigationComponent.Child = when (config) {
         Config.Home -> Home(
             DefaultHomeComponent(
-                componentContext = componentContext.childContext(key = "home")
-            ) { navigation.push(Config.GroupSpends) }
+                componentContext = componentContext.childContext(key = "home"),
+                { navigation.push(Config.GroupSpends(it)) }
+            ) {
+                navigation.push(Config.CreateGroup)
+            }
         )
 
         Config.Profile -> Profile(
@@ -120,19 +127,20 @@ class DefaultBottomNavigationComponent(
             )
         )
 
-        Config.GroupSpends -> GroupSpends(
+        is Config.GroupSpends -> GroupSpends(
             DefaultGroupSpendsComponent(
                 componentContext.childContext(key = "groupSpends"),
-                { navigation.push(Config.SpendDetails) },
+                config.groupId,
+                { navigation.push(Config.SpendDetails(it)) },
                 { navigation.push(Config.EditSpends) }
-            ) { navigation.push(Config.GroupSettings) }
+            ) { navigation.push(Config.GroupSettings(it)) }
         )
 
-        Config.GroupSettings -> GroupSettings(
+        is Config.GroupSettings -> GroupSettings(
             DefaultGroupSettingsComponent(
                 componentContext.childContext(key = "groupSettings"),
-                "",
-                { navigation.push(Config.Search) }
+                config.groupId,
+                { memberIds, groupId -> navigation.push(Config.Search(memberIds, groupId)) }
             ) { navigation.pop() }
         )
 
@@ -143,7 +151,7 @@ class DefaultBottomNavigationComponent(
             )
         )
 
-        Config.SpendDetails -> SpendDetails(
+        is Config.SpendDetails -> SpendDetails(
             DefaultSpendDetailsComponent(
                 componentContext.childContext(key = "spendDetails"),
                 { navigation.pop() }
@@ -175,11 +183,13 @@ class DefaultBottomNavigationComponent(
             }
         )
 
-        Config.Search -> Search(
+        is Config.Search -> Search(
             DefaultSearchComponent(
                 componentContext.childContext("search"),
+                config.existingMemberIds,
+                config.groupId,
                 {
-                    navigation.push(Config.AddFriends)
+                    navigation.push(Config.AddFriends(config.existingMemberIds, config.groupId))
                 }
             ) {
                 navigation.pop()
@@ -187,12 +197,20 @@ class DefaultBottomNavigationComponent(
             }
         )
 
-        Config.AddFriends -> AddFriends(
+        is Config.AddFriends -> AddFriends(
             DefaultAddFriendsComponent(
-                componentContext.childContext("addFriends")
+                componentContext.childContext("addFriends"),
+                config.existingMemberIds,
+                config.groupId
             ) {
                 navigation.pop()
             }
+        )
+
+        Config.CreateGroup -> CreateGroup(
+            DefaultCreateGroupComponent(
+                componentContext.childContext("createGroup")
+            )
         )
 
     }
@@ -206,16 +224,16 @@ class DefaultBottomNavigationComponent(
         data object Profile : Config()
 
         @Serializable
-        data object GroupSpends : Config()
+        data class GroupSpends(val groupId: String) : Config()
 
         @Serializable
-        data object GroupSettings : Config()
+        data class GroupSettings(val groupId: String) : Config()
 
         @Serializable
         data object EditSpends : Config()
 
         @Serializable
-        data object SpendDetails : Config()
+        data class SpendDetails(val spendId: String) : Config()
 
         @Serializable
         data object Totals : Config()
@@ -227,10 +245,13 @@ class DefaultBottomNavigationComponent(
         data object SettleUp : Config()
 
         @Serializable
-        data object Search : Config()
+        data class Search(val existingMemberIds: String, val groupId: String) : Config()
 
         @Serializable
-        data object AddFriends : Config()
+        data class AddFriends(val existingMemberIds: String, val groupId: String) : Config()
+
+        @Serializable
+        data object CreateGroup : Config()
     }
 
 }

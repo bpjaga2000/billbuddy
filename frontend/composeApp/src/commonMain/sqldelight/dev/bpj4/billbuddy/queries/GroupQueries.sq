@@ -2,4 +2,7 @@ selectAllGroups:
 SELECT * FROM Groups;
 
 insertGroups:
-INSERT INTO Groups VALUES (?,?,?,?,?,?,?,?,?,?,?);
+INSERT OR REPLACE INTO Groups VALUES (?,?,?,?,?,?,?,?,?,?);
+
+getGroupById:
+SELECT * FROM Groups WHERE id = ?;
