@@ -8,8 +8,8 @@ import presentation.common.EditSpendItem
 @Composable
 fun EditSpendsTab(component: EditSpendsTabComponent, modifier: Modifier = Modifier) {
     LazyColumn {
-        items(component.splitDetails.size, { it -> component.splitDetails[it].userId }) {
-            EditSpendItem(component.splitDetails[it], component.type)
+        items(component.splitDetails.value.size, { it -> component.splitDetails.value[it].userId }) {
+            EditSpendItem(component.splitDetails.value[it], component.type)
         }
     }
 }

@@ -1,5 +1,7 @@
 package presentation.editspends.editspendstab
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import com.arkivanov.decompose.ComponentContext
 import data.model.EditSpendTabDetails
 import data.model.GroupMemberSplit
@@ -8,7 +10,7 @@ interface EditSpendsTabComponent {
     val type: Int
     val peopleInvolved: List<GroupMemberSplit>
     val amount: String
-    var splitDetails: List<EditSpendTabDetails>
+    var splitDetails: MutableState<List<EditSpendTabDetails>>
 }
 
 class DefaultEditSpendsTabComponent(
@@ -17,11 +19,14 @@ class DefaultEditSpendsTabComponent(
     override val peopleInvolved: List<GroupMemberSplit>,
     override val amount: String,
 ) : EditSpendsTabComponent, ComponentContext by componentContext {
-    override var splitDetails: List<EditSpendTabDetails> =
-        List(peopleInvolved.size) { it ->
-            EditSpendTabDetails(
-                peopleInvolved[it].userId,
-                peopleInvolved[it].userName
-            )
-        }
+
+    override var splitDetails: MutableState<List<EditSpendTabDetails>> =
+        mutableStateOf(
+            List(peopleInvolved.size) { it ->
+                EditSpendTabDetails(
+                    peopleInvolved[it].userId,
+                    peopleInvolved[it].userName
+                )
+            }
+        )
 }

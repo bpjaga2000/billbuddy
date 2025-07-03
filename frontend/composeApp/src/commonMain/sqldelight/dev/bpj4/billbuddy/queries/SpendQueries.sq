@@ -3,3 +3,6 @@ INSERT OR REPLACE INTO Spends VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 
 getSpendsForGroup:
 SELECT * FROM Spends WHERE groupId = ? ORDER BY spentAt DESC ;
+
+deleteSpend:
+DELETE FROM Spends WHERE id = ?;

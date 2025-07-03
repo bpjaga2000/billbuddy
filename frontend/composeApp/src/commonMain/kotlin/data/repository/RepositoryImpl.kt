@@ -5,11 +5,14 @@ import app.cash.sqldelight.adapter.primitive.FloatColumnAdapter
 import app.cash.sqldelight.adapter.primitive.IntColumnAdapter
 import com.russhwolf.settings.get
 import com.russhwolf.settings.set
+import constants.LentOrBorrowed
 import constants.UserRoles
 import data.GroupTags
 import data.Repository
+import data.SpendTags
 import data.SyncStatus
 import data.model.Balance
+import data.model.EditSpendTabDetails
 import data.model.GroupMember
 import data.model.SpendWithSplit
 import data.model.dto.GroupDto
@@ -31,6 +34,7 @@ import dev.bpj4.billbuddy.queries.UserQueriesQueries
 import dev.bpj4.billbuddy.tableandmigrations.Groups
 import dev.bpj4.billbuddy.tableandmigrations.SpendSplits
 import dev.bpj4.billbuddy.tableandmigrations.Spends
+import diglol.id.Id
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
@@ -540,6 +544,78 @@ class RepositoryImpl : Repository {
 
     override suspend fun clearDb() {
         MiscQueriesQueries(db).clearData()
+    }
+
+    override suspend fun saveSpend(
+        spendName: String,
+        amount: String,
+        spendTags: SpendTags,
+        groupId: String,
+        spentBy: String,
+        spentAt: Long
+    ) = flow<String> {
+        emit("")
+        val spendId = Id.generate().toString()
+        SpendQueriesQueries(
+            db,
+            Spends.Adapter(FloatColumnAdapter, EnumColumnAdapter(), IntColumnAdapter)
+        ).insertSpends(
+            spendId,
+            spendName,
+            amount.toFloat(),
+            false,
+            spendTags,
+            groupId,
+            spentBy,
+            spentAt,
+            DataStore.settings.get<String>("id") ?: "",
+            DataStore.settings.get<String>("id") ?: "",
+            null,
+            Clock.System.now().epochSeconds,
+            Clock.System.now().epochSeconds,
+            null,
+            SyncStatus.LOCAL.value
+        )
+        emit(spendId)
+    }
+
+    fun saveSpendSplits(
+        splits: List<EditSpendTabDetails>,
+        spendId: String,
+        groupId: String,
+        splitType: Int
+    ) = flow<Boolean> {//TODO
+        emit(false)
+        val spendSplitTable = SpendSplitQueriesQueries(
+            db,
+            SpendSplits.Adapter(FloatColumnAdapter, IntColumnAdapter)
+        )
+        spendSplitTable.transaction {
+            afterRollback {
+                SpendQueriesQueries(
+                    db,
+                    Spends.Adapter(FloatColumnAdapter, EnumColumnAdapter(), IntColumnAdapter)
+                ).deleteSpend(groupId)
+            }
+            splits.forEach {
+                spendSplitTable.insertSpendSplits(
+                    Id.generate().toString(),
+                    it.userId,
+                    spendId,
+                    LentOrBorrowed.BORROWED.toLong(),
+                    splitType.toLong(),
+                    it.value.value.toFloat(),
+                    DataStore.settings.get<String>("id") ?: "",
+                    DataStore.settings.get<String>("id") ?: "",
+                    null,
+                    Clock.System.now().epochSeconds,
+                    Clock.System.now().epochSeconds,
+                    null,
+                    SyncStatus.LOCAL.value
+                )
+            }
+        }
+        emit(true)
     }
 
 

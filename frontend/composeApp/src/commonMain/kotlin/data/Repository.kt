@@ -44,4 +44,12 @@ interface Repository {
     suspend fun updateProfile(profileUpdateDto: ProfileUpdateDto): Flow<ApiResult<ProfileDto>>
     suspend fun logout(): Flow<ApiResult<Unit>>
     suspend fun clearDb()
+    suspend fun saveSpend(
+        spendName: String,
+        amount: String,
+        spendTags: SpendTags,
+        groupId: String,
+        spentBy: String,
+        spentAt: Long
+    ): Flow<String>
 }
