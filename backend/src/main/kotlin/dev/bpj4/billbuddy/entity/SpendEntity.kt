@@ -13,7 +13,7 @@ data class SpendEntity(
         val name: String = "",
 
         @Column(name = "total_amount")
-        val totalAmount: Float = 0f,
+        val totalAmount: Double = 0f,
 
         @Column(name = "is_payback")
         val isPayback: Boolean = false,

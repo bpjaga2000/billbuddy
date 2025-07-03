@@ -9,7 +9,7 @@ data class SpendSplitDto(
         val spendId: String,
         val lentOrBorrowed: Int,
         val splitType: Int,
-        val value: Float,
+        val value: Double,
         val createdBy: String,
         val updatedBy: String,
         val deletedBy: String?,

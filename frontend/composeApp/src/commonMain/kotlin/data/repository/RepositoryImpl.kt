@@ -1,7 +1,6 @@
 package data.repository
 
 import app.cash.sqldelight.EnumColumnAdapter
-import app.cash.sqldelight.adapter.primitive.FloatColumnAdapter
 import app.cash.sqldelight.adapter.primitive.IntColumnAdapter
 import com.russhwolf.settings.get
 import com.russhwolf.settings.set
@@ -166,7 +165,6 @@ class RepositoryImpl : Repository {
                 spends.forEach {
                     SpendQueriesQueries(
                         db, Spends.Adapter(
-                            FloatColumnAdapter,
                             EnumColumnAdapter(),
                             IntColumnAdapter
                         )
@@ -191,7 +189,6 @@ class RepositoryImpl : Repository {
                 spendSplit.forEach {
                     SpendSplitQueriesQueries(
                         db, SpendSplits.Adapter(
-                            FloatColumnAdapter,
                             IntColumnAdapter
                         )
                     ).insertSpendSplits(
@@ -315,14 +312,14 @@ class RepositoryImpl : Repository {
         val spendWithSplitList: ArrayList<SpendWithSplit> = arrayListOf()
         val spends = SpendQueriesQueries(
             db,
-            Spends.Adapter(FloatColumnAdapter, EnumColumnAdapter(), IntColumnAdapter)
+            Spends.Adapter( EnumColumnAdapter(), IntColumnAdapter)
         ).getSpendsForGroup(groupId).executeAsList()
         spends.forEach {
             spendWithSplitList.add(
                 SpendWithSplit(
                     it, SpendSplitQueriesQueries(
                         db,
-                        SpendSplits.Adapter(FloatColumnAdapter, IntColumnAdapter)
+                        SpendSplits.Adapter( IntColumnAdapter)
                     ).getSplitForSpend(it.id).executeAsList()
                 )
             )
@@ -558,11 +555,11 @@ class RepositoryImpl : Repository {
         val spendId = Id.generate().toString()
         SpendQueriesQueries(
             db,
-            Spends.Adapter(FloatColumnAdapter, EnumColumnAdapter(), IntColumnAdapter)
+            Spends.Adapter( EnumColumnAdapter(), IntColumnAdapter)
         ).insertSpends(
             spendId,
             spendName,
-            amount.toFloat(),
+            amount.toDouble(),
             false,
             spendTags,
             groupId,
@@ -588,13 +585,13 @@ class RepositoryImpl : Repository {
         emit(false)
         val spendSplitTable = SpendSplitQueriesQueries(
             db,
-            SpendSplits.Adapter(FloatColumnAdapter, IntColumnAdapter)
+            SpendSplits.Adapter( IntColumnAdapter)
         )
         spendSplitTable.transaction {
             afterRollback {
                 SpendQueriesQueries(
                     db,
-                    Spends.Adapter(FloatColumnAdapter, EnumColumnAdapter(), IntColumnAdapter)
+                    Spends.Adapter( EnumColumnAdapter(), IntColumnAdapter)
                 ).deleteSpend(groupId)
             }
             splits.forEach {
@@ -604,7 +601,7 @@ class RepositoryImpl : Repository {
                     spendId,
                     LentOrBorrowed.BORROWED.toLong(),
                     splitType.toLong(),
-                    it.value.value.toFloat(),
+                    it.value.value.toDouble(),
                     DataStore.settings.get<String>("id") ?: "",
                     DataStore.settings.get<String>("id") ?: "",
                     null,

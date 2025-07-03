@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 data class SpendDto(
     val id: String,
     val name: String,
-    val totalAmount: Float,
+    val totalAmount: Double,
     val isPayback: Boolean,
     val tag: SpendTags,
     val groupId: String,

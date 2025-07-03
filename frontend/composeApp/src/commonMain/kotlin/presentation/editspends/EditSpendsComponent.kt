@@ -73,7 +73,7 @@ class DefaultEditSpendsComponent(
                         member.userId,
                         member.userName,
                         false,
-                        0f
+                        0.0
                     )
                 }
             }
@@ -113,7 +113,7 @@ class DefaultEditSpendsComponent(
                 it.value.value = "1"
             }
         isValid = spendName.value.isNotBlank() &&
-                (amount.value.toFloatOrNull() ?: 0f) != 0f &&
+                (amount.value.toDoubleOrNull() ?: 0f) != 0f &&
                 spentBy.value.isNotBlank() &&
                 spentAt.value != 0L &&
                 when (pageStack.value.selectedIndex + 1) {
@@ -122,27 +122,27 @@ class DefaultEditSpendsComponent(
                     }
 
                     SplitType.AMOUNT -> {
-                        var total = 0f
+                        var total = 0.0
                         splitList.forEach {
-                            total = total + (it.value.value.toFloatOrNull() ?: 0f)
+                            total = total + (it.value.value.toDoubleOrNull() ?: 0.0)
                         }
-                        total == (amount.value.toFloatOrNull() ?: 0f)
+                        total == (amount.value.toDoubleOrNull() ?: 0f)
                     }
 
                     SplitType.SHARE -> {
-                        var total = 0f
+                        var total = 0.0
                         splitList.forEach {
-                            total = total + (it.value.value.toFloatOrNull() ?: 0f)
+                            total = total + (it.value.value.toDoubleOrNull() ?: 0.0)
                         }
-                        total > 0f
+                        total > 0.0
                     }
 
                     SplitType.RATIO -> {
-                        var total = 0f
+                        var total = 0.0
                         splitList.forEach {
-                            total = total + (it.value.value.toFloatOrNull() ?: 0f)
+                            total = total + (it.value.value.toDoubleOrNull() ?: 0.0)
                         }
-                        total == 1f
+                        total == 1.0
                     }
 
                     SplitType.DIFFERENCE -> {

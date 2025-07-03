@@ -1,7 +1,7 @@
 import data.GroupTags;
 import data.SpendTags;
 import kotlin.Boolean;
-import kotlin.Float;
+import kotlin.Double;
 import kotlin.Int;
 
 CREATE TABLE Users (
@@ -46,7 +46,7 @@ CREATE TABLE GroupMembers (
 CREATE TABLE Spends (
     id TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
-    totalAmount REAL AS Float NOT NULL,
+    totalAmount REAL NOT NULL,
     isPayback INTEGER AS Boolean NOT NULL DEFAULT 0,
     tag TEXT AS SpendTags NOT NULL,
     groupId TEXT NOT NULL,
@@ -67,7 +67,7 @@ CREATE TABLE SpendSplits (
     spendId TEXT NOT NULL,
     lentOrBorrowed INTEGER NOT NULL,
     splitType INTEGER NOT NULL,
-    value REAL AS Float NOT NULL,
+    value REAL NOT NULL,
     createdBy TEXT NOT NULL,
     updatedBy TEXT NOT NULL,
     deletedBy TEXT,

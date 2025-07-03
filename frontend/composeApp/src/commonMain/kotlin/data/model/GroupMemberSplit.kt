@@ -6,7 +6,7 @@ data class GroupMemberSplit(
     val userId: String,
     val userName: String,
     val isInvolved: Boolean,
-    var splitValue: Float = 0f,
+    var splitValue: Double = 0.0,
 )
 
 fun GroupMembers.toGroupMemberSplit(name: String): GroupMemberSplit {

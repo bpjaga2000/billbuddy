@@ -21,7 +21,7 @@ open class SpendSplitEntity(
         open val splitType: Int = SplitType.EQUAL,
 
         @Column(name = "value")
-        open val value: Float = 0f,
+        open val value: Double = 0f,
 
         @Column(name = "created_by")
         open var createdBy: String = "",
