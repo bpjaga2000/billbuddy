@@ -5,5 +5,6 @@ import dev.bpj4.billbuddy.tableandmigrations.Spends
 
 data class SpendWithSplit(
     val spend: Spends,
-    val splits: List<SpendSplits>
+    val splits: List<SpendSplits>,
+    var owe: Double = 0.0
 )

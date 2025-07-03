@@ -57,8 +57,7 @@ fun GroupSpendsScreen(component: GroupSpendsComponent, modifier: Modifier = Modi
                         SpendListItem(
                             spends[it],
                             { component.onGroupSpendClicked(spends[it].spend.id) },
-                            component.getUserNameFromId(spends[it].spend.spentBy),
-                            spends[it].splits.find { it -> it.id == DataStore.settings.get<String>("id") } != null
+                            component.getUserNameFromId(spends[it].spend.spentBy)
                         )
                     }
                 }

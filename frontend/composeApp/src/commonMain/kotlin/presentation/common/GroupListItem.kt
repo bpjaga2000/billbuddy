@@ -31,7 +31,7 @@ fun GroupListItem(group: Groups, onGroupClicked: () -> Unit, modifier: Modifier 
             modifier = Modifier.padding(20.dp).fillMaxWidth()
         ) {
             Column {
-                Text(group.id)
+                Text(group.name)
                 Spacer(modifier = Modifier.height(10.dp).fillMaxWidth())
                 if (balance > 0)
                     Text("You owe $100")

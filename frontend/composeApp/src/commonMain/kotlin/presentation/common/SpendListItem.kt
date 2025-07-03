@@ -20,7 +20,6 @@ fun SpendListItem(
     spendWithSplit: SpendWithSplit,
     onSpendClick: () -> Unit,
     spentBy: String,
-    involved: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     Card(
@@ -53,24 +52,31 @@ fun SpendListItem(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(text = spendWithSplit.spend.name, modifier = Modifier.padding(5.dp))
-                if (involved)
+                if (spendWithSplit.owe == 0.0)
+                    Text("You are not involved", modifier = Modifier.padding(5.dp))
+                else
                     Text(
                         text = "$spentBy paid ${spendWithSplit.spend.totalAmount}",
                         modifier = Modifier.padding(5.dp)
                     )
-                else
-                    Text("You are not involved", modifier = Modifier.padding(5.dp))
             }
             Column(
                 modifier = Modifier.weight(0.2f),
                 horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.Center
             ) {
-                if (involved) {
-                    Text(text = "your share", modifier = Modifier.padding(5.dp))
-                    Text(text = "200", modifier = Modifier.padding(5.dp))
-                } else
+                if (spendWithSplit.owe == 0.0)
                     Text(text = "not involved", modifier = Modifier.padding(5.dp))
+                else if (spendWithSplit.owe > 0) {
+                    Text(text = "you owe", modifier = Modifier.padding(5.dp))
+                    Text(text = spendWithSplit.owe.toString(), modifier = Modifier.padding(5.dp))
+                } else {
+                    Text(text = "you get", modifier = Modifier.padding(5.dp))
+                    Text(
+                        text = (spendWithSplit.owe * -1.0).toString(),
+                        modifier = Modifier.padding(5.dp)
+                    )
+                }
             }
         }
     }
