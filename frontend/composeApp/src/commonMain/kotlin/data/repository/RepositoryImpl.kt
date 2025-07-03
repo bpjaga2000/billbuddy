@@ -308,23 +308,38 @@ class RepositoryImpl : Repository {
             }
         }
 
-    override fun getSpendAndSplit(groupId: String) = flow {
+    override suspend fun getSpendAndSplitForGroup(groupId: String) = flow {
         val spendWithSplitList: ArrayList<SpendWithSplit> = arrayListOf()
         val spends = SpendQueriesQueries(
             db,
-            Spends.Adapter( EnumColumnAdapter(), IntColumnAdapter)
+            Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
         ).getSpendsForGroup(groupId).executeAsList()
         spends.forEach {
             spendWithSplitList.add(
                 SpendWithSplit(
                     it, SpendSplitQueriesQueries(
                         db,
-                        SpendSplits.Adapter( IntColumnAdapter)
+                        SpendSplits.Adapter(IntColumnAdapter)
                     ).getSplitForSpend(it.id).executeAsList()
                 )
             )
         }
         emit(spendWithSplitList)
+    }
+
+    override suspend fun getSpendAndSplitWithSpendId(spendId: String) = flow {
+        val spend = SpendQueriesQueries(
+            db,
+            Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
+        ).getSpendWithId(spendId).executeAsOne()
+        emit(
+            SpendWithSplit(
+                spend, SpendSplitQueriesQueries(
+                    db,
+                    SpendSplits.Adapter(IntColumnAdapter)
+                ).getSplitForSpend(spend.id).executeAsList()
+            )
+        )
     }
 
     override suspend fun getUserNameFromId(id: String) =
@@ -555,7 +570,7 @@ class RepositoryImpl : Repository {
         val spendId = Id.generate().toString()
         SpendQueriesQueries(
             db,
-            Spends.Adapter( EnumColumnAdapter(), IntColumnAdapter)
+            Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
         ).insertSpends(
             spendId,
             spendName,
@@ -585,13 +600,13 @@ class RepositoryImpl : Repository {
         emit(false)
         val spendSplitTable = SpendSplitQueriesQueries(
             db,
-            SpendSplits.Adapter( IntColumnAdapter)
+            SpendSplits.Adapter(IntColumnAdapter)
         )
         spendSplitTable.transaction {
             afterRollback {
                 SpendQueriesQueries(
                     db,
-                    Spends.Adapter( EnumColumnAdapter(), IntColumnAdapter)
+                    Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
                 ).deleteSpend(groupId)
             }
             splits.forEach {

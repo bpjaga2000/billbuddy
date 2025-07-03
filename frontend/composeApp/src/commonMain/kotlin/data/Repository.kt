@@ -26,7 +26,7 @@ interface Repository {
         groupTag: GroupTags
     ): Flow<ApiResult<GroupResponseDto>>
 
-    fun getSpendAndSplit(groupId: String): Flow<List<SpendWithSplit>>
+    suspend fun getSpendAndSplitForGroup(groupId: String): Flow<List<SpendWithSplit>>
     suspend fun getUserNameFromId(id: String): Flow<String>
     suspend fun getGroupById(id: String): Flow<Groups>
     suspend fun updateGroup(groupId: String, groupDto: GroupDto): Flow<ApiResult<GroupResponseDto>>
@@ -52,4 +52,6 @@ interface Repository {
         spentBy: String,
         spentAt: Long
     ): Flow<String>
+
+    suspend fun getSpendAndSplitWithSpendId(spendId: String): Flow<SpendWithSplit>
 }

@@ -22,6 +22,8 @@ interface GroupSpendsComponent {
     fun onAddSpendClicked()
     fun onGroupSpendSettingsClicked()
     fun getUserNameFromId(spentBy: String): String
+    fun onSettleUpClicked()
+    fun onBalancesClicked()
 }
 
 class DefaultGroupSpendsComponent(
@@ -29,14 +31,16 @@ class DefaultGroupSpendsComponent(
     override val groupId: String,
     val onGroupSpendClick: (String) -> Unit,
     val onAddSpendClick: () -> Unit,
-    val onGroupSpendSettingsClick: (groupId: String) -> Unit
+    val onGroupSpendSettingsClick: (groupId: String) -> Unit,
+    val onSettleUpClick: (groupId: String) -> Unit,
+    val onBalancesClick: (groupId: String) -> Unit
 ) : GroupSpendsComponent, ComponentContext by componentContext {
     override val spendList: MutableValue<List<SpendWithSplit>> = MutableValue(listOf())
     private val currentUserId = DataStore.settings.get<String>("id")
 
     init {
         componentContext.componentCoroutineScope().launch(Dispatchers.IO) {
-            RepositoryImpl().getSpendAndSplit(groupId).collect { spends ->
+            RepositoryImpl().getSpendAndSplitForGroup(groupId).collect { spends ->
                 spends.forEach { spend ->
                     spend.splits.find { it.userId == currentUserId }?.let {
                         val currentUserValue =
@@ -105,5 +109,13 @@ class DefaultGroupSpendsComponent(
             name = RepositoryImpl().getUserNameFromId(spentBy).single()
         }
         return name
+    }
+
+    override fun onSettleUpClicked() {
+        onSettleUpClick(groupId)
+    }
+
+    override fun onBalancesClicked() {
+        onBalancesClick(groupId)
     }
 }

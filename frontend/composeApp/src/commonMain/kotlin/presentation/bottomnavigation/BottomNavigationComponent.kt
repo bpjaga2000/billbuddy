@@ -136,9 +136,12 @@ class DefaultBottomNavigationComponent(
             DefaultGroupSpendsComponent(
                 componentContext.childContext(key = "groupSpends"),
                 config.groupId,
-                { navigation.push(Config.SpendDetails(it)) },
-                { navigation.push(Config.EditSpends(config.groupId)) }
-            ) { navigation.push(Config.GroupSettings(it)) }
+                { navigation.push(Config.SpendDetails(config.groupId, it)) },
+                { navigation.push(Config.EditSpends(config.groupId)) },
+                { navigation.push(Config.GroupSettings(it)) },
+                { navigation.push(Config.SettleUp) },
+                { navigation.push(Config.Balances) },
+            )
         )
 
         is Config.GroupSettings -> GroupSettings(
@@ -160,8 +163,9 @@ class DefaultBottomNavigationComponent(
         is Config.SpendDetails -> SpendDetails(
             DefaultSpendDetailsComponent(
                 componentContext.childContext(key = "spendDetails"),
+                config.spendId,
                 { navigation.pop() }
-            ) { /*navigation.push(Config.EditSpends(config.))*/ }
+            ) { navigation.push(Config.EditSpends(config.groupId, config.spendId)) }
         )
 
         Config.Balances -> Balances(
@@ -236,10 +240,10 @@ class DefaultBottomNavigationComponent(
         data class GroupSettings(val groupId: String) : Config()
 
         @Serializable
-        data class EditSpends(val groupId: String) : Config()
+        data class EditSpends(val groupId: String, val spendId: String? = null) : Config()
 
         @Serializable
-        data class SpendDetails(val spendId: String) : Config()
+        data class SpendDetails(val groupId: String, val spendId: String) : Config()
 
         @Serializable
         data object Totals : Config()

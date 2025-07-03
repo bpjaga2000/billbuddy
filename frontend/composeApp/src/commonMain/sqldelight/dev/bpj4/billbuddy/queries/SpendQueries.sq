@@ -4,5 +4,8 @@ INSERT OR REPLACE INTO Spends VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 getSpendsForGroup:
 SELECT * FROM Spends WHERE groupId = ? ORDER BY spentAt DESC ;
 
+getSpendWithId:
+SELECT * FROM Spends WHERE id = ?;
+
 deleteSpend:
 DELETE FROM Spends WHERE id = ?;
