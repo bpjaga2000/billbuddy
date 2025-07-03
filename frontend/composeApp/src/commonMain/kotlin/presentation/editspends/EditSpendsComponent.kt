@@ -11,9 +11,9 @@ import com.arkivanov.decompose.router.pages.PagesNavigation
 import com.arkivanov.decompose.router.pages.childPages
 import com.arkivanov.decompose.router.pages.select
 import com.arkivanov.decompose.value.Value
-import com.russhwolf.settings.get
 import constants.SplitType
 import data.SpendTags
+import data.model.EditSpendDetails
 import data.model.GroupMemberSplit
 import data.repository.RepositoryImpl
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +24,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import presentation.editspends.editspendstab.DefaultEditSpendsTabComponent
 import presentation.editspends.editspendstab.EditSpendsTabComponent
-import utils.DataStore
 import utils.DispatcherUtils.componentCoroutineScope
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -37,7 +36,7 @@ interface EditSpendsComponent {
     val spendName: MutableState<String>
     val amount: MutableState<String>
     val spendTags: MutableState<SpendTags>
-    val spentBy: MutableState<String>
+    val spentBy: MutableState<List<EditSpendDetails>>
     val spentAt: MutableState<Long>
     var isValid: Boolean
     var groupMembers: List<GroupMemberSplit>
@@ -55,7 +54,7 @@ class DefaultEditSpendsComponent(
     override val spendName = mutableStateOf("")
     override val amount = mutableStateOf("")
     override val spendTags = mutableStateOf<SpendTags>(SpendTags.OTHER)
-    override val spentBy = mutableStateOf("")
+    override val spentBy = mutableStateOf(listOf<EditSpendDetails>())
     override val spentAt = mutableStateOf(Clock.System.now().epochSeconds)
     override var groupMembers: List<GroupMemberSplit> = listOf()
     private val navigation = PagesNavigation<Config>()
@@ -77,9 +76,7 @@ class DefaultEditSpendsComponent(
                     )
                 }
             }
-            spentBy.value =
-                groupMembers.find { it.userId == DataStore.settings.get<String>("id") }?.userId
-                    ?: groupMembers.first().userId
+            spentBy.value = groupMembers.map { member -> EditSpendDetails(member.userId, member.userName) }
             spentAt.value = Clock.System.now().epochSeconds
         }
     }
@@ -104,26 +101,24 @@ class DefaultEditSpendsComponent(
     }
 
     override fun onSaveClicked() {
-        val splitList =
+        val lenderList = spentBy.value.filter { f -> f.value.value.isNotBlank() }
+        val borrowerList =
             pageStack.value.items[pageStack.value.selectedIndex].instance?.splitDetails?.value?.filter { f ->
-                f.isChecked.value
+                f.value.value.isNotBlank()
             }.orEmpty()
-        if (pageStack.value.selectedIndex + 1 == SplitType.EQUAL)
-            splitList.forEach {
-                it.value.value = "1"
-            }
         isValid = spendName.value.isNotBlank() &&
                 (amount.value.toDoubleOrNull() ?: 0f) != 0f &&
-                spentBy.value.isNotBlank() &&
+                lenderList.isNotEmpty() &&
+                lenderList.sumOf { it.value.value.toDoubleOrNull() ?: 0.0 } == amount.value.toDoubleOrNull() &&
                 spentAt.value != 0L &&
                 when (pageStack.value.selectedIndex + 1) {
                     SplitType.EQUAL -> {
-                        splitList.isNotEmpty()
+                        borrowerList.isNotEmpty()
                     }
 
                     SplitType.AMOUNT -> {
                         var total = 0.0
-                        splitList.forEach {
+                        borrowerList.forEach {
                             total = total + (it.value.value.toDoubleOrNull() ?: 0.0)
                         }
                         total == (amount.value.toDoubleOrNull() ?: 0f)
@@ -131,7 +126,7 @@ class DefaultEditSpendsComponent(
 
                     SplitType.SHARE -> {
                         var total = 0.0
-                        splitList.forEach {
+                        borrowerList.forEach {
                             total = total + (it.value.value.toDoubleOrNull() ?: 0.0)
                         }
                         total > 0.0
@@ -139,7 +134,7 @@ class DefaultEditSpendsComponent(
 
                     SplitType.RATIO -> {
                         var total = 0.0
-                        splitList.forEach {
+                        borrowerList.forEach {
                             total = total + (it.value.value.toDoubleOrNull() ?: 0.0)
                         }
                         total == 1.0
@@ -160,12 +155,12 @@ class DefaultEditSpendsComponent(
                     amount.value,
                     spendTags.value,
                     groupId,
-                    spentBy.value,
                     spentAt.value
                 ).collect { id ->
                     if (id.isNotBlank())
                         RepositoryImpl().saveSpendSplits(
-                            splitList,
+                            lenderList,
+                            borrowerList,
                             id,
                             groupId,
                             pageStack.value.selectedIndex + 1

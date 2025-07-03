@@ -5,12 +5,14 @@ import app.cash.sqldelight.adapter.primitive.IntColumnAdapter
 import com.russhwolf.settings.get
 import com.russhwolf.settings.set
 import constants.LentOrBorrowed
+import constants.SplitType
 import constants.UserRoles
 import data.GroupTags
 import data.Repository
 import data.SpendTags
 import data.SyncStatus
 import data.model.Balance
+import data.model.EditSpendDetails
 import data.model.EditSpendTabDetails
 import data.model.GroupMember
 import data.model.SpendWithSplit
@@ -175,7 +177,6 @@ class RepositoryImpl : Repository {
                         it.isPayback,
                         it.tag,
                         it.groupId,
-                        it.spentBy,
                         it.spentAt,
                         it.createdBy,
                         it.updatedBy,
@@ -563,7 +564,6 @@ class RepositoryImpl : Repository {
         amount: String,
         spendTags: SpendTags,
         groupId: String,
-        spentBy: String,
         spentAt: Long
     ) = flow<String> {
         emit("")
@@ -578,7 +578,6 @@ class RepositoryImpl : Repository {
             false,
             spendTags,
             groupId,
-            spentBy,
             spentAt,
             DataStore.settings.get<String>("id") ?: "",
             DataStore.settings.get<String>("id") ?: "",
@@ -592,7 +591,8 @@ class RepositoryImpl : Repository {
     }
 
     fun saveSpendSplits(
-        splits: List<EditSpendTabDetails>,
+        lends: List<EditSpendDetails>,
+        borrows: List<EditSpendTabDetails>,
         spendId: String,
         groupId: String,
         splitType: Int
@@ -609,7 +609,24 @@ class RepositoryImpl : Repository {
                     Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
                 ).deleteSpend(groupId)
             }
-            splits.forEach {
+            lends.forEach {
+                spendSplitTable.insertSpendSplits(
+                    Id.generate().toString(),
+                    it.userId,
+                    spendId,
+                    LentOrBorrowed.LENT.toLong(),
+                    SplitType.AMOUNT.toLong(),
+                    it.value.value.toDouble(),
+                    DataStore.settings.get<String>("id") ?: "",
+                    DataStore.settings.get<String>("id") ?: "",
+                    null,
+                    Clock.System.now().epochSeconds,
+                    Clock.System.now().epochSeconds,
+                    null,
+                    SyncStatus.LOCAL.value
+                )
+            }
+            borrows.forEach {
                 spendSplitTable.insertSpendSplits(
                     Id.generate().toString(),
                     it.userId,

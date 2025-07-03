@@ -33,7 +33,7 @@ class DefaultSpendDetailsComponent(
             RepositoryImpl().getSpendAndSplitWithSpendId(spendId).collect { spend ->
                 spendDetails.value = spend
                 RepositoryImpl().getUserNameFromId(spend.spend.createdBy).collect {
-                    userNames.value = userNames.value.plus(Pair(spend.spend.spentBy, it))
+                    userNames.value = userNames.value.plus(Pair(spend.spend.createdBy, it))
                 }
                 spend.splits.forEach { split ->
                     componentContext.componentCoroutineScope().launch(Dispatchers.IO) {

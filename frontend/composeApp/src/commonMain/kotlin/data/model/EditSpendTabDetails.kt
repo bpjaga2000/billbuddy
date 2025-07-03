@@ -2,14 +2,17 @@ package data.model
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import constants.SplitType
 
 data class EditSpendTabDetails(
-    val userId: String = "",
-    val name: String = "",
-    val isChecked: MutableState<Boolean> = mutableStateOf(false),
+    val userId: String,
+    val name: String,
+    val type: Int,
     val value: MutableState<String> = mutableStateOf(""),
     val onChecked: ((Boolean) -> Unit) = {
-        isChecked.value = it
-        if (!it) value.value = ""
+        if (!it)
+            value.value = ""
+        else if(type == SplitType.EQUAL)
+            value.value = "1"
     },
 )

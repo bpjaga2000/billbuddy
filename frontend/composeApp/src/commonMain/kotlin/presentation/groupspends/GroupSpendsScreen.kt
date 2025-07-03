@@ -55,7 +55,7 @@ fun GroupSpendsScreen(component: GroupSpendsComponent, modifier: Modifier = Modi
                         SpendListItem(
                             spends[it],
                             { component.onGroupSpendClicked(spends[it].spend.id) },
-                            component.getUserNameFromId(spends[it].spend.spentBy)
+                            component.groupUsersDetails.value
                         )
                     }
                 }

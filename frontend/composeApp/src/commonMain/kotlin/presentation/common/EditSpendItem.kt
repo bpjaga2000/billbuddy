@@ -1,51 +1,21 @@
 package presentation.common
 
 import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import constants.SplitType.AMOUNT
-import constants.SplitType.DIFFERENCE
-import constants.SplitType.EQUAL
-import constants.SplitType.RATIO
-import constants.SplitType.SHARE
-import data.model.EditSpendTabDetails
+import data.model.EditSpendDetails
 
 @Composable
 fun EditSpendItem(
-    editDetails: EditSpendTabDetails,
-    type: Int,
+    editDetails: EditSpendDetails,
     modifier: Modifier = Modifier,
 ) {
     editDetails.apply {
-
         Row(modifier = modifier) {
-
-            Checkbox(
-                isChecked.value,
-                onChecked
-            )
-
             Text(name)
-
-            if (type == AMOUNT)
-                Text("₹")
-
-            if (type != EQUAL)
-                TextEdit(
-                    value,
-                    when (type) {
-                        AMOUNT -> "0.00"
-                        SHARE -> "0"
-                        RATIO -> "0.00"
-                        DIFFERENCE -> "0.00"
-                        else -> ""
-                    },
-                    editable = isChecked.value
-                )
-
+            Text("₹")
+            TextEdit(value, "0.00")
         }
-
     }
 }

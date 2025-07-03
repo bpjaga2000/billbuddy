@@ -25,7 +25,8 @@ class DefaultEditSpendsTabComponent(
             List(peopleInvolved.size) { it ->
                 EditSpendTabDetails(
                     peopleInvolved[it].userId,
-                    peopleInvolved[it].userName
+                    peopleInvolved[it].userName,
+                    type
                 )
             }
         )

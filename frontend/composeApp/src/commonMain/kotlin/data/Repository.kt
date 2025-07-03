@@ -49,7 +49,6 @@ interface Repository {
         amount: String,
         spendTags: SpendTags,
         groupId: String,
-        spentBy: String,
         spentAt: Long
     ): Flow<String>
 

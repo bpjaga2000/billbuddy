@@ -19,7 +19,7 @@ import io.ktor.util.date.GMTDate
 fun SpendListItem(
     spendWithSplit: SpendWithSplit,
     onSpendClick: () -> Unit,
-    spentBy: String,
+    spentBy: Map<String, String>,
     modifier: Modifier = Modifier,
 ) {
     Card(
@@ -38,11 +38,11 @@ fun SpendListItem(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = GMTDate(/*spend.updatedAt*/).month.value,
+                    text = GMTDate(spendWithSplit.spend.updatedAt).month.value,
                     modifier = Modifier.padding(5.dp)
                 )
                 Text(
-                    text = GMTDate(/*spend.updatedAt*/).dayOfMonth.toString(),
+                    text = GMTDate(spendWithSplit.spend.updatedAt).dayOfMonth.toString(),
                     modifier = Modifier.padding(5.dp)
                 )
             }
@@ -56,7 +56,7 @@ fun SpendListItem(
                     Text("You are not involved", modifier = Modifier.padding(5.dp))
                 else
                     Text(
-                        text = "$spentBy paid ${spendWithSplit.spend.totalAmount}",
+                        text = "${spentBy.values.joinToString(", ")} paid ${spendWithSplit.spend.totalAmount}",
                         modifier = Modifier.padding(5.dp)
                     )
             }

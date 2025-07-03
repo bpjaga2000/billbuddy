@@ -11,7 +11,6 @@ data class SpendDto(
     val isPayback: Boolean,
     val tag: SpendTags,
     val groupId: String,
-    val spentBy: String,
     val spentAt: Long,
     val createdBy: String,
     val updatedBy: String,
