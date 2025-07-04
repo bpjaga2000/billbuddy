@@ -7,7 +7,6 @@ import data.GroupTags
 import data.remote.ApiResult
 import data.repository.RepositoryImpl
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import utils.DispatcherUtils.componentCoroutineScope
@@ -23,7 +22,7 @@ class DefaultCreateGroupComponent(
     override val isLoading: MutableState<Boolean> = mutableStateOf(false)
 
     override fun createGroup(groupName: String, groupTag: GroupTags) {
-        componentContext.componentCoroutineScope().launch(Dispatchers.IO) {
+        componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
             RepositoryImpl().createGroup(groupName, groupTag).collectLatest {
                 when (it) {
                     is ApiResult.Success -> {

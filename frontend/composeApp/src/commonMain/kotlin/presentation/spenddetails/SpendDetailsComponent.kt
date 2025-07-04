@@ -6,7 +6,6 @@ import com.arkivanov.decompose.ComponentContext
 import data.model.SpendWithSplit
 import data.repository.RepositoryImpl
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import utils.DispatcherUtils.componentCoroutineScope
 import utils.calculateOwes
@@ -29,14 +28,14 @@ class DefaultSpendDetailsComponent(
     override val userNames = mutableStateOf(mapOf<String, String>())
 
     init {
-        componentContext.componentCoroutineScope().launch(Dispatchers.IO) {
+        componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
             RepositoryImpl().getSpendAndSplitWithSpendId(spendId).collect { spend ->
                 spendDetails.value = spend
                 RepositoryImpl().getUserNameFromId(spend.spend.createdBy).collect {
                     userNames.value = userNames.value.plus(Pair(spend.spend.createdBy, it))
                 }
                 spend.splits.forEach { split ->
-                    componentContext.componentCoroutineScope().launch(Dispatchers.IO) {
+                    componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
                         RepositoryImpl().getUserNameFromId(split.userId).collect {
                             userNames.value = userNames.value.plus(Pair(split.userId, it))
                         }

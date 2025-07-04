@@ -9,7 +9,6 @@ import com.russhwolf.settings.get
 import data.model.SpendWithSplit
 import data.repository.RepositoryImpl
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import utils.DataStore
 import utils.DispatcherUtils.componentCoroutineScope
@@ -40,7 +39,7 @@ class DefaultGroupSpendsComponent(
     override val groupUsersDetails = mutableStateOf(mapOf<String, String>())
 
     init {
-        componentContext.componentCoroutineScope().launch(Dispatchers.IO) {
+        componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
             RepositoryImpl().getGroupMemberDetails(groupId).collect {
                 it.forEach { user ->
                     groupUsersDetails.value =

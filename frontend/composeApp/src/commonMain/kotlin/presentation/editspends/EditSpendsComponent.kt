@@ -17,7 +17,6 @@ import data.model.EditSpendDetails
 import data.model.GroupMemberSplit
 import data.repository.RepositoryImpl
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -62,7 +61,7 @@ class DefaultEditSpendsComponent(
     override var isValid = false
 
     init {
-        runBlocking(Dispatchers.IO) {
+        runBlocking(Dispatchers.Default) {
             RepositoryImpl().getGroupById(groupId).collect {
                 groupName.value = it.name
             }
@@ -149,7 +148,7 @@ class DefaultEditSpendsComponent(
                 }
 
         if (isValid)
-            componentContext.componentCoroutineScope().launch(Dispatchers.IO) {
+            componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
                 RepositoryImpl().saveSpend(
                     spendName.value,
                     amount.value,

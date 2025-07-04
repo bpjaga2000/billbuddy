@@ -7,7 +7,6 @@ import data.model.dto.ProfileDto
 import data.remote.ApiResult
 import data.repository.RepositoryImpl
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import utils.DispatcherUtils.componentCoroutineScope
@@ -35,7 +34,7 @@ class DefaultSearchComponent(
     )
 
     override fun onSearchClicked(text: String) {
-        componentContext.componentCoroutineScope().launch(Dispatchers.IO) {
+        componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
             RepositoryImpl().searchFriends(text).collect {
                 searchResults.value = it.filterNot { f -> existingMemberIds.contains(f.id) }
             }
@@ -58,7 +57,7 @@ class DefaultSearchComponent(
     }
 
     override fun onDoneClicked() {
-        componentContext.componentCoroutineScope().launch(Dispatchers.IO) {
+        componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
             RepositoryImpl().addUsers(addedMembers.value).collect { added ->
                 if (added)
                     RepositoryImpl().addGroupMembers(addedMembers.value.map { it.id }, groupId)

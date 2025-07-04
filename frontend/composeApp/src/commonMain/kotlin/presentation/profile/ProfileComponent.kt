@@ -8,7 +8,6 @@ import data.remote.ApiResult
 import data.repository.RepositoryImpl
 import dev.bpj4.billbuddy.tableandmigrations.Users
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import utils.DataStore
@@ -38,7 +37,7 @@ class DefaultProfileComponent(
     override val phone = mutableStateOf("")
 
     init {
-        componentContext.componentCoroutineScope().launch(Dispatchers.IO) {
+        componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
             RepositoryImpl().getCurrentUser().collect {
                 user = it
                 name.value = it.name
@@ -50,7 +49,7 @@ class DefaultProfileComponent(
     }
 
     override fun onSaveClick() {
-        componentContext.componentCoroutineScope().launch(Dispatchers.IO) {
+        componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
             val profileUpdateDto = ProfileUpdateDto(
                 user.id,
                 name.value,

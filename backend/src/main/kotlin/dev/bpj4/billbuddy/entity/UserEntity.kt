@@ -1,6 +1,6 @@
 package dev.bpj4.billbuddy.entity
 
-import diglol.id.Id
+import io.voxkit.kotlin.nanoid.NanoId
 import jakarta.persistence.*
 
 @Entity
@@ -23,4 +23,4 @@ data class UserEntity(
         @Column(name = "default_group_id")
         var defaultGroupId: String? = null
 
-) : BaseEntity<String>(Id.generate().encodeToString())
+) : BaseEntity<String>(NanoId.generate())

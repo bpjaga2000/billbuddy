@@ -35,7 +35,6 @@ import dev.bpj4.billbuddy.queries.UserQueriesQueries
 import dev.bpj4.billbuddy.tableandmigrations.Groups
 import dev.bpj4.billbuddy.tableandmigrations.SpendSplits
 import dev.bpj4.billbuddy.tableandmigrations.Spends
-import diglol.id.Id
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.headers
@@ -47,9 +46,8 @@ import io.ktor.client.request.url
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
-import kotlinx.coroutines.delay
+import io.voxkit.kotlin.nanoid.NanoId
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.runBlocking
 import utils.DataStore
 import utils.getSqlDriver
 import kotlin.time.Clock
@@ -61,9 +59,6 @@ class RepositoryImpl : Repository {
     private val db = getSqlDriver()!!
 
     override suspend fun logIn(email: String, password: String) = flow<ApiResult<UserDto>> {
-        runBlocking {
-            delay(3000)
-        }
         emit(ApiResult.loading())
         with(ApiClient.httpClient.post {
             url("http:////92.119.126.127:8090/api/v1/auth/login")
@@ -567,7 +562,7 @@ class RepositoryImpl : Repository {
         spentAt: Long
     ) = flow<String> {
         emit("")
-        val spendId = Id.generate().toString()
+        val spendId = NanoId.generate()
         SpendQueriesQueries(
             db,
             Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
@@ -611,7 +606,7 @@ class RepositoryImpl : Repository {
             }
             lends.forEach {
                 spendSplitTable.insertSpendSplits(
-                    Id.generate().toString(),
+                    NanoId.generate(),
                     it.userId,
                     spendId,
                     LentOrBorrowed.LENT.toLong(),
@@ -628,7 +623,7 @@ class RepositoryImpl : Repository {
             }
             borrows.forEach {
                 spendSplitTable.insertSpendSplits(
-                    Id.generate().toString(),
+                    NanoId.generate(),
                     it.userId,
                     spendId,
                     LentOrBorrowed.BORROWED.toLong(),

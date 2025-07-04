@@ -1,6 +1,7 @@
 package dev.bpj4.billbuddy.entity
 
 
+import io.voxkit.kotlin.nanoid.NanoId
 import jakarta.persistence.*
 
 @Entity
@@ -9,10 +10,10 @@ import jakarta.persistence.*
 @DiscriminatorColumn(name = "lent_or_borrowed", discriminatorType = DiscriminatorType.INTEGER)
 open class SpendSplitEntity(
         @Column(name = "user_id")
-        open val userId: String = diglol.id.Id.generate().encodeToString(),
+        open val userId: String = NanoId.generate(),
 
         @Column(name = "spend_id")
-        open val spendId: String = diglol.id.Id.generate().encodeToString(),
+        open val spendId: String = NanoId.generate(),
 
         @Column(name = "lent_or_borrowed", insertable = false, updatable = false)
         open val lentOrBorrowed: Int = LentOrBorrowed.LENT,
@@ -21,7 +22,7 @@ open class SpendSplitEntity(
         open val splitType: Int = SplitType.EQUAL,
 
         @Column(name = "value")
-        open val value: Double = 0f,
+        open val value: Double = 0.0,
 
         @Column(name = "created_by")
         open var createdBy: String = "",
@@ -31,4 +32,4 @@ open class SpendSplitEntity(
 
         @Column(name = "deleted_by")
         open var deletedBy: String? = null
-) : BaseEntity<String>(diglol.id.Id.generate().encodeToString())
+) : BaseEntity<String>(NanoId.generate())

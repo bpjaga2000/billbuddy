@@ -1,6 +1,6 @@
 package dev.bpj4.billbuddy.entity
 
-import diglol.id.Id
+import io.voxkit.kotlin.nanoid.NanoId
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
@@ -24,4 +24,4 @@ data class GroupMembersEntity(
         @Column(name = "deleted_by")
         var deletedBy: String? = null
 
-) : BaseEntity<String>(Id.generate().encodeToString())
+) : BaseEntity<String>(NanoId.generate())

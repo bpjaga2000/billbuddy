@@ -8,7 +8,6 @@ import data.remote.ApiResult
 import data.repository.RepositoryImpl
 import dev.bpj4.billbuddy.tableandmigrations.Groups
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -36,7 +35,7 @@ class DefaultHomeComponent(
     override var friendBalances: MutableValue<List<Balance>> = MutableValue(listOf())
 
     init {
-        componentContext.componentCoroutineScope().launch(Dispatchers.IO) {
+        componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
             RepositoryImpl().sync(DataStore.settings.getString("id", "")).collect { sync ->
                 when (sync) {
                     is ApiResult.Success -> {

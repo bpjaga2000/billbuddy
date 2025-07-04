@@ -1,18 +1,21 @@
+@file:OptIn(ExperimentalWasmDsl::class)
+
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.sqldelight)
     id("org.jetbrains.kotlin.plugin.serialization") version "2.1.21"
     id("de.jensklingenberg.ktorfit") version "2.5.2"
-    id("app.cash.sqldelight") version "2.1.0"
 }
 
 kotlin {
-    /*@OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
+    /*wasmJs {
         moduleName = "composeApp"
         browser {
             commonWebpackConfig {
@@ -36,7 +39,11 @@ kotlin {
         }
     }
 
-    jvm("desktop")
+    jvm()
+    /*js{
+        browser()
+        nodejs()
+    }*/
 
     listOf(
         iosX64(),
@@ -50,7 +57,7 @@ kotlin {
     }
 
     sourceSets {
-        val desktopMain by getting
+        val jvmMain by getting
 
         androidMain.dependencies {
             implementation(libs.compose.ui.tooling.preview)
@@ -83,16 +90,14 @@ kotlin {
             implementation(libs.ktor.client.logging)
             implementation(libs.slf4j.simple)
             api(libs.image.loader)
-            implementation(libs.mvvm.core)
             implementation(libs.decompose)
             implementation(libs.multiplatform.settings)
             implementation("com.arkivanov.decompose:extensions-compose:${libs.versions.decompose.get()}")
             implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
             implementation(libs.sonner)
-            implementation(libs.androidx.paging3.extensions)
             implementation(libs.primitive.adapters)
         }
-        desktopMain.dependencies {
+        jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqlite.driver)
@@ -101,17 +106,19 @@ kotlin {
             implementation(libs.ktor.client.darwin)
         }
         nativeMain.dependencies {
-            implementation("app.cash.sqldelight:native-driver:${libs.versions.androidDriverVersion.get()}")
+            implementation(libs.native.driver)
         }
-        jvmMain.dependencies {
-            implementation("app.cash.sqldelight:sqlite-driver:${libs.versions.androidDriverVersion.get()}")
-        }
+        /*jsMain.dependencies {
+            implementation(libs.js.driver)
+            implementation(npm("sql.js", "1.6.2"))
+            implementation(devNpm("copy-webpack-plugin", "9.1.0"))
+        }*/
     }
 }
 
 android {
     namespace = "dev.bpj4.billbuddy"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdkVersion(libs.versions.android.compileSdk.get().toInt())
 
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     sourceSets["main"].res.srcDirs("src/androidMain/res")
@@ -149,15 +156,14 @@ compose.desktop {
         mainClass = "MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Exe)
             packageName = "dev.bpj4.billbuddy"
             packageVersion = "1.0.0"
         }
     }
 }
 
-compose.experimental {
-    web.application {}
+compose.web {
 }
 
 sqldelight {

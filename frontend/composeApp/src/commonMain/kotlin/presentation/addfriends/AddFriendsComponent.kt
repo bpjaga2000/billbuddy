@@ -7,7 +7,6 @@ import data.model.dto.ProfileDto
 import data.remote.ApiResult
 import data.repository.RepositoryImpl
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import utils.DispatcherUtils.componentCoroutineScope
@@ -33,7 +32,7 @@ class DefaultAddFriendsComponent(
     override var addFriendsResults = mutableStateOf(listOf<ProfileDto>())
 
     override fun onAddFriendsClicked(text: String) {
-        componentContext.componentCoroutineScope().launch(Dispatchers.IO) {
+        componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
             RepositoryImpl().searchFriendsOnline(text).collect {
                 when (it) {
                     is ApiResult.Success -> {
@@ -61,7 +60,7 @@ class DefaultAddFriendsComponent(
     }
 
     override fun onDoneClicked() {
-        componentContext.componentCoroutineScope().launch(Dispatchers.IO) {
+        componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
             RepositoryImpl().addUsers(addedFriends.value).collect { added ->
                 if (added)
                     RepositoryImpl().addGroupMembers(addedFriends.value.map { it.id }, groupId)

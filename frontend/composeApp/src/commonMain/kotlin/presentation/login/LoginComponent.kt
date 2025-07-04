@@ -2,14 +2,10 @@ package presentation.login
 
 import com.arkivanov.decompose.ComponentContext
 import com.russhwolf.settings.set
-import data.model.dto.SyncDto
 import data.model.dto.UserDto
 import data.remote.ApiResult
 import data.repository.RepositoryImpl
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,7 +35,7 @@ class DefaultLoginComponent(
 
     override fun onLoginClicked(email: String, password: String) {
         _isLoading.value = true
-        coroutineScope.launch(Dispatchers.IO) {
+        coroutineScope.launch(Dispatchers.Default) {
             RepositoryImpl().logIn(email, password).collect {
                 when (it) {
                     is ApiResult.Success -> {
@@ -63,7 +59,7 @@ class DefaultLoginComponent(
 
     private fun syncData() {
         _isLoading.value = true
-        coroutineScope.launch(Dispatchers.IO) {
+        coroutineScope.launch(Dispatchers.Default) {
             RepositoryImpl().sync((_userLoginResponse.value as ApiResult.Success<UserDto>).data.id)
                 .collect {
                     when (it) {

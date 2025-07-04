@@ -9,7 +9,6 @@ import data.remote.ApiResult
 import data.repository.RepositoryImpl
 import dev.bpj4.billbuddy.tableandmigrations.Groups
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import utils.DispatcherUtils.componentCoroutineScope
@@ -36,7 +35,7 @@ class DefaultGroupSettingsComponent(
     override val groupMembers get() = _groupMembers
 
     init {
-        componentContext.componentCoroutineScope().launch(Dispatchers.IO) {
+        componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
             RepositoryImpl().getGroupById(groupId).collect {
                 group = it
                 group?.let { group -> groupName = group.name }
@@ -47,7 +46,7 @@ class DefaultGroupSettingsComponent(
     }
 
     override fun onRemoveMemberClicked(groupMemberId: String) {
-        componentContext.componentCoroutineScope().launch(Dispatchers.IO) {
+        componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
             RepositoryImpl().removeMemberFromGroup(listOf(groupMemberId), groupId).collect {
                 when (it) {
                     is ApiResult.Success -> {
@@ -69,7 +68,7 @@ class DefaultGroupSettingsComponent(
     }
 
     override fun onSaveClicked() {
-        componentContext.componentCoroutineScope().launch(Dispatchers.IO) {
+        componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
             RepositoryImpl().updateGroup(
                 groupId, GroupDto(
                     groupName,
