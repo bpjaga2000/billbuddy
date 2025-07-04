@@ -9,7 +9,7 @@ import presentation.common.EditSpendTabItem
 fun EditSpendsTab(component: EditSpendsTabComponent, modifier: Modifier = Modifier) {
     LazyColumn {
         items(component.splitDetails.value.size, { it -> component.splitDetails.value[it].userId }) {
-            EditSpendTabItem(component.splitDetails.value[it], component.type)
+            EditSpendTabItem(component.splitDetails.value[it])
         }
     }
 }

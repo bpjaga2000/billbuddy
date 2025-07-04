@@ -7,6 +7,7 @@ import data.model.SpendWithSplit
 import data.repository.RepositoryImpl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import utils.DispatcherUtils.componentCoroutineScope
 import utils.calculateOwes
 
@@ -46,7 +47,14 @@ class DefaultSpendDetailsComponent(
     }
 
     override fun onDeleteClicked() {
-        this.onDeleteClicked.invoke()
+        componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
+            RepositoryImpl().deleteSpend(spendId).collect {
+                if (it)
+                    withContext(Dispatchers.Main) {
+                        this@DefaultSpendDetailsComponent.onDeleteClicked.invoke()
+                    }
+            }
+        }
     }
 
     override fun onEditClicked() {

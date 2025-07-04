@@ -15,14 +15,13 @@ import data.model.EditSpendTabDetails
 @Composable
 fun EditSpendTabItem(
     editDetails: EditSpendTabDetails,
-    type: Int,
     modifier: Modifier = Modifier,
 ) {
     editDetails.apply {
 
         Row(modifier = modifier) {
 
-            if (type == EQUAL)
+            if (editDetails.type == EQUAL)
                 Checkbox(
                     value.value != "",
                     onChecked
@@ -30,10 +29,10 @@ fun EditSpendTabItem(
 
             Text(name)
 
-            if (type == AMOUNT)
+            if (editDetails.type == AMOUNT)
                 Text("₹")
 
-            if (type != EQUAL)
+            if (editDetails.type != EQUAL)
                 TextEdit(
                     value,
                     when (type) {

@@ -57,6 +57,7 @@ import kotlin.time.ExperimentalTime
 class RepositoryImpl : Repository {
 
     private val db = getSqlDriver()!!
+    private val currentUserId = DataStore.settings.get<String>("id") ?: ""
 
     override suspend fun logIn(email: String, password: String) = flow<ApiResult<UserDto>> {
         emit(ApiResult.loading())
@@ -235,7 +236,7 @@ class RepositoryImpl : Repository {
     }
 
     override suspend fun createGroup(groupName: String, groupTag: GroupTags) =
-        flow<ApiResult<GroupResponseDto>> {
+        flow {
             emit(ApiResult.loading())
             with(ApiClient.httpClient.post {
                 headers {
@@ -270,7 +271,7 @@ class RepositoryImpl : Repository {
         }
 
     override suspend fun updateGroup(groupId: String, groupDto: GroupDto) =
-        flow<ApiResult<GroupResponseDto>> {
+        flow {
             emit(ApiResult.loading())
             with(ApiClient.httpClient.put {
                 headers {
@@ -338,6 +339,29 @@ class RepositoryImpl : Repository {
         )
     }
 
+    override suspend fun deleteSpend(spendId: String) = flow {
+        emit(false)
+        SpendSplitQueriesQueries(
+            db,
+            SpendSplits.Adapter(IntColumnAdapter)
+        ).deleteSpendSplit(
+            currentUserId,
+            Clock.System.now().epochSeconds,
+            SyncStatus.LOCAL.value,
+            spendId
+        )
+        SpendQueriesQueries(
+            db,
+            Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
+        ).deleteSpend(
+            currentUserId,
+            Clock.System.now().epochSeconds,
+            SyncStatus.LOCAL.value,
+            spendId
+        )
+        emit(true)
+    }
+
     override suspend fun getUserNameFromId(id: String) =
         flow {
             emit(
@@ -353,7 +377,7 @@ class RepositoryImpl : Repository {
     }
 
     override suspend fun removeMemberFromGroup(userIds: List<String>, groupId: String) =
-        flow<ApiResult<GroupResponseDto>> {
+        flow {
             emit(ApiResult.loading())
             with(ApiClient.httpClient.post {
                 headers {
@@ -364,7 +388,7 @@ class RepositoryImpl : Repository {
                 }
                 contentType(ContentType.Application.Json)
                 url("http", "92.119.126.127", 8090, "api/v1/group/manage/remove/$groupId")
-                setBody(UserIdListDto(userIds, DataStore.settings.get<String>("id") ?: ""))
+                setBody(UserIdListDto(userIds, currentUserId))
             }) {
                 if (status.value in 200..299) {
                     val body = body<GroupResponseDto>()
@@ -387,7 +411,7 @@ class RepositoryImpl : Repository {
             }
         }
 
-    override suspend fun searchFriends(searchTag: String) = flow<List<ProfileDto>> {
+    override suspend fun searchFriends(searchTag: String) = flow {
         emit(UserQueriesQueries(db).searchUsers(searchTag).executeAsList().map {
             ProfileDto(
                 it.id,
@@ -426,7 +450,7 @@ class RepositoryImpl : Repository {
         }
     }
 
-    override suspend fun addUsers(profiles: List<ProfileDto>) = flow<Boolean> {
+    override suspend fun addUsers(profiles: List<ProfileDto>) = flow {
         emit(false)
         profiles.forEach {
             UserQueriesQueries(db).insertUsers(
@@ -449,7 +473,7 @@ class RepositoryImpl : Repository {
     override suspend fun addGroupMembers(
         userIds: List<String>,
         groupId: String
-    ) = flow<ApiResult<GroupResponseDto>> {
+    ) = flow {
         emit(ApiResult.loading())
         with(ApiClient.httpClient.post {
             headers {
@@ -460,7 +484,7 @@ class RepositoryImpl : Repository {
             }
             contentType(ContentType.Application.Json)
             url("http", "92.119.126.127", 8090, "api/v1/group/manage/add/$groupId")
-            setBody(UserIdListDto(userIds, DataStore.settings.get<String>("id") ?: ""))
+            setBody(UserIdListDto(userIds, currentUserId))
         }) {
             if (status.value in 200..299) {
                 val body = body<GroupResponseDto>()
@@ -485,13 +509,13 @@ class RepositoryImpl : Repository {
 
     override suspend fun getCurrentUser() = flow {
         emit(
-            UserQueriesQueries(db).getUserFromId(DataStore.settings.get<String>("id") ?: "")
+            UserQueriesQueries(db).getUserFromId(currentUserId)
                 .executeAsOne()
         )
     }
 
     override suspend fun updateProfile(profileUpdateDto: ProfileUpdateDto) =
-        flow<ApiResult<ProfileDto>> {
+        flow {
             emit(ApiResult.loading())
             with(ApiClient.httpClient.post {
                 headers {
@@ -525,7 +549,7 @@ class RepositoryImpl : Repository {
             }
         }
 
-    override suspend fun logout() = flow<ApiResult<Unit>> {
+    override suspend fun logout() = flow {
         emit(ApiResult.loading())
         with(ApiClient.httpClient.get {
             headers {
@@ -560,7 +584,7 @@ class RepositoryImpl : Repository {
         spendTags: SpendTags,
         groupId: String,
         spentAt: Long
-    ) = flow<String> {
+    ) = flow {
         emit("")
         val spendId = NanoId.generate()
         SpendQueriesQueries(
@@ -574,8 +598,8 @@ class RepositoryImpl : Repository {
             spendTags,
             groupId,
             spentAt,
-            DataStore.settings.get<String>("id") ?: "",
-            DataStore.settings.get<String>("id") ?: "",
+            currentUserId,
+            currentUserId,
             null,
             Clock.System.now().epochSeconds,
             Clock.System.now().epochSeconds,
@@ -591,7 +615,7 @@ class RepositoryImpl : Repository {
         spendId: String,
         groupId: String,
         splitType: Int
-    ) = flow<Boolean> {//TODO
+    ) = flow {//TODO
         emit(false)
         val spendSplitTable = SpendSplitQueriesQueries(
             db,
@@ -602,7 +626,7 @@ class RepositoryImpl : Repository {
                 SpendQueriesQueries(
                     db,
                     Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
-                ).deleteSpend(groupId)
+                ).removeSpend(groupId)
             }
             lends.forEach {
                 spendSplitTable.insertSpendSplits(
@@ -612,8 +636,8 @@ class RepositoryImpl : Repository {
                     LentOrBorrowed.LENT.toLong(),
                     SplitType.AMOUNT.toLong(),
                     it.value.value.toDouble(),
-                    DataStore.settings.get<String>("id") ?: "",
-                    DataStore.settings.get<String>("id") ?: "",
+                    currentUserId,
+                    currentUserId,
                     null,
                     Clock.System.now().epochSeconds,
                     Clock.System.now().epochSeconds,
@@ -629,8 +653,111 @@ class RepositoryImpl : Repository {
                     LentOrBorrowed.BORROWED.toLong(),
                     splitType.toLong(),
                     it.value.value.toDouble(),
-                    DataStore.settings.get<String>("id") ?: "",
-                    DataStore.settings.get<String>("id") ?: "",
+                    currentUserId,
+                    currentUserId,
+                    null,
+                    Clock.System.now().epochSeconds,
+                    Clock.System.now().epochSeconds,
+                    null,
+                    SyncStatus.LOCAL.value
+                )
+            }
+        }
+        emit(true)
+    }
+
+    override suspend fun updateSpend(
+        spend: Spends
+    ) = flow {
+        emit(false)
+        SpendQueriesQueries(
+            db,
+            Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
+        ).insertSpends(
+            spend.id,
+            spend.name,
+            spend.totalAmount,
+            spend.isPayback,
+            spend.tag,
+            spend.groupId,
+            spend.spentAt,
+            spend.createdBy,
+            spend.updatedBy,
+            spend.deletedBy,
+            spend.createdAt,
+            spend.updatedAt,
+            spend.deletedAt,
+            SyncStatus.LOCAL.value
+        )
+        emit(true)
+    }
+
+    override suspend fun updateSpendSplits(
+        lends: List<EditSpendDetails>,
+        borrows: List<EditSpendTabDetails>,
+        splitType: Int,
+        spend: Spends
+    ) = flow {//TODO
+        emit(false)
+        val spendSplitTable = SpendSplitQueriesQueries(
+            db,
+            SpendSplits.Adapter(IntColumnAdapter)
+        )
+        spendSplitTable.transaction {
+            afterRollback {
+                SpendQueriesQueries(
+                    db,
+                    Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
+                ).insertSpends(
+                    spend.id,
+                    spend.name,
+                    spend.totalAmount,
+                    spend.isPayback,
+                    spend.tag,
+                    spend.groupId,
+                    spend.spentAt,
+                    spend.createdBy,
+                    spend.updatedBy,
+                    spend.deletedBy,
+                    spend.createdAt,
+                    spend.updatedAt,
+                    spend.deletedAt,
+                    spend.status
+                )
+            }
+            spendSplitTable.deleteSpendSplit(
+                currentUserId,
+                Clock.System.now().epochSeconds,
+                SyncStatus.LOCAL.value,
+                spend.id
+            )
+            lends.forEach {
+                spendSplitTable.insertSpendSplits(
+                    NanoId.generate(),
+                    it.userId,
+                    spend.id,
+                    LentOrBorrowed.LENT.toLong(),
+                    SplitType.AMOUNT.toLong(),
+                    it.value.value.toDouble(),
+                    currentUserId,
+                    currentUserId,
+                    null,
+                    Clock.System.now().epochSeconds,
+                    Clock.System.now().epochSeconds,
+                    null,
+                    SyncStatus.LOCAL.value
+                )
+            }
+            borrows.forEach {
+                spendSplitTable.insertSpendSplits(
+                    NanoId.generate(),
+                    it.userId,
+                    spend.id,
+                    LentOrBorrowed.BORROWED.toLong(),
+                    splitType.toLong(),
+                    it.value.value.toDouble(),
+                    currentUserId,
+                    currentUserId,
                     null,
                     Clock.System.now().epochSeconds,
                     Clock.System.now().epochSeconds,

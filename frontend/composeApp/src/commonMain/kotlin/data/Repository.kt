@@ -1,6 +1,8 @@
 package data
 
 import data.model.Balance
+import data.model.EditSpendDetails
+import data.model.EditSpendTabDetails
 import data.model.GroupMember
 import data.model.SpendWithSplit
 import data.model.dto.GroupDto
@@ -11,6 +13,7 @@ import data.model.dto.SyncDto
 import data.model.dto.UserDto
 import data.remote.ApiResult
 import dev.bpj4.billbuddy.tableandmigrations.Groups
+import dev.bpj4.billbuddy.tableandmigrations.Spends
 import dev.bpj4.billbuddy.tableandmigrations.Users
 import kotlinx.coroutines.flow.Flow
 
@@ -31,7 +34,11 @@ interface Repository {
     suspend fun getGroupById(id: String): Flow<Groups>
     suspend fun updateGroup(groupId: String, groupDto: GroupDto): Flow<ApiResult<GroupResponseDto>>
     suspend fun getGroupMemberDetails(groupId: String): Flow<List<GroupMember>>
-    suspend fun removeMemberFromGroup(userIds: List<String>, groupId: String): Flow<ApiResult<GroupResponseDto>>
+    suspend fun removeMemberFromGroup(
+        userIds: List<String>,
+        groupId: String
+    ): Flow<ApiResult<GroupResponseDto>>
+
     suspend fun searchFriends(searchTag: String): Flow<List<ProfileDto>>
     suspend fun searchFriendsOnline(searchTag: String): Flow<ApiResult<List<ProfileDto>>>
     suspend fun addUsers(profiles: List<ProfileDto>): Flow<Boolean>
@@ -53,4 +60,13 @@ interface Repository {
     ): Flow<String>
 
     suspend fun getSpendAndSplitWithSpendId(spendId: String): Flow<SpendWithSplit>
+    suspend fun deleteSpend(spendId: String): Flow<Boolean>
+    suspend fun updateSpendSplits(
+        lends: List<EditSpendDetails>,
+        borrows: List<EditSpendTabDetails>,
+        splitType: Int,
+        spend: Spends
+    ): Flow<Boolean>
+
+    suspend fun updateSpend(spend: Spends): Flow<Boolean>
 }

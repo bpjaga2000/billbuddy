@@ -8,7 +8,6 @@ import data.model.GroupMemberSplit
 
 interface EditSpendsTabComponent {
     val type: Int
-    val peopleInvolved: List<GroupMemberSplit>
     val amount: String
     var splitDetails: MutableState<List<EditSpendTabDetails>>
 }
@@ -16,18 +15,6 @@ interface EditSpendsTabComponent {
 class DefaultEditSpendsTabComponent(
     componentContext: ComponentContext,
     override val type: Int,
-    override val peopleInvolved: List<GroupMemberSplit>,
+    override var splitDetails: MutableState<List<EditSpendTabDetails>>,
     override val amount: String,
-) : EditSpendsTabComponent, ComponentContext by componentContext {
-
-    override var splitDetails: MutableState<List<EditSpendTabDetails>> =
-        mutableStateOf(
-            List(peopleInvolved.size) { it ->
-                EditSpendTabDetails(
-                    peopleInvolved[it].userId,
-                    peopleInvolved[it].userName,
-                    type
-                )
-            }
-        )
-}
+) : EditSpendsTabComponent, ComponentContext by componentContext

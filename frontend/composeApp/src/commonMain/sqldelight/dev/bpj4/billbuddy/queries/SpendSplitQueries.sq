@@ -2,4 +2,7 @@ insertSpendSplits:
 INSERT OR REPLACE INTO SpendSplits VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?);
 
 getSplitForSpend:
-SELECT * FROM SpendSplits WHERE spendId = ?;
+SELECT * FROM SpendSplits WHERE spendId = ? AND deletedBy ISNULL;
+
+deleteSpendSplit:
+UPDATE SpendSplits SET deletedBy = ?, deletedAt = ?, status = ? WHERE spendId = ?;

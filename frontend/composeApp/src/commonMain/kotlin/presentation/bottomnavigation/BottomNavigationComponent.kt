@@ -156,6 +156,7 @@ class DefaultBottomNavigationComponent(
             DefaultEditSpendsComponent(
                 componentContext = componentContext.childContext(key = "editSpends"),
                 config.groupId,
+                config.spendId,
                 onSaved = { navigation.pop() }
             )
         )

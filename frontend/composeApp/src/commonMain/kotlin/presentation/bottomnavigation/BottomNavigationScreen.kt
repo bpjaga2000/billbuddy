@@ -11,6 +11,8 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.BottomAppBar
@@ -149,6 +151,24 @@ fun BottomNavigationScreen(component: BottomNavigationComponent, modifier: Modif
                                 Icon(
                                     modifier = Modifier.size(24.dp),
                                     imageVector = Icons.Outlined.Logout,
+                                    contentDescription = "done"
+                                )
+                            }
+                        }
+
+                        is BottomNavigationComponent.Child.SpendDetails -> {
+                            IconButton(onClick = { instance.component.onEditClicked() }) {
+                                Icon(
+                                    modifier = Modifier.size(24.dp),
+                                    imageVector = Icons.Outlined.Edit,
+                                    contentDescription = "done"
+                                )
+                            }
+
+                            IconButton(onClick = { instance.component.onDeleteClicked() }) {
+                                Icon(
+                                    modifier = Modifier.size(24.dp),
+                                    imageVector = Icons.Outlined.Delete,
                                     contentDescription = "done"
                                 )
                             }
