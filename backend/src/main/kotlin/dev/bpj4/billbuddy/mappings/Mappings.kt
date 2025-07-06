@@ -69,6 +69,18 @@ fun GroupMembersEntity.mapToGroupMembersDto() = GroupMembersDto(
     id, userId, groupId, createdAt, createdBy, updatedAt, updatedBy, deletedAt, deletedBy
 )
 
+fun GroupSettleEntity.mapToGroupSettlesDto() = GroupSettlesDto(
+    id,
+    groupId,
+    settledAt,
+    createdAtFrontend,
+    updatedAtFrontend,
+    deletedAtFrontend,
+    createdAt,
+    updatedAt,
+    deletedAt
+)
+
 fun SpendEntity.mapToSpendDto() = SpendDto(
     id,
     name,
@@ -77,6 +89,7 @@ fun SpendEntity.mapToSpendDto() = SpendDto(
     tag,
     groupId,
     spentAt,
+    spentBy,
     createdBy,
     updatedBy,
     deletedBy,
@@ -95,6 +108,7 @@ fun SpendDto.mapToSpendEntity() = SpendEntity(
     tag,
     groupId,
     spentAt,
+    spentBy,
     createdBy,
     updatedBy,
     deletedBy
@@ -112,7 +126,6 @@ fun SpendSplitEntity.mapToSpendSplitDto() = SpendSplitDto(
     id,
     userId,
     spendId,
-    lentOrBorrowed,
     splitType,
     value,
     createdBy,
@@ -129,7 +142,6 @@ fun SpendSplitEntity.mapToSpendSplitDto() = SpendSplitDto(
 fun SpendSplitDto.mapToSpendSplitEntity() = SpendSplitEntity(
     userId,
     spendId,
-    lentOrBorrowed,
     splitType,
     value,
     createdBy,
@@ -140,6 +152,19 @@ fun SpendSplitDto.mapToSpendSplitEntity() = SpendSplitEntity(
     it.createdBy = createdBy
     it.updatedBy = updatedBy
     it.deletedBy = deletedBy
+    it.createdAtFrontend = createdAtFrontend
+    it.updatedAtFrontend = updatedAtFrontend
+    it.deletedAtFrontend = deletedAtFrontend
+    it.createdAt = if (createdAt != 0L) createdAt else System.currentTimeMillis()
+    it.updatedAt = updatedAt
+    it.deletedAt = deletedAt
+}
+
+fun GroupSettlesDto.mapToGroupSettleEntity() = GroupSettleEntity(
+    groupId,
+    settledAt
+).also {
+    it.id = id
     it.createdAtFrontend = createdAtFrontend
     it.updatedAtFrontend = updatedAtFrontend
     it.deletedAtFrontend = deletedAtFrontend

@@ -10,6 +10,7 @@ data class SpendDto(
         val tag: SpendTags,
         val groupId: String,
         val spentAt: Long,
+        val spentBy: String,
         val createdBy: String,
         val updatedBy: String,
         val deletedBy: String?,

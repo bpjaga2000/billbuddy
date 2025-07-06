@@ -1,5 +1,5 @@
 insertSpends:
-INSERT OR REPLACE INTO Spends VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+INSERT OR REPLACE INTO Spends VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 
 getSpendsForGroup:
 SELECT * FROM Spends WHERE groupId = ? AND deletedBy ISNULL ORDER BY spentAt DESC ;
@@ -12,3 +12,6 @@ DELETE FROM Spends WHERE id = ?;
 
 deleteSpend:
 UPDATE Spends SET deletedBy = ?, deletedAt = ?, status = ? WHERE id = ?;
+
+getSpendsAfterLastSettle:
+SELECT * FROM Spends WHERE groupId = ? AND updatedAt > ? AND deletedBy ISNULL ORDER BY spentAt DESC ;

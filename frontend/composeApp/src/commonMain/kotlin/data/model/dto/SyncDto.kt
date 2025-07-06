@@ -14,4 +14,5 @@ data class SyncDto(
     val groupMembers: List<GroupMembersDto>,
     val spends: List<SpendDto>,
     val spendSplit: List<SpendSplitDto>,
+    val groupSettles: List<GroupSettlesDto>
 )

@@ -15,9 +15,6 @@ open class SpendSplitEntity(
         @Column(name = "spend_id")
         open val spendId: String = NanoId.generate(),
 
-        @Column(name = "lent_or_borrowed", insertable = false, updatable = false)
-        open val lentOrBorrowed: Int = LentOrBorrowed.LENT,
-
         @Column(name = "split_type")
         open val splitType: Int = SplitType.EQUAL,
 

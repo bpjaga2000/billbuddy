@@ -30,6 +30,7 @@ import presentation.editspends.editspendstab.DefaultEditSpendsTabComponent
 import presentation.editspends.editspendstab.EditSpendsTabComponent
 import utils.DataStore
 import utils.DispatcherUtils.componentCoroutineScope
+import utils.checkGroupSettles
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -41,7 +42,7 @@ interface EditSpendsComponent {
     val spendName: MutableState<String>
     val amount: MutableState<String>
     val spendTags: MutableState<SpendTags>
-    val spentBy: MutableState<List<EditSpendDetails>>
+    val spentBy: MutableState<String>
     val spentAt: MutableState<Long>
     var isValid: Boolean
     var groupMembers: List<GroupMemberSplit>
@@ -62,7 +63,7 @@ class DefaultEditSpendsComponent(
     override val spendName = mutableStateOf("")
     override val amount = mutableStateOf("")
     override val spendTags = mutableStateOf<SpendTags>(SpendTags.OTHER)
-    override val spentBy = mutableStateOf(listOf<EditSpendDetails>())
+    override val spentBy = mutableStateOf("")
     override val spentAt = mutableStateOf(Clock.System.now().epochSeconds)
     override var groupMembers: List<GroupMemberSplit> = listOf()
     override var spend: Spends? = null
@@ -71,6 +72,7 @@ class DefaultEditSpendsComponent(
     override val groupName = mutableStateOf("")
     override var isValid = false
     private var splitDetails: List<EditSpendTabDetails>? = null
+    private var currentUser = DataStore.settings.get<String>("id")!!
 
     init {
         runBlocking(Dispatchers.Default) {
@@ -87,8 +89,7 @@ class DefaultEditSpendsComponent(
                     )
                 }
             }
-            spentBy.value =
-                groupMembers.map { member -> EditSpendDetails(member.userId, member.userName) }
+            spentBy.value = currentUser
             spentAt.value = Clock.System.now().epochSeconds
             if (spendId != null) {
                 RepositoryImpl().getSpendAndSplitWithSpendId(spendId).collect {
@@ -98,18 +99,9 @@ class DefaultEditSpendsComponent(
                     amount.value = it.spend.totalAmount.toString()
                     spendTags.value = it.spend.tag
                     spentAt.value = it.spend.spentAt
-                    spentBy.value =
-                        it.splits.filter { s -> s.lentOrBorrowed == LentOrBorrowed.LENT.toLong() }
-                            .map { split ->
-                                EditSpendDetails(
-                                    split.userId,
-                                    groupMembers.find { gm -> gm.userId == split.userId }!!.userName,
-                                    mutableStateOf(split.value_.toString())
-                                )
-                            }
+                    spentBy.value = it.spend.spentBy
                     splitDetails =
-                        it.splits.filter { s -> s.lentOrBorrowed == LentOrBorrowed.BORROWED.toLong() }
-                            .map { b ->
+                        it.splits.map { b ->
                                 EditSpendTabDetails(
                                     b.userId,
                                     groupMembers.find { gm -> gm.userId == b.userId }!!.userName,
@@ -152,9 +144,7 @@ class DefaultEditSpendsComponent(
     }
 
     override fun onSaveClicked() {
-
-        val lenderList = spentBy.value.filter { f -> f.value.value.isNotBlank() }
-        val borrowerList =
+        val payeeList =
             pageStack.value.items[pageStack.value.selectedIndex].instance?.splitDetails?.value?.filter { f ->
                 f.value.value.isNotBlank()
             }.orEmpty()
@@ -163,19 +153,16 @@ class DefaultEditSpendsComponent(
 
         isValid = spendName.value.isNotBlank() &&
                 (amount.value.toDoubleOrNull() ?: 0f) != 0f &&
-                lenderList.isNotEmpty() &&
-                lenderList.sumOf {
-                    it.value.value.toDoubleOrNull() ?: 0.0
-                } == amount.value.toDoubleOrNull() &&
+                spentBy.value.isNotBlank() &&
                 spentAt.value != 0L &&
                 when (splitType) {
                     SplitType.EQUAL -> {
-                        borrowerList.isNotEmpty()
+                        payeeList.isNotEmpty()
                     }
 
                     SplitType.AMOUNT -> {
                         var total = 0.0
-                        borrowerList.forEach {
+                        payeeList.forEach {
                             total = total + (it.value.value.toDoubleOrNull() ?: 0.0)
                         }
                         total == (amount.value.toDoubleOrNull() ?: 0f)
@@ -183,7 +170,7 @@ class DefaultEditSpendsComponent(
 
                     SplitType.SHARE -> {
                         var total = 0.0
-                        borrowerList.forEach {
+                        payeeList.forEach {
                             total = total + (it.value.value.toDoubleOrNull() ?: 0.0)
                         }
                         total > 0.0
@@ -191,7 +178,7 @@ class DefaultEditSpendsComponent(
 
                     SplitType.RATIO -> {
                         var total = 0.0
-                        borrowerList.forEach {
+                        payeeList.forEach {
                             total = total + (it.value.value.toDoubleOrNull() ?: 0.0)
                         }
                         total == 1.0
@@ -210,6 +197,7 @@ class DefaultEditSpendsComponent(
         //TODO toast
             return
 
+        //TODO Group settle entry needs to be changed
         componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
             if (spendId == null) {
                 RepositoryImpl().saveSpend(
@@ -217,24 +205,37 @@ class DefaultEditSpendsComponent(
                     amount.value,
                     spendTags.value,
                     groupId,
-                    spentAt.value
+                    spentAt.value,
+                    spentBy.value
                 ).collect { id ->
                     if (id.isNotBlank())
                         RepositoryImpl().saveSpendSplits(
-                            lenderList,
-                            borrowerList,
+                            payeeList,
                             id,
                             groupId,
                             splitType,
                         ).collect {
-                            if (it)
+                            if (it) {
+                                checkGroupSettles(groupId).collect {
+                                }
                                 withContext(Dispatchers.Main) {
                                     onSaved()
                                 }
+                            }
                         }
                 }
             } else {
-                if (spend!!.name != spendName.value || spend!!.totalAmount != amount.value.toDoubleOrNull() || spend!!.tag != spendTags.value || spend!!.spentAt != spentAt.value)
+
+                var isDifferent = false
+                if (!isDifferent)
+                    spendSplit!!.forEach { b ->
+                        if (!isDifferent) {
+                            val new = payeeList.find { it.userId == b.userId }
+                            isDifferent =
+                                isDifferent || new == null || b.value_ != new.value.value.toDoubleOrNull() || b.splitType != splitType.toLong()
+                        }
+                    }
+                if (isDifferent || spend!!.name != spendName.value || spend!!.totalAmount != amount.value.toDoubleOrNull() || spend!!.tag != spendTags.value || spend!!.spentAt != spentAt.value || spend!!.spentBy != spentBy.value)
                     RepositoryImpl().updateSpend(
                         spend!!.copy(
                             name = spendName.value,
@@ -242,44 +243,24 @@ class DefaultEditSpendsComponent(
                             tag = spendTags.value,
                             spentAt = spentAt.value,
                             updatedAt = Clock.System.now().epochSeconds,
-                            updatedBy = DataStore.settings.get<String>("id")!!
+                            updatedBy = currentUser
                         )
                     ).collect {
                     }
 
-                val oldLenders =
-                    spendSplit!!.filter { it.lentOrBorrowed == LentOrBorrowed.LENT.toLong() }
-                val oldBorrowers =
-                    spendSplit!!.filter { it.lentOrBorrowed == LentOrBorrowed.BORROWED.toLong() }
-                var isDifferent = false
-                oldLenders.forEach { l ->
-                    if (!isDifferent) {
-                        val new = lenderList.find { it.userId == l.userId }
-                        isDifferent =
-                            isDifferent || new == null || l.value_ != new.value.value.toDoubleOrNull()
-                    }
-                }
-
-                if (!isDifferent)
-                    oldBorrowers.forEach { b ->
-                        if (!isDifferent) {
-                            val new = borrowerList.find { it.userId == b.userId }
-                            isDifferent =
-                                isDifferent || new == null || b.value_ != new.value.value.toDoubleOrNull() || b.splitType != splitType.toLong()
-                        }
-                    }
-
                 if (isDifferent) {
                     RepositoryImpl().updateSpendSplits(
-                        lenderList,
-                        borrowerList,
+                        payeeList,
                         splitType,
                         spend!!
                     ).collect {
-                        if (it)
+                        if (it) {
+                            checkGroupSettles(groupId).collect {
+                            }
                             withContext(Dispatchers.Main) {
                                 onSaved()
                             }
+                        }
                     }
                 }
             }

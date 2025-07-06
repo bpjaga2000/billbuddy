@@ -12,6 +12,7 @@ import utils.DispatcherUtils.componentCoroutineScope
 import utils.calculateOwes
 
 interface SpendDetailsComponent {
+    val spenderOwes: MutableState<Double>
     var spendDetails: MutableState<SpendWithSplit?>
     val userNames: MutableState<Map<String, String>>
     fun onDeleteClicked()
@@ -25,6 +26,7 @@ class DefaultSpendDetailsComponent(
     private val onDeleteClicked: () -> Unit,
     private val onEditClicked: (spendId: String) -> Unit
 ) : SpendDetailsComponent, ComponentContext by componentContext {
+    override val spenderOwes = mutableStateOf(0.0)
     override var spendDetails = mutableStateOf<SpendWithSplit?>(null)
     override val userNames = mutableStateOf(mapOf<String, String>())
 
@@ -32,6 +34,7 @@ class DefaultSpendDetailsComponent(
         componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
             RepositoryImpl().getSpendAndSplitWithSpendId(spendId).collect { spend ->
                 spendDetails.value = spend
+                spenderOwes.value = spend.calculateOwes(spend.spend.spentBy)
                 RepositoryImpl().getUserNameFromId(spend.spend.createdBy).collect {
                     userNames.value = userNames.value.plus(Pair(spend.spend.createdBy, it))
                 }

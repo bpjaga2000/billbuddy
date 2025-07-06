@@ -13,17 +13,19 @@ class SyncServiceImpl(
         private val groupRepository: GroupRepository,
         private val groupMemberRepository: GroupMemberRepository,
         private val spendRepository: SpendRepository,
-        private val spendSplitRepository: SpendSplitRepository
+        private val spendSplitRepository: SpendSplitRepository,
+        private val groupSettlesRepository: GroupSettlesRepository
 ) : SyncService {
     override fun fetchAllData(id: String): SyncDto {
         val friendDetails = userRepository.findAllById(groupMemberRepository.fetchUserFriendIds(id)).map { it.mapToProfileDto() }
                 .plus(userRepository.findById(id).get().mapToProfileDto())
         val groups = groupRepository.findAllById(groupMemberRepository.findAllByUserId(id).map { it.groupId }).map { it.mapToGroupSyncResponseDto() }
         val groupMembers = groupMemberRepository.findAllByGroupId(groups.map { it.id }).map { it.mapToGroupMembersDto() }
+        val groupSettles = groupSettlesRepository.findAllByGroupId(groups.map { it.id }).map { it.mapToGroupSettlesDto() }
         val spends = spendRepository.findAllByGroupId(groups.map { it.id }).map { it.mapToSpendDto() }
         val spendSplits = spendSplitRepository.findAllBySpendId(spends.map { it.id }).map { it.mapToSpendSplitDto() }
 
-        return SyncDto(friendDetails, groups, groupMembers, spends, spendSplits)
+        return SyncDto(friendDetails, groups, groupMembers, spends, spendSplits, groupSettles)
 
     }
 
@@ -35,8 +37,9 @@ class SyncServiceImpl(
         val groupMembers = groupMemberRepository.findAllUpdatedRecordsByGroupIds(timeInSecs, groups.map { it.id }).map { it.mapToGroupMembersDto() }
         val spends = spendRepository.findAllUpdatedRecordsByGroupIds(timeInSecs, groups.map { it.id }).map { it.mapToSpendDto() }
         val spendSplits = spendSplitRepository.findAllUpdatedRecordsBySpendId(timeInSecs, spends.map { it.id }).map { it.mapToSpendSplitDto() }
+        val groupSettles = groupSettlesRepository.findAllUpdatedRecordsByGroupId(timeInSecs, groups.map { it.id }).map { it.mapToGroupSettlesDto() }
 
-        return SyncDto(friendDetails, groups, groupMembers, spends, spendSplits)
+        return SyncDto(friendDetails, groups, groupMembers, spends, spendSplits, groupSettles)
     }
 
     override fun uploadData(id: String, upSyncDto: UpSyncDto): String {
@@ -56,6 +59,13 @@ class SyncServiceImpl(
                     }
             val spendSplitsDataToUpdate = spendSplit.filterNot { spendSplitsFromRepositoryToUpdate.find { repoSpends -> repoSpends.id == it.id } == null }
             spendSplitRepository.saveAll(spendSplitsDataToUpdate.map { it.mapToSpendSplitEntity() })
+
+            val groupSettlesFromRepositoryToUpdate = groupSettlesRepository.findAllById(groupSettles.map { it.id })
+                    .filter {
+                        it.updatedAtFrontend < (groupSettles.find { user -> user.id == it.id }?.updatedAtFrontend ?: 0)
+                    }
+            val groupSettlesDataToUpdate = groupSettles.filterNot { groupSettlesFromRepositoryToUpdate.find { repoSpends -> repoSpends.id == it.id } == null }
+            groupSettlesRepository.saveAll(groupSettlesDataToUpdate.map { it.mapToGroupSettleEntity() })
 
         }
 

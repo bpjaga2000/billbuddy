@@ -11,7 +11,6 @@ import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.push
 import com.arkivanov.decompose.router.stack.replaceAll
 import com.arkivanov.decompose.value.Value
-import data.model.Balance
 import dev.bpj4.billbuddy.tableandmigrations.Users
 import kotlinx.serialization.Serializable
 import presentation.addfriends.AddFriendsComponent
@@ -119,9 +118,18 @@ class DefaultBottomNavigationComponent(
                 { navigation.push(Config.GroupSpends(it)) },
                 {
                     navigation.push(Config.CreateGroup)
-                }) {
-                onLogout()
-            }
+                },
+                { onLogout() },
+                { payerId, payeeId ->
+                    navigation.push(
+                        Config.SettleUp(
+                            null,
+                            payerId,
+                            payeeId
+                        )
+                    )
+                }
+            )
         )
 
         Config.Profile -> Profile(
@@ -139,8 +147,7 @@ class DefaultBottomNavigationComponent(
                 { navigation.push(Config.SpendDetails(config.groupId, it)) },
                 { navigation.push(Config.EditSpends(config.groupId)) },
                 { navigation.push(Config.GroupSettings(it)) },
-                { navigation.push(Config.SettleUp) },
-                { navigation.push(Config.Balances) },
+                { navigation.push(Config.Balances(config.groupId)) },
             )
         )
 
@@ -169,11 +176,19 @@ class DefaultBottomNavigationComponent(
             ) { navigation.push(Config.EditSpends(config.groupId, config.spendId)) }
         )
 
-        Config.Balances -> Balances(
+        is Config.Balances -> Balances(
             DefaultBalancesComponent(
                 componentContext.childContext("balances"),
-                ""
-            )
+                config.groupId
+            ) { groupId, payerId, payeeId ->
+                navigation.push(
+                    Config.SettleUp(
+                        config.groupId,
+                        payerId,
+                        payeeId
+                    )
+                )
+            }
         )
 
         Config.Totals -> Totals(
@@ -183,12 +198,12 @@ class DefaultBottomNavigationComponent(
             )
         )
 
-        Config.SettleUp -> SettleUp(
+        is Config.SettleUp -> SettleUp(
             DefaultSettleUpComponent(
                 componentContext.childContext("settleUp"),
-                "",
-                Balance("", "", "", ""),
-                Balance("", "", "", "")
+                config.groupId,
+                config.payerId,
+                config.payeeId
             ) {
                 navigation.pop()
             }
@@ -250,10 +265,11 @@ class DefaultBottomNavigationComponent(
         data object Totals : Config()
 
         @Serializable
-        data object Balances : Config()
+        data class Balances(val groupId: String) : Config()
 
         @Serializable
-        data object SettleUp : Config()
+        data class SettleUp(val groupId: String?, val payerId: String, val payeeId: String) :
+            Config()
 
         @Serializable
         data class Search(val existingMemberIds: String, val groupId: String) : Config()

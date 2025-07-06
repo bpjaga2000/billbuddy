@@ -6,3 +6,13 @@ INSERT OR REPLACE INTO Groups VALUES (?,?,?,?,?,?,?,?,?,?);
 
 getGroupById:
 SELECT * FROM Groups WHERE id = ?;
+
+getGroupsWithPendingBalances:
+SELECT DISTINCT(Groups.id) FROM Groups
+    JOIN
+    (SELECT Spends.* FROM Spends
+        LEFT JOIN (SELECT *, max(settledAt) AS msa FROM GroupSettles WHERE deletedAt ISNULL) AS GroupSettles
+        ON GroupSettles.groupId = Spends.id AND Spends.updatedAt > GroupSettles.settledAt WHERE Spends.spentBy IN :users AND deletedBy ISNULL
+    ) AS Spends ON Spends.groupId = Groups.id
+    JOIN (SELECT * FROM SpendSplits WHERE SpendSplits.userId IN :users AND deletedBy ISNULL) AS SpendSplits
+    ON Spends.id = SpendSplits.spendId;

@@ -4,15 +4,12 @@ import app.cash.sqldelight.EnumColumnAdapter
 import app.cash.sqldelight.adapter.primitive.IntColumnAdapter
 import com.russhwolf.settings.get
 import com.russhwolf.settings.set
-import constants.LentOrBorrowed
 import constants.SplitType
 import constants.UserRoles
 import data.GroupTags
 import data.Repository
 import data.SpendTags
 import data.SyncStatus
-import data.model.Balance
-import data.model.EditSpendDetails
 import data.model.EditSpendTabDetails
 import data.model.GroupMember
 import data.model.SpendWithSplit
@@ -28,10 +25,12 @@ import data.remote.ApiClient
 import data.remote.ApiResult
 import dev.bpj4.billbuddy.queries.GroupMemberQueriesQueries
 import dev.bpj4.billbuddy.queries.GroupQueriesQueries
+import dev.bpj4.billbuddy.queries.GroupSettleQueriesQueries
 import dev.bpj4.billbuddy.queries.MiscQueriesQueries
 import dev.bpj4.billbuddy.queries.SpendQueriesQueries
 import dev.bpj4.billbuddy.queries.SpendSplitQueriesQueries
 import dev.bpj4.billbuddy.queries.UserQueriesQueries
+import dev.bpj4.billbuddy.tableandmigrations.GroupSettles
 import dev.bpj4.billbuddy.tableandmigrations.Groups
 import dev.bpj4.billbuddy.tableandmigrations.SpendSplits
 import dev.bpj4.billbuddy.tableandmigrations.Spends
@@ -50,6 +49,7 @@ import io.voxkit.kotlin.nanoid.NanoId
 import kotlinx.coroutines.flow.flow
 import utils.DataStore
 import utils.getSqlDriver
+import kotlin.math.absoluteValue
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -174,6 +174,7 @@ class RepositoryImpl : Repository {
                         it.tag,
                         it.groupId,
                         it.spentAt,
+                        it.spentBy,
                         it.createdBy,
                         it.updatedBy,
                         it.deletedBy,
@@ -192,12 +193,26 @@ class RepositoryImpl : Repository {
                         it.id,
                         it.userId,
                         it.spendId,
-                        it.lentOrBorrowed.toLong(),
                         it.splitType.toLong(),
                         it.value,
                         it.createdBy,
                         it.updatedBy,
                         it.deletedBy,
+                        it.createdAtFrontend,
+                        it.updatedAtFrontend,
+                        it.deletedAtFrontend,
+                        SyncStatus.SYNCED.value
+                    )
+                }
+                groupSettles.forEach {
+                    GroupSettleQueriesQueries(
+                        db, GroupSettles.Adapter(
+                            IntColumnAdapter
+                        )
+                    ).insertGroupSettles(
+                        it.id,
+                        it.groupId,
+                        it.settledAt,
                         it.createdAtFrontend,
                         it.updatedAtFrontend,
                         it.deletedAtFrontend,
@@ -212,7 +227,7 @@ class RepositoryImpl : Repository {
         }
     }
 
-    override suspend fun getGroups() = flow {
+    override suspend fun getAllGroups() = flow {
         emit(
             GroupQueriesQueries(
                 db,
@@ -229,10 +244,6 @@ class RepositoryImpl : Repository {
                 Groups.Adapter(EnumColumnAdapter())
             ).getGroupById(id).executeAsOne()
         )
-    }
-
-    override suspend fun getFriendBalances() = flow<List<Balance>> {
-        emit(listOf())
     }
 
     override suspend fun createGroup(groupName: String, groupTag: GroupTags) =
@@ -583,7 +594,8 @@ class RepositoryImpl : Repository {
         amount: String,
         spendTags: SpendTags,
         groupId: String,
-        spentAt: Long
+        spentAt: Long,
+        spentBy: String
     ) = flow {
         emit("")
         val spendId = NanoId.generate()
@@ -598,6 +610,7 @@ class RepositoryImpl : Repository {
             spendTags,
             groupId,
             spentAt,
+            spentBy,
             currentUserId,
             currentUserId,
             null,
@@ -610,8 +623,7 @@ class RepositoryImpl : Repository {
     }
 
     fun saveSpendSplits(
-        lends: List<EditSpendDetails>,
-        borrows: List<EditSpendTabDetails>,
+        split: List<EditSpendTabDetails>,
         spendId: String,
         groupId: String,
         splitType: Int
@@ -628,29 +640,11 @@ class RepositoryImpl : Repository {
                     Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
                 ).removeSpend(groupId)
             }
-            lends.forEach {
+            split.forEach {
                 spendSplitTable.insertSpendSplits(
                     NanoId.generate(),
                     it.userId,
                     spendId,
-                    LentOrBorrowed.LENT.toLong(),
-                    SplitType.AMOUNT.toLong(),
-                    it.value.value.toDouble(),
-                    currentUserId,
-                    currentUserId,
-                    null,
-                    Clock.System.now().epochSeconds,
-                    Clock.System.now().epochSeconds,
-                    null,
-                    SyncStatus.LOCAL.value
-                )
-            }
-            borrows.forEach {
-                spendSplitTable.insertSpendSplits(
-                    NanoId.generate(),
-                    it.userId,
-                    spendId,
-                    LentOrBorrowed.BORROWED.toLong(),
                     splitType.toLong(),
                     it.value.value.toDouble(),
                     currentUserId,
@@ -681,6 +675,7 @@ class RepositoryImpl : Repository {
             spend.tag,
             spend.groupId,
             spend.spentAt,
+            spend.spentBy,
             spend.createdBy,
             spend.updatedBy,
             spend.deletedBy,
@@ -693,8 +688,7 @@ class RepositoryImpl : Repository {
     }
 
     override suspend fun updateSpendSplits(
-        lends: List<EditSpendDetails>,
-        borrows: List<EditSpendTabDetails>,
+        splits: List<EditSpendTabDetails>,
         splitType: Int,
         spend: Spends
     ) = flow {//TODO
@@ -716,6 +710,7 @@ class RepositoryImpl : Repository {
                     spend.tag,
                     spend.groupId,
                     spend.spentAt,
+                    spend.spentBy,
                     spend.createdBy,
                     spend.updatedBy,
                     spend.deletedBy,
@@ -731,29 +726,11 @@ class RepositoryImpl : Repository {
                 SyncStatus.LOCAL.value,
                 spend.id
             )
-            lends.forEach {
+            splits.forEach {
                 spendSplitTable.insertSpendSplits(
                     NanoId.generate(),
                     it.userId,
                     spend.id,
-                    LentOrBorrowed.LENT.toLong(),
-                    SplitType.AMOUNT.toLong(),
-                    it.value.value.toDouble(),
-                    currentUserId,
-                    currentUserId,
-                    null,
-                    Clock.System.now().epochSeconds,
-                    Clock.System.now().epochSeconds,
-                    null,
-                    SyncStatus.LOCAL.value
-                )
-            }
-            borrows.forEach {
-                spendSplitTable.insertSpendSplits(
-                    NanoId.generate(),
-                    it.userId,
-                    spend.id,
-                    LentOrBorrowed.BORROWED.toLong(),
                     splitType.toLong(),
                     it.value.value.toDouble(),
                     currentUserId,
@@ -769,5 +746,104 @@ class RepositoryImpl : Repository {
         emit(true)
     }
 
+    override fun getSpendsAfterLastSettle(groupId: String) = flow {
+        val lastSettle = GroupSettleQueriesQueries(db, GroupSettles.Adapter(IntColumnAdapter))
+            .getLastSettleForGroup(groupId).executeAsOneOrNull()?.max ?: 0L
+
+        val list = arrayListOf<SpendWithSplit>()
+        SpendQueriesQueries(
+            db,
+            Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
+        ).getSpendsAfterLastSettle(groupId, lastSettle).executeAsList().forEach {
+            list.add(
+                SpendWithSplit(
+                    it,
+                    SpendSplitQueriesQueries(
+                        db,
+                        SpendSplits.Adapter(IntColumnAdapter)
+                    ).getSplitForSpend(it.id).executeAsList()
+                )
+            )
+        }
+        emit(list)
+    }
+
+    override suspend fun getAllUsers() = flow {
+        emit(UserQueriesQueries(db).selectAll().executeAsList())
+    }
+
+    override suspend fun getGroupsWithPendingBalances(payerId: String, payeeId: String) = flow {
+        emit(
+            GroupQueriesQueries(
+                db,
+                Groups.Adapter(EnumColumnAdapter())
+            ).getGroupsWithPendingBalances(listOf(payerId, payeeId))
+                .executeAsList()
+        )
+    }
+
+    override suspend fun settleUp(
+        payerId: String,
+        payeeId: String,
+        groupWiseAmount: HashMap<String, Double>
+    ) = flow {
+        emit(false)
+        groupWiseAmount.forEach { (k, v) ->
+            val now = Clock.System.now().epochSeconds
+            val spendId = NanoId.generate()
+            SpendQueriesQueries(
+                db,
+                Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
+            ).insertSpends(
+                spendId,
+                "Settle Up",
+                v.absoluteValue,
+                true,
+                SpendTags.OTHER,
+                k,
+                now,
+                if (v < 0) payerId else payeeId,
+                currentUserId,
+                currentUserId,
+                null,
+                now,
+                now,
+                null,
+                SyncStatus.LOCAL.value
+            ).await()
+            SpendSplitQueriesQueries(
+                db,
+                SpendSplits.Adapter(IntColumnAdapter)
+            ).insertSpendSplits(
+                NanoId.generate(),
+                if (v < 0) payeeId else payerId,
+                spendId,
+                SplitType.AMOUNT.toLong(),
+                v.absoluteValue,
+                currentUserId,
+                currentUserId,
+                null,
+                now,
+                now,
+                null,
+                SyncStatus.SYNCED.value
+            ).await()
+        }
+        emit(true)
+    }
+
+    override suspend fun saveGroupSettle(groupId: String) = flow {
+        GroupSettleQueriesQueries(db, GroupSettles.Adapter(IntColumnAdapter))
+            .insertGroupSettles(
+                NanoId.generate(),
+                groupId,
+                Clock.System.now().epochSeconds,
+                Clock.System.now().epochSeconds,
+                Clock.System.now().epochSeconds,
+                null,
+                SyncStatus.LOCAL.value
+            )
+        emit(true)
+    }
 
 }

@@ -1,5 +1,5 @@
 insertSpendSplits:
-INSERT OR REPLACE INTO SpendSplits VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?);
+INSERT OR REPLACE INTO SpendSplits VALUES(?,?,?,?,?,?,?,?,?,?,?,?);
 
 getSplitForSpend:
 SELECT * FROM SpendSplits WHERE spendId = ? AND deletedBy ISNULL;

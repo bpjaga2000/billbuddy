@@ -1,14 +1,9 @@
 package dev.bpj4.billbuddy.dto
 
-data class SpendSplitDto(
+data class GroupSettlesDto(
         val id: String,
-        val userId: String,
-        val spendId: String,
-        val splitType: Int,
-        val value: Double,
-        val createdBy: String,
-        val updatedBy: String,
-        val deletedBy: String?,
+        val groupId: String,
+        val settledAt: Long,
         val createdAtFrontend: Long,
         val updatedAtFrontend: Long,
         val deletedAtFrontend: Long?,

@@ -1,5 +1,6 @@
 package presentation.home
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,33 +10,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import data.model.Balance
-import dev.bpj4.billbuddy.tableandmigrations.Groups
 import presentation.common.FriendListItem
 import presentation.common.GroupListItem
 
 @Composable
 fun HomeScreen(component: HomeComponent, modifier: Modifier = Modifier) {
-    val groups = remember { mutableStateListOf<Groups>() }
-    val friendBalances = remember { mutableStateListOf<Balance>() }
+    val groups by remember { component.groups }
+    val friendBalances by remember { component.friendBalances }
 
-    component.groups.subscribe {
-        groups.clear()
-        groups.addAll(it)
-    }
-    component.friendBalances.subscribe {
-        friendBalances.clear()
-        friendBalances.addAll(it)
-    }
     Box {
         Column(
             modifier = modifier.then(Modifier.fillMaxSize().padding(horizontal = 16.dp)),
@@ -48,10 +41,8 @@ fun HomeScreen(component: HomeComponent, modifier: Modifier = Modifier) {
                 verticalArrangement = Arrangement.SpaceAround,
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
-                repeat(friendBalances.size) {
-                    item {
-                        FriendListItem(friendBalances[it])
-                    }
+                items(friendBalances.size) {
+                    FriendListItem(friendBalances[it], {component.onFriendBalanceClicked(friendBalances[it].userId)})
                 }
             }
             Text("Groups")
@@ -59,7 +50,7 @@ fun HomeScreen(component: HomeComponent, modifier: Modifier = Modifier) {
                 repeat(groups.size) {
                     item {
                         groups[it].let { group ->
-                            GroupListItem(group, { component.onGroupClick(group.id) })
+                            GroupListItem(group, { component.onGroupClick(group.group.id) })
                         }
                     }
                 }

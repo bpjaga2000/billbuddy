@@ -1,10 +1,5 @@
 package dev.bpj4.billbuddy.entity
 
-object LentOrBorrowed {
-    const val LENT = 1
-    const val BORROWED = 2
-}
-
 object UserRoles {
     const val PRO = "PRO"
     const val LIMITED = "LIMITED"

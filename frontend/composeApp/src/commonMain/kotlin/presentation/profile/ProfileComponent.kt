@@ -68,7 +68,7 @@ class DefaultProfileComponent(
     }
 
     override fun onLogoutClick() {
-        componentContext.componentCoroutineScope().launch {
+        componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
             RepositoryImpl().logout().collect {
                 when (it) {
                     is ApiResult.Success -> {

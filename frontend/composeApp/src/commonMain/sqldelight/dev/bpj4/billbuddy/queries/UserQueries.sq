@@ -1,5 +1,5 @@
 selectAll:
-SELECT * FROM Users;
+SELECT * FROM Users ORDER BY createdAt;
 
 selectCurrentUser:
 SELECT * FROM Users WHERE id = :id;
@@ -11,7 +11,7 @@ getUserFromId:
 SELECT * FROM Users WHERE id = ?;
 
 getMemberDetailsOfGroup:
-SELECT GroupMembers.id AS groupMemberId, Users.id, Users.name FROM Users JOIN GroupMembers ON Users.id = GroupMembers.userId WHERE groupId = ? AND deletedBy ISNULL;
+SELECT GroupMembers.id AS groupMemberId, Users.id, Users.name FROM Users JOIN GroupMembers ON Users.id = GroupMembers.userId WHERE groupId = ? AND deletedBy ISNULL ORDER BY Users.createdAt;
 
 searchUsers:
 SELECT * FROM Users WHERE name LIKE :searchTag OR email LIKE :searchTag;

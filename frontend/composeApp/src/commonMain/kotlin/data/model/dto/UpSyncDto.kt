@@ -5,5 +5,6 @@ import data.model.dto.SpendSplitDto
 
 data class UpSyncDto(
     val spends: List<SpendDto>,
-    val spendSplit: List<SpendSplitDto>
+    val spendSplit: List<SpendSplitDto>,
+    val groupSettles: List<GroupSettlesDto>
 )

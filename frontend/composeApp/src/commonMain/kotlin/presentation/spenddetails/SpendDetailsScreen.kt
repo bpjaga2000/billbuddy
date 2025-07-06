@@ -7,7 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import constants.LentOrBorrowed
+import utils.calculateOwes
 
 @Composable
 fun SpendDetailsScreen(
@@ -15,28 +15,24 @@ fun SpendDetailsScreen(
     modifier: Modifier = Modifier,
 ) {
     val spendDetails by remember { mutableStateOf(component.spendDetails) }
+    val spenderOwes by remember { component.spenderOwes }
     Column(modifier) {
         spendDetails.value?.let { (spend, splits, _) ->
             Text(spend.name)
             Text(spend.totalAmount.toString())
             Text("Added by ${component.userNames.value[spend.createdBy]} on 123")
-            val borrowers = splits.filter { it.lentOrBorrowed.toInt() == LentOrBorrowed.BORROWED }
-            val lenders = splits.filter { it.lentOrBorrowed.toInt() == LentOrBorrowed.LENT }
-            //TODO merge
-            repeat(lenders.size) {
-                Text("${component.userNames.value[lenders[it].userId]} paid ${lenders[it].value_}")//${if (spenderOwes != 0.0) " and owes $spenderOwes" else ""}")
-            }
-            repeat(borrowers.size) {
-//                if (splits[it].userId != spend.spentBy)
-                Text(
-                    "${component.userNames.value[borrowers[it].userId]} " +
-                            "owes " +
-                            "${
-                                component.calculateOwes(
-                                    borrowers[it].userId
-                                )
-                            }"
-                )
+            Text("${component.userNames.value[spend.spentBy]} paid ${spend.totalAmount} ${if (spenderOwes > 0.0) " and owes $spenderOwes" else ""}")
+            repeat(splits.size) {
+                if (splits[it].userId != spend.spentBy)
+                    Text(
+                        "${component.userNames.value[splits[it].userId]} " +
+                                "owes " +
+                                "${
+                                    component.calculateOwes(
+                                        splits[it].userId
+                                    )
+                                }"
+                    )
             }
         }
     }

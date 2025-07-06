@@ -17,11 +17,11 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import dev.bpj4.billbuddy.tableandmigrations.Groups
+import data.model.GroupWithOwes
+import kotlin.math.absoluteValue
 
 @Composable
-fun GroupListItem(group: Groups, onGroupClicked: () -> Unit, modifier: Modifier = Modifier) {
-    val balance by remember { mutableIntStateOf(1) }
+fun GroupListItem(group: GroupWithOwes, onGroupClicked: () -> Unit, modifier: Modifier = Modifier) {
     Card(
         shape = RoundedCornerShape(20.dp),
         modifier = modifier.then(
@@ -31,12 +31,12 @@ fun GroupListItem(group: Groups, onGroupClicked: () -> Unit, modifier: Modifier 
             modifier = Modifier.padding(20.dp).fillMaxWidth()
         ) {
             Column {
-                Text(group.name)
+                Text(group.group.name)
                 Spacer(modifier = Modifier.height(10.dp).fillMaxWidth())
-                if (balance > 0)
-                    Text("You owe $100")
-                else if (balance < 0)
-                    Text("You are owed $100")
+                if (group.owe > 0)
+                    Text("You owe ${group.owe}")
+                else if (group.owe < 0)
+                    Text("You are owed ${group.owe.absoluteValue}")
                 else
                     Text("Settled")
                 Spacer(modifier = Modifier.height(10.dp).fillMaxWidth())

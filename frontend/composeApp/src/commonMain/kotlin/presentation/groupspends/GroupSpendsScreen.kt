@@ -25,11 +25,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import data.model.SpendWithSplit
 import presentation.common.SpendListItem
+import kotlin.math.absoluteValue
 
 @Composable
 fun GroupSpendsScreen(component: GroupSpendsComponent, modifier: Modifier = Modifier) {
 
     var spends by remember { mutableStateOf(listOf<SpendWithSplit>()) }
+    var totalBalance by remember { component.totalBalance }
     component.spendList.subscribe {
         spends = it
     }
@@ -37,13 +39,15 @@ fun GroupSpendsScreen(component: GroupSpendsComponent, modifier: Modifier = Modi
     Box(modifier = modifier.then(Modifier.fillMaxSize())) {
         Column(modifier = modifier.then(Modifier.padding(horizontal = 16.dp))) {
 
+            if (totalBalance == 0.0)
+                Text("You are all settled")
+            else
+                Text(if (totalBalance > 0.0) "You owe $totalBalance" else "You get ${totalBalance.absoluteValue}")
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Button(onClick = { component.onSettleUpClicked() }) {
-                    Text("Settle Up")
-                }
                 Button(onClick = { component.onBalancesClicked() }) {
                     Text("Balances")
                 }
@@ -55,7 +59,7 @@ fun GroupSpendsScreen(component: GroupSpendsComponent, modifier: Modifier = Modi
                         SpendListItem(
                             spends[it],
                             { component.onGroupSpendClicked(spends[it].spend.id) },
-                            component.groupUsersDetails.value
+                            component.groupUsersDetails.value[spends[it].spend.spentBy]!!
                         )
                     }
                 }

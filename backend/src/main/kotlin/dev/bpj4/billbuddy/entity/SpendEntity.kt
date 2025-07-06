@@ -26,6 +26,9 @@ data class SpendEntity(
         @Column(name = "spent_at")
         var spentAt: Long = 0L,
 
+        @Column(name = "spent_by")
+        var spentBy: String,
+
         @Column(name = "created_by")
         var createdBy: String = "",
 

@@ -11,20 +11,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,7 +37,6 @@ import com.arkivanov.decompose.extensions.compose.pages.ChildPages
 import com.arkivanov.decompose.extensions.compose.pages.PagesScrollAnimation
 import data.SpendTags
 import io.ktor.util.date.GMTDate
-import presentation.common.EditSpendItem
 import presentation.common.TextEdit
 import presentation.editspends.editspendstab.EditSpendsTab
 
@@ -55,15 +51,14 @@ fun EditSpendsScreen(component: EditSpendsComponent, modifier: Modifier = Modifi
     val groupName by remember { component.groupName }
     val spendTags by remember { component.spendTags }
     val spentAt by remember { component.spentAt }
-    var spentBy by remember { mutableStateOf("enter spend details") }
+    var spentBy by remember { component.spentBy }
     val amount = remember { component.amount }
+    val selection by remember { component.selection }
+    val datePickerState = rememberDatePickerState()
     var isSpendTagExpanded by remember { mutableStateOf(false) }
     var isDatePickerVisible by remember { mutableStateOf(false) }
-    val datePickerState = rememberDatePickerState()
-    val bottomSheetState = rememberModalBottomSheetState()
-    var isBottomSheetVisible by remember { mutableStateOf(false) }
+    var isSpendByExpanded by remember { mutableStateOf(false) }
     val types = listOf("Equal", "Amount", "Share", "Ratio", "Difference")
-    val selection by remember { component.selection }
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -107,18 +102,41 @@ fun EditSpendsScreen(component: EditSpendsComponent, modifier: Modifier = Modifi
                 }
             }
         }
-        Text(
-            modifier = Modifier
+        Column(
+            Modifier
                 .width(300.dp)
                 .height(40.dp)
                 .border(
                     BorderStroke(1.dp, Color.Gray),
                     shape = RoundedCornerShape(50.dp)
                 )
-                .clickable { isBottomSheetVisible = true },
-            textAlign = TextAlign.Center,
-            text = spentBy
-        )
+                .clickable { isSpendByExpanded = !isSpendByExpanded },
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                textAlign = TextAlign.Center,
+                text = component.groupMembers.find { it.userId == spentBy }!!.userName
+            )
+            DropdownMenu(
+                isSpendByExpanded,
+                { isSpendByExpanded = false },
+                modifier = Modifier.width(280.dp).align(Alignment.CenterHorizontally)
+            ) {
+                repeat(component.groupMembers.size) {
+                    DropdownMenuItem(
+                        {
+                            Text(component.groupMembers[it].userName)
+                        },
+                        {
+                            component.spentBy.value = component.groupMembers[it].userId
+                            isSpendByExpanded = false
+                        },
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                }
+            }
+        }
 
         Text(
             text = GMTDate(spentAt).toString(),
@@ -162,16 +180,6 @@ fun EditSpendsScreen(component: EditSpendsComponent, modifier: Modifier = Modifi
             scrollAnimation = PagesScrollAnimation.Default
         ) { _, page ->
             EditSpendsTab(page)
-        }
-
-        AnimatedVisibility(isBottomSheetVisible) {
-            ModalBottomSheet({ isBottomSheetVisible = false }, sheetState = bottomSheetState) {
-                LazyColumn {
-                    items(component.spentBy.value.size) {
-                        EditSpendItem(component.spentBy.value[it])
-                    }
-                }
-            }
         }
     }
 

@@ -22,8 +22,7 @@ interface Repository {
     suspend fun register(email: String, password: String): Flow<ApiResult<UserDto>>
     suspend fun sync(userId: String): Flow<ApiResult<SyncDto>>
     suspend fun saveSyncData(data: SyncDto): Flow<Boolean>
-    suspend fun getGroups(): Flow<List<Groups>>
-    suspend fun getFriendBalances(): Flow<List<Balance>>
+    suspend fun getAllGroups(): Flow<List<Groups>>
     suspend fun createGroup(
         groupName: String,
         groupTag: GroupTags
@@ -56,17 +55,30 @@ interface Repository {
         amount: String,
         spendTags: SpendTags,
         groupId: String,
-        spentAt: Long
+        spentAt: Long,
+        spentBy: String
     ): Flow<String>
 
     suspend fun getSpendAndSplitWithSpendId(spendId: String): Flow<SpendWithSplit>
     suspend fun deleteSpend(spendId: String): Flow<Boolean>
     suspend fun updateSpendSplits(
-        lends: List<EditSpendDetails>,
-        borrows: List<EditSpendTabDetails>,
+        splits: List<EditSpendTabDetails>,
         splitType: Int,
         spend: Spends
     ): Flow<Boolean>
 
     suspend fun updateSpend(spend: Spends): Flow<Boolean>
+    fun getSpendsAfterLastSettle(groupId: String): Flow<ArrayList<SpendWithSplit>>
+    suspend fun getAllUsers(): Flow<List<Users>>
+    suspend fun getGroupsWithPendingBalances(
+        payerId: String,
+        payeeId: String
+    ): Flow<List<String>>
+
+    suspend fun saveGroupSettle(groupId: String): Flow<Boolean>
+    suspend fun settleUp(
+        payerId: String,
+        payeeId: String,
+        groupWiseAmount: HashMap<String, Double>
+    ): Flow<Boolean>
 }
