@@ -14,7 +14,8 @@ import kotlinx.coroutines.withContext
 import utils.DataStore
 import utils.DispatcherUtils.componentCoroutineScope
 import utils.calculateOwes
-import utils.checkGroupSettles
+import utils.checkGroupSettlesAndSync
+import kotlin.collections.addAll
 
 interface HomeComponent {
 
@@ -45,60 +46,36 @@ class DefaultHomeComponent(
 
     init {
         componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
-            val groupsList = arrayListOf<GroupWithOwes>()
-            RepositoryImpl().sync(currentUserId).collect { sync ->
-                when (sync) {
+            RepositoryImpl().upSync().collect {upSync ->
+                when(upSync) {
                     is ApiResult.Success -> {
-                        RepositoryImpl().saveSyncData(sync.data).collectLatest { isDone ->
-                            if (isDone) {
+                        RepositoryImpl().sync().collect { sync ->
+                            when (sync) {
+                                is ApiResult.Success -> {
+                                    RepositoryImpl().saveSyncData(sync.data).collectLatest { isDone ->
+                                        if (isDone) {
 //                                    _isLoading.value = false
-                                RepositoryImpl().getAllGroups().collect { g ->
-                                    groupsList.addAll(g.map { GroupWithOwes(it, 0.0) })
-                                    g.forEach {gId ->
-                                        checkGroupSettles(gId.id).collect {
-
+                                            loadData()
                                         }
                                     }
                                 }
+
+                                is ApiResult.Error -> withContext(Dispatchers.Main) {
+//                        _isLoading.value = false
+                                    loadData()
+                                }
+
+                                is ApiResult.Loading -> {}
                             }
                         }
                     }
 
                     is ApiResult.Error -> withContext(Dispatchers.Main) {
 //                        _isLoading.value = false
+                        loadData()
                     }
 
                     is ApiResult.Loading -> {}
-                }
-                val balances = arrayListOf<Balance>()
-                RepositoryImpl().getAllUsers().collect {
-                    balances.addAll(
-                        it.map { user ->
-                            Balance(
-                                null,
-                                user.id,
-                                user.name,
-                                0.0,
-                                null
-                            )
-                        }.filter { f -> f.userId != currentUserId }
-                    )
-                    groupsList.forEach { group ->
-                        RepositoryImpl().getSpendsAfterLastSettle(group.group.id)
-                            .collect { spendWithSplit ->
-                                spendWithSplit.forEach { sp ->
-                                    group.owe = group.owe + sp.calculateOwes(currentUserId)
-                                    balances.forEach { f ->
-                                        if ((sp.spend.spentBy == f.userId && sp.splits.find { it.userId == currentUserId } != null)
-                                            || (sp.spend.spentBy == currentUserId && sp.splits.find { it.userId == f.userId } != null))
-                                            f.amount =
-                                                f.amount + sp.calculateOwes(f.userId)
-                                    }
-                                }
-                            }
-                    }
-                    friendBalances.value = balances.filter { f -> f.amount != 0.0 }
-                    groups.value = groupsList
                 }
             }
         }
@@ -112,15 +89,58 @@ class DefaultHomeComponent(
         onCreateGroupClicked.invoke()
     }
 
+    suspend fun loadData() {
+        val groupsList = arrayListOf<GroupWithOwes>()
+        val balances = arrayListOf<Balance>()
+        RepositoryImpl().getAllGroups().collect { g ->
+            groupsList.addAll(g.map { GroupWithOwes(it, 0.0) })
+            g.forEach { gId ->
+                checkGroupSettlesAndSync(gId.id).collect {
+
+                }
+            }
+        }
+        RepositoryImpl().getAllUsers().collect {
+            balances.addAll(
+                it.map { user ->
+                    Balance(
+                        null,
+                        user.id,
+                        user.name,
+                        0.0,
+                        null
+                    )
+                }.filter { f -> f.userId != currentUserId }
+            )
+            groupsList.forEach { group ->
+                RepositoryImpl().getSpendsAfterLastSettle(group.group.id)
+                    .collect { spendWithSplit ->
+                        spendWithSplit.forEach { sp ->
+                            group.owe = group.owe + sp.calculateOwes(currentUserId)
+                            balances.forEach { f ->
+                                if ((sp.spend.spentBy == f.userId && sp.splits.find { it.userId == currentUserId } != null)
+                                    || (sp.spend.spentBy == currentUserId && sp.splits.find { it.userId == f.userId } != null))
+                                    f.amount =
+                                        f.amount + sp.calculateOwes(f.userId)
+                            }
+                        }
+                    }
+            }
+            friendBalances.value = balances.filter { f -> f.amount != 0.0 }
+            groups.value = groupsList
+        }
+    }
+
     override fun onLogoutClick() {
         componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
             RepositoryImpl().logout().collect {
                 when (it) {
                     is ApiResult.Success -> {
                         withContext(Dispatchers.Main) {
-                            RepositoryImpl().clearDb()
-                            DataStore.settings.clear()
-                            onLogoutClick.invoke()
+                            RepositoryImpl().clearDb().collect {
+                                DataStore.settings.clear()
+                                onLogoutClick.invoke()
+                            }
                         }
                     }
 

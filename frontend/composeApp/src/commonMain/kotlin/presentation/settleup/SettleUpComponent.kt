@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import utils.DispatcherUtils.componentCoroutineScope
 import utils.calculateOwes
-import utils.checkGroupSettles
+import utils.checkGroupSettlesAndSync
 import kotlin.math.absoluteValue
 
 interface SettleUpComponent {
@@ -80,7 +80,7 @@ class DefaultSettleUpComponent(
             ).collect { r ->
                 if (r) {
                     groupWiseAmount.keys.forEach {
-                        checkGroupSettles(it).collect {
+                        checkGroupSettlesAndSync(it).collect {
                         }
                     }
                     withContext(Dispatchers.Main) {

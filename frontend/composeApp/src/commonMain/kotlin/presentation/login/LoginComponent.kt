@@ -60,7 +60,7 @@ class DefaultLoginComponent(
     private fun syncData() {
         _isLoading.value = true
         coroutineScope.launch(Dispatchers.Default) {
-            RepositoryImpl().sync((_userLoginResponse.value as ApiResult.Success<UserDto>).data.id)
+            RepositoryImpl().sync()
                 .collect {
                     when (it) {
                         is ApiResult.Success -> {

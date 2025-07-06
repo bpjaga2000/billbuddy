@@ -19,6 +19,7 @@ import data.model.dto.LoginDto
 import data.model.dto.ProfileDto
 import data.model.dto.ProfileUpdateDto
 import data.model.dto.SyncDto
+import data.model.dto.UpSyncDto
 import data.model.dto.UserDto
 import data.model.dto.UserIdListDto
 import data.remote.ApiClient
@@ -49,6 +50,9 @@ import io.voxkit.kotlin.nanoid.NanoId
 import kotlinx.coroutines.flow.flow
 import utils.DataStore
 import utils.getSqlDriver
+import utils.mapToGroupSettlesDto
+import utils.mapToSpendDto
+import utils.mapToSpendSplitDto
 import kotlin.math.absoluteValue
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -87,7 +91,7 @@ class RepositoryImpl : Repository {
         }
     }
 
-    override suspend fun sync(userId: String) = flow<ApiResult<SyncDto>> {
+    override suspend fun sync() = flow<ApiResult<SyncDto>> {
         emit(ApiResult.loading())
         with(ApiClient.httpClient.get {
             headers {
@@ -95,7 +99,7 @@ class RepositoryImpl : Repository {
             }
             contentType(ContentType.Application.Json)
             url("http", "92.119.126.127", 8090, "api/v1/sync") {
-                parameters.append("id", userId)
+                parameters.append("id", currentUserId)
                 DataStore.settings.get<Long>("lastSyncTime")?.let { lastSyncTime ->
                     parameters.append("lastSyncTime", lastSyncTime.toString())
                 }
@@ -585,8 +589,9 @@ class RepositoryImpl : Repository {
         }
     }
 
-    override suspend fun clearDb() {
-        MiscQueriesQueries(db).clearData()
+    override suspend fun clearDb() = flow{
+        MiscQueriesQueries(db).clearData().await()
+        emit(true)
     }
 
     override suspend fun saveSpend(
@@ -844,6 +849,47 @@ class RepositoryImpl : Repository {
                 SyncStatus.LOCAL.value
             )
         emit(true)
+    }
+
+    override suspend fun upSync() = flow {
+        emit(ApiResult.loading())
+
+        val spends = SpendQueriesQueries(
+            db,
+            Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
+        ).getSpendsToSync(
+            SyncStatus.LOCAL.value
+        ).executeAsList().map { it.mapToSpendDto() }
+
+        val splits = SpendSplitQueriesQueries(
+            db,
+            SpendSplits.Adapter(IntColumnAdapter)
+        ).getSpendSplitsToSync(
+            SyncStatus.LOCAL.value
+        ).executeAsList().map { it.mapToSpendSplitDto() }
+
+        val groupSettles = GroupSettleQueriesQueries(
+            db,
+            GroupSettles.Adapter(IntColumnAdapter)
+        ).getGroupSettlesToSync(
+            SyncStatus.LOCAL.value
+        ).executeAsList().map { it.mapToGroupSettlesDto() }
+
+        with(ApiClient.httpClient.post {
+            headers {
+                append(HttpHeaders.Authorization, "Bearer ${DataStore.settings["token"] ?: " "}")
+            }
+            contentType(ContentType.Application.Json)
+            url("http", "92.119.126.127", 8090, "api/v1/sync") {
+                parameters.append("id", currentUserId)
+            }
+            setBody(UpSyncDto(spends, splits, groupSettles))
+        }) {
+            if (status.value in 200..299) {
+                emit(ApiResult.success(body<String>()))
+            } else
+                emit(ApiResult.error(body() as String?))
+        }
     }
 
 }

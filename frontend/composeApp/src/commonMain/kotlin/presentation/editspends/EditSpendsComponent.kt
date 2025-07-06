@@ -12,10 +12,8 @@ import com.arkivanov.decompose.router.pages.childPages
 import com.arkivanov.decompose.router.pages.select
 import com.arkivanov.decompose.value.Value
 import com.russhwolf.settings.get
-import constants.LentOrBorrowed
 import constants.SplitType
 import data.SpendTags
-import data.model.EditSpendDetails
 import data.model.EditSpendTabDetails
 import data.model.GroupMemberSplit
 import data.repository.RepositoryImpl
@@ -30,7 +28,7 @@ import presentation.editspends.editspendstab.DefaultEditSpendsTabComponent
 import presentation.editspends.editspendstab.EditSpendsTabComponent
 import utils.DataStore
 import utils.DispatcherUtils.componentCoroutineScope
-import utils.checkGroupSettles
+import utils.checkGroupSettlesAndSync
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -216,7 +214,7 @@ class DefaultEditSpendsComponent(
                             splitType,
                         ).collect {
                             if (it) {
-                                checkGroupSettles(groupId).collect {
+                                checkGroupSettlesAndSync(groupId).collect {
                                 }
                                 withContext(Dispatchers.Main) {
                                     onSaved()
@@ -255,7 +253,7 @@ class DefaultEditSpendsComponent(
                         spend!!
                     ).collect {
                         if (it) {
-                            checkGroupSettles(groupId).collect {
+                            checkGroupSettlesAndSync(groupId).collect {
                             }
                             withContext(Dispatchers.Main) {
                                 onSaved()

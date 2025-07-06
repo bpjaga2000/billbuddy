@@ -6,8 +6,6 @@ import jakarta.persistence.*
 
 @Entity
 @Table(name = "spend_splits")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "lent_or_borrowed", discriminatorType = DiscriminatorType.INTEGER)
 open class SpendSplitEntity(
         @Column(name = "user_id")
         open val userId: String = NanoId.generate(),

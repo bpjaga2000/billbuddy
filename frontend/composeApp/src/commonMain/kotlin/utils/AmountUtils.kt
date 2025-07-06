@@ -2,6 +2,7 @@ package utils
 
 import constants.SplitType
 import data.model.SpendWithSplit
+import data.remote.ApiResult
 import data.repository.RepositoryImpl
 import kotlinx.coroutines.flow.flow
 
@@ -51,11 +52,12 @@ fun SpendWithSplit.calculateOwes(userId: String): Double {
     }
 }
 
-suspend fun checkGroupSettles(groupId: String) = flow {
+suspend fun checkGroupSettlesAndSync(groupId: String) = flow {
     RepositoryImpl().getSpendsAfterLastSettle(groupId).collect {
-        if (it.isEmpty())
+        if (it.isEmpty()) {
+            upSync()
             emit(true)
-        else {
+        } else {
             val balanceList = hashMapOf<String, Double>()
             RepositoryImpl().getGroupMemberDetails(groupId).collect {
                 balanceList.putAll(
@@ -74,11 +76,22 @@ suspend fun checkGroupSettles(groupId: String) = flow {
             }
             if (balanceList.values.all { ele -> ele == 0.0 })
                 RepositoryImpl().saveGroupSettle(groupId).collect {
-//                    RepositoryImpl().upSync().collect{} TODO
-                    if (it)
+                    upSync()
+                    if (it) {
                         emit(true)
+                    }
                 }
-            else emit(false)
+            else {
+                upSync()
+                emit(false)
+            }
         }
+    }
+}
+
+suspend fun upSync() {
+    RepositoryImpl().upSync().collect {
+        if (it is ApiResult.Success)
+            RepositoryImpl().sync().collect {  }
     }
 }

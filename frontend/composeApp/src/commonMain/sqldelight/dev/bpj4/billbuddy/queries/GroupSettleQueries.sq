@@ -3,3 +3,6 @@ INSERT OR REPLACE INTO GroupSettles VALUES (?,?,?,?,?,?,?);
 
 getLastSettleForGroup:
 SELECT max(settledAt) FROM GroupSettles WHERE groupId = ? AND deletedAt ISNULL;
+
+getGroupSettlesToSync:
+SELECT * FROM GroupSettles WHERE status = ?;

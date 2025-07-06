@@ -2,7 +2,7 @@ insertSpends:
 INSERT OR REPLACE INTO Spends VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 
 getSpendsForGroup:
-SELECT * FROM Spends WHERE groupId = ? AND deletedBy ISNULL ORDER BY spentAt DESC ;
+SELECT * FROM Spends WHERE groupId = ? AND deletedBy ISNULL ORDER BY spentAt DESC;
 
 getSpendWithId:
 SELECT * FROM Spends WHERE id = ?;
@@ -14,4 +14,7 @@ deleteSpend:
 UPDATE Spends SET deletedBy = ?, deletedAt = ?, status = ? WHERE id = ?;
 
 getSpendsAfterLastSettle:
-SELECT * FROM Spends WHERE groupId = ? AND updatedAt > ? AND deletedBy ISNULL ORDER BY spentAt DESC ;
+SELECT * FROM Spends WHERE groupId = ? AND updatedAt > ? AND deletedBy ISNULL ORDER BY spentAt DESC;
+
+getSpendsToSync:
+SELECT * FROM Spends WHERE status = ?;

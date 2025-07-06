@@ -6,3 +6,6 @@ SELECT * FROM SpendSplits WHERE spendId = ? AND deletedBy ISNULL;
 
 deleteSpendSplit:
 UPDATE SpendSplits SET deletedBy = ?, deletedAt = ?, status = ? WHERE spendId = ?;
+
+getSpendSplitsToSync:
+SELECT * FROM SpendSplits WHERE status = ?;

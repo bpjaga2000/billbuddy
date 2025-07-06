@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.Flow
 interface Repository {
     suspend fun logIn(email: String, password: String): Flow<ApiResult<UserDto>>
     suspend fun register(email: String, password: String): Flow<ApiResult<UserDto>>
-    suspend fun sync(userId: String): Flow<ApiResult<SyncDto>>
+    suspend fun sync(): Flow<ApiResult<SyncDto>>
     suspend fun saveSyncData(data: SyncDto): Flow<Boolean>
     suspend fun getAllGroups(): Flow<List<Groups>>
     suspend fun createGroup(
@@ -49,7 +49,7 @@ interface Repository {
     suspend fun getCurrentUser(): Flow<Users>
     suspend fun updateProfile(profileUpdateDto: ProfileUpdateDto): Flow<ApiResult<ProfileDto>>
     suspend fun logout(): Flow<ApiResult<Unit>>
-    suspend fun clearDb()
+    suspend fun clearDb(): Flow<Boolean>
     suspend fun saveSpend(
         spendName: String,
         amount: String,
@@ -81,4 +81,6 @@ interface Repository {
         payeeId: String,
         groupWiseAmount: HashMap<String, Double>
     ): Flow<Boolean>
+
+    suspend fun upSync(): Flow<ApiResult<String>>
 }
