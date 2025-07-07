@@ -21,7 +21,6 @@ import dev.bpj4.billbuddy.tableandmigrations.SpendSplits
 import dev.bpj4.billbuddy.tableandmigrations.Spends
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import presentation.editspends.editspendstab.DefaultEditSpendsTabComponent
@@ -73,7 +72,7 @@ class DefaultEditSpendsComponent(
     private var currentUser = DataStore.settings.get<String>("id")!!
 
     init {
-        runBlocking(Dispatchers.Default) {
+        componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
             RepositoryImpl().getGroupById(groupId).collect {
                 groupName.value = it.name
             }
@@ -100,13 +99,13 @@ class DefaultEditSpendsComponent(
                     spentBy.value = it.spend.spentBy
                     splitDetails =
                         it.splits.map { b ->
-                                EditSpendTabDetails(
-                                    b.userId,
-                                    groupMembers.find { gm -> gm.userId == b.userId }!!.userName,
-                                    b.splitType.toInt(),
-                                    mutableStateOf(b.value_.toString())
-                                )
-                            }
+                            EditSpendTabDetails(
+                                b.userId,
+                                groupMembers.find { gm -> gm.userId == b.userId }!!.userName,
+                                b.splitType.toInt(),
+                                mutableStateOf(b.value_.toString())
+                            )
+                        }
                     selection.value = splitDetails!![0].type - 1
                 }
             }

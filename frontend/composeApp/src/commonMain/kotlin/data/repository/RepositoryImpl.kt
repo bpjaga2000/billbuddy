@@ -2,6 +2,7 @@ package data.repository
 
 import app.cash.sqldelight.EnumColumnAdapter
 import app.cash.sqldelight.adapter.primitive.IntColumnAdapter
+import app.cash.sqldelight.db.SqlDriver
 import com.russhwolf.settings.get
 import com.russhwolf.settings.set
 import constants.SplitType
@@ -60,8 +61,16 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalTime::class)
 class RepositoryImpl : Repository {
 
-    private val db = getSqlDriver()!!
+    private var db: SqlDriver? = null
     private val currentUserId = DataStore.settings.get<String>("id") ?: ""
+
+    init {
+        db = getSqlDriver()!!
+
+        /*if (db == null)
+            CoroutineScope(Dispatchers.Default).launch {
+            }*/
+    }
 
     override suspend fun logIn(email: String, password: String) = flow<ApiResult<UserDto>> {
         emit(ApiResult.loading())
@@ -117,7 +126,7 @@ class RepositoryImpl : Repository {
         try {
             with(data) {
                 users.forEach {
-                    UserQueriesQueries(db).insertUsers(
+                    UserQueriesQueries(db!!).insertUsers(
                         it.id,
                         it.name,
                         "",
@@ -133,7 +142,7 @@ class RepositoryImpl : Repository {
                 }
                 groups.forEach {
                     GroupQueriesQueries(
-                        db, Groups.Adapter(
+                        db!!, Groups.Adapter(
                             EnumColumnAdapter()
                         )
                     ).insertGroups(
@@ -151,7 +160,7 @@ class RepositoryImpl : Repository {
                 }
                 groupMembers.forEach {
                     GroupMemberQueriesQueries(
-                        db
+                        db!!
                     ).insertGroupMembers(
                         it.id,
                         it.userId,
@@ -166,7 +175,7 @@ class RepositoryImpl : Repository {
                 }
                 spends.forEach {
                     SpendQueriesQueries(
-                        db, Spends.Adapter(
+                        db!!, Spends.Adapter(
                             EnumColumnAdapter(),
                             IntColumnAdapter
                         )
@@ -190,7 +199,7 @@ class RepositoryImpl : Repository {
                 }
                 spendSplit.forEach {
                     SpendSplitQueriesQueries(
-                        db, SpendSplits.Adapter(
+                        db!!, SpendSplits.Adapter(
                             IntColumnAdapter
                         )
                     ).insertSpendSplits(
@@ -210,7 +219,7 @@ class RepositoryImpl : Repository {
                 }
                 groupSettles.forEach {
                     GroupSettleQueriesQueries(
-                        db, GroupSettles.Adapter(
+                        db!!, GroupSettles.Adapter(
                             IntColumnAdapter
                         )
                     ).insertGroupSettles(
@@ -234,7 +243,7 @@ class RepositoryImpl : Repository {
     override suspend fun getAllGroups() = flow {
         emit(
             GroupQueriesQueries(
-                db,
+                db!!,
                 Groups.Adapter(EnumColumnAdapter())
             ).selectAllGroups()
                 .executeAsList()
@@ -244,7 +253,7 @@ class RepositoryImpl : Repository {
     override suspend fun getGroupById(id: String) = flow {
         emit(
             GroupQueriesQueries(
-                db,
+                db!!,
                 Groups.Adapter(EnumColumnAdapter())
             ).getGroupById(id).executeAsOne()
         )
@@ -267,7 +276,7 @@ class RepositoryImpl : Repository {
                 if (status.value in 200..299) {
                     val body = body<GroupResponseDto>()
                     GroupQueriesQueries(
-                        db,
+                        db!!,
                         Groups.Adapter(EnumColumnAdapter())
                     ).insertGroups(
                         body.id,
@@ -302,7 +311,7 @@ class RepositoryImpl : Repository {
                 if (status.value in 200..299) {
                     val body = body<GroupResponseDto>()
                     GroupQueriesQueries(
-                        db,
+                        db!!,
                         Groups.Adapter(EnumColumnAdapter())
                     ).insertGroups(
                         body.id,
@@ -323,14 +332,14 @@ class RepositoryImpl : Repository {
     override suspend fun getSpendAndSplitForGroup(groupId: String) = flow {
         val spendWithSplitList: ArrayList<SpendWithSplit> = arrayListOf()
         val spends = SpendQueriesQueries(
-            db,
+            db!!,
             Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
         ).getSpendsForGroup(groupId).executeAsList()
         spends.forEach {
             spendWithSplitList.add(
                 SpendWithSplit(
                     it, SpendSplitQueriesQueries(
-                        db,
+                        db!!,
                         SpendSplits.Adapter(IntColumnAdapter)
                     ).getSplitForSpend(it.id).executeAsList()
                 )
@@ -341,13 +350,13 @@ class RepositoryImpl : Repository {
 
     override suspend fun getSpendAndSplitWithSpendId(spendId: String) = flow {
         val spend = SpendQueriesQueries(
-            db,
+            db!!,
             Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
         ).getSpendWithId(spendId).executeAsOne()
         emit(
             SpendWithSplit(
                 spend, SpendSplitQueriesQueries(
-                    db,
+                    db!!,
                     SpendSplits.Adapter(IntColumnAdapter)
                 ).getSplitForSpend(spend.id).executeAsList()
             )
@@ -357,7 +366,7 @@ class RepositoryImpl : Repository {
     override suspend fun deleteSpend(spendId: String) = flow {
         emit(false)
         SpendSplitQueriesQueries(
-            db,
+            db!!,
             SpendSplits.Adapter(IntColumnAdapter)
         ).deleteSpendSplit(
             currentUserId,
@@ -366,7 +375,7 @@ class RepositoryImpl : Repository {
             spendId
         )
         SpendQueriesQueries(
-            db,
+            db!!,
             Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
         ).deleteSpend(
             currentUserId,
@@ -380,13 +389,13 @@ class RepositoryImpl : Repository {
     override suspend fun getUserNameFromId(id: String) =
         flow {
             emit(
-                UserQueriesQueries(db).getUserFromId(id)
+                UserQueriesQueries(db!!).getUserFromId(id)
                     .executeAsList()[0].name
             )
         }
 
     override suspend fun getGroupMemberDetails(groupId: String) = flow {
-        emit(UserQueriesQueries(db).getMemberDetailsOfGroup(groupId).executeAsList().map { it ->
+        emit(UserQueriesQueries(db!!).getMemberDetailsOfGroup(groupId).executeAsList().map { it ->
             GroupMember(it.groupMemberId, it.id, it.name)
         })
     }
@@ -408,7 +417,7 @@ class RepositoryImpl : Repository {
                 if (status.value in 200..299) {
                     val body = body<GroupResponseDto>()
                     body.members.forEach {
-                        GroupMemberQueriesQueries(db).insertGroupMembers(
+                        GroupMemberQueriesQueries(db!!).insertGroupMembers(
                             it.id,
                             it.userId,
                             it.groupId,
@@ -427,7 +436,7 @@ class RepositoryImpl : Repository {
         }
 
     override suspend fun searchFriends(searchTag: String) = flow {
-        emit(UserQueriesQueries(db).searchUsers(searchTag).executeAsList().map {
+        emit(UserQueriesQueries(db!!).searchUsers(searchTag).executeAsList().map {
             ProfileDto(
                 it.id,
                 it.name,
@@ -468,7 +477,7 @@ class RepositoryImpl : Repository {
     override suspend fun addUsers(profiles: List<ProfileDto>) = flow {
         emit(false)
         profiles.forEach {
-            UserQueriesQueries(db).insertUsers(
+            UserQueriesQueries(db!!).insertUsers(
                 it.id,
                 it.name,
                 "",
@@ -504,7 +513,7 @@ class RepositoryImpl : Repository {
             if (status.value in 200..299) {
                 val body = body<GroupResponseDto>()
                 body.members.forEach {
-                    GroupMemberQueriesQueries(db).insertGroupMembers(
+                    GroupMemberQueriesQueries(db!!).insertGroupMembers(
                         it.id,
                         it.userId,
                         it.groupId,
@@ -524,7 +533,7 @@ class RepositoryImpl : Repository {
 
     override suspend fun getCurrentUser() = flow {
         emit(
-            UserQueriesQueries(db).getUserFromId(currentUserId)
+            UserQueriesQueries(db!!).getUserFromId(currentUserId)
                 .executeAsOne()
         )
     }
@@ -545,7 +554,7 @@ class RepositoryImpl : Repository {
             }) {
                 if (status.value in 200..299) {
                     val body = body<ProfileDto>()
-                    UserQueriesQueries(db).insertUsers(
+                    UserQueriesQueries(db!!).insertUsers(
                         body.id,
                         body.name,
                         "",
@@ -589,8 +598,8 @@ class RepositoryImpl : Repository {
         }
     }
 
-    override suspend fun clearDb() = flow{
-        MiscQueriesQueries(db).clearData().await()
+    override suspend fun clearDb() = flow {
+        MiscQueriesQueries(db!!).clearData().await()
         emit(true)
     }
 
@@ -605,7 +614,7 @@ class RepositoryImpl : Repository {
         emit("")
         val spendId = NanoId.generate()
         SpendQueriesQueries(
-            db,
+            db!!,
             Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
         ).insertSpends(
             spendId,
@@ -635,13 +644,13 @@ class RepositoryImpl : Repository {
     ) = flow {//TODO
         emit(false)
         val spendSplitTable = SpendSplitQueriesQueries(
-            db,
+            db!!,
             SpendSplits.Adapter(IntColumnAdapter)
         )
         spendSplitTable.transaction {
             afterRollback {
                 SpendQueriesQueries(
-                    db,
+                    db!!,
                     Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
                 ).removeSpend(groupId)
             }
@@ -670,7 +679,7 @@ class RepositoryImpl : Repository {
     ) = flow {
         emit(false)
         SpendQueriesQueries(
-            db,
+            db!!,
             Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
         ).insertSpends(
             spend.id,
@@ -699,13 +708,13 @@ class RepositoryImpl : Repository {
     ) = flow {//TODO
         emit(false)
         val spendSplitTable = SpendSplitQueriesQueries(
-            db,
+            db!!,
             SpendSplits.Adapter(IntColumnAdapter)
         )
         spendSplitTable.transaction {
             afterRollback {
                 SpendQueriesQueries(
-                    db,
+                    db!!,
                     Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
                 ).insertSpends(
                     spend.id,
@@ -752,19 +761,19 @@ class RepositoryImpl : Repository {
     }
 
     override fun getSpendsAfterLastSettle(groupId: String) = flow {
-        val lastSettle = GroupSettleQueriesQueries(db, GroupSettles.Adapter(IntColumnAdapter))
+        val lastSettle = GroupSettleQueriesQueries(db!!, GroupSettles.Adapter(IntColumnAdapter))
             .getLastSettleForGroup(groupId).executeAsOneOrNull()?.max ?: 0L
 
         val list = arrayListOf<SpendWithSplit>()
         SpendQueriesQueries(
-            db,
+            db!!,
             Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
         ).getSpendsAfterLastSettle(groupId, lastSettle).executeAsList().forEach {
             list.add(
                 SpendWithSplit(
                     it,
                     SpendSplitQueriesQueries(
-                        db,
+                        db!!,
                         SpendSplits.Adapter(IntColumnAdapter)
                     ).getSplitForSpend(it.id).executeAsList()
                 )
@@ -774,13 +783,13 @@ class RepositoryImpl : Repository {
     }
 
     override suspend fun getAllUsers() = flow {
-        emit(UserQueriesQueries(db).selectAll().executeAsList())
+        emit(UserQueriesQueries(db!!).selectAll().executeAsList())
     }
 
     override suspend fun getGroupsWithPendingBalances(payerId: String, payeeId: String) = flow {
         emit(
             GroupQueriesQueries(
-                db,
+                db!!,
                 Groups.Adapter(EnumColumnAdapter())
             ).getGroupsWithPendingBalances(listOf(payerId, payeeId))
                 .executeAsList()
@@ -797,7 +806,7 @@ class RepositoryImpl : Repository {
             val now = Clock.System.now().epochSeconds
             val spendId = NanoId.generate()
             SpendQueriesQueries(
-                db,
+                db!!,
                 Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
             ).insertSpends(
                 spendId,
@@ -817,7 +826,7 @@ class RepositoryImpl : Repository {
                 SyncStatus.LOCAL.value
             ).await()
             SpendSplitQueriesQueries(
-                db,
+                db!!,
                 SpendSplits.Adapter(IntColumnAdapter)
             ).insertSpendSplits(
                 NanoId.generate(),
@@ -838,7 +847,7 @@ class RepositoryImpl : Repository {
     }
 
     override suspend fun saveGroupSettle(groupId: String) = flow {
-        GroupSettleQueriesQueries(db, GroupSettles.Adapter(IntColumnAdapter))
+        GroupSettleQueriesQueries(db!!, GroupSettles.Adapter(IntColumnAdapter))
             .insertGroupSettles(
                 NanoId.generate(),
                 groupId,
@@ -855,21 +864,21 @@ class RepositoryImpl : Repository {
         emit(ApiResult.loading())
 
         val spends = SpendQueriesQueries(
-            db,
+            db!!,
             Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
         ).getSpendsToSync(
             SyncStatus.LOCAL.value
         ).executeAsList().map { it.mapToSpendDto() }
 
         val splits = SpendSplitQueriesQueries(
-            db,
+            db!!,
             SpendSplits.Adapter(IntColumnAdapter)
         ).getSpendSplitsToSync(
             SyncStatus.LOCAL.value
         ).executeAsList().map { it.mapToSpendSplitDto() }
 
         val groupSettles = GroupSettleQueriesQueries(
-            db,
+            db!!,
             GroupSettles.Adapter(IntColumnAdapter)
         ).getGroupSettlesToSync(
             SyncStatus.LOCAL.value

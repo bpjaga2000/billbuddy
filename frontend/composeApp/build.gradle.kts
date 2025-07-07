@@ -15,7 +15,7 @@ plugins {
 }
 
 kotlin {
-    /*wasmJs {
+    wasmJs {
         moduleName = "composeApp"
         browser {
             commonWebpackConfig {
@@ -29,7 +29,7 @@ kotlin {
             }
         }
         binaries.executable()
-    }*/
+    }
 
     androidTarget {
         compilations.all {
@@ -40,10 +40,9 @@ kotlin {
     }
 
     jvm()
-    /*js{
+    wasmJs {
         browser()
-        nodejs()
-    }*/
+    }
 
     listOf(
         iosX64(),
@@ -108,11 +107,12 @@ kotlin {
         nativeMain.dependencies {
             implementation(libs.native.driver)
         }
-        /*jsMain.dependencies {
-            implementation(libs.js.driver)
+        wasmJsMain.dependencies {
+            implementation("app.cash.sqldelight:web-worker-driver:2.1.0")
+            implementation(npm("@cashapp/sqldelight-sqljs-worker", "2.1.0"))
             implementation(npm("sql.js", "1.6.2"))
             implementation(devNpm("copy-webpack-plugin", "9.1.0"))
-        }*/
+        }
     }
 }
 

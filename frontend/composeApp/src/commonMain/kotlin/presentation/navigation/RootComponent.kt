@@ -10,6 +10,7 @@ import com.arkivanov.decompose.router.stack.push
 import com.arkivanov.decompose.router.stack.replaceAll
 import com.arkivanov.decompose.value.Value
 import com.russhwolf.settings.set
+import data.repository.RepositoryImpl
 import kotlinx.serialization.Serializable
 import presentation.bottomnavigation.BottomNavigationComponent
 import presentation.bottomnavigation.DefaultBottomNavigationComponent
@@ -32,6 +33,10 @@ interface RootComponent {
 class DefaultRootComponent(
     componentContext: ComponentContext
 ) : RootComponent, ComponentContext by componentContext {
+
+    init {
+        RepositoryImpl()
+    }
     private val navigation = StackNavigation<Config>()
 
     override val childStack: Value<ChildStack<*, RootComponent.Child>> = childStack(
