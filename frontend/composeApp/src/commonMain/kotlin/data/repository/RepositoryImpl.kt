@@ -28,7 +28,6 @@ import data.remote.ApiResult
 import dev.bpj4.billbuddy.queries.GroupMemberQueriesQueries
 import dev.bpj4.billbuddy.queries.GroupQueriesQueries
 import dev.bpj4.billbuddy.queries.GroupSettleQueriesQueries
-import dev.bpj4.billbuddy.queries.MiscQueriesQueries
 import dev.bpj4.billbuddy.queries.SpendQueriesQueries
 import dev.bpj4.billbuddy.queries.SpendSplitQueriesQueries
 import dev.bpj4.billbuddy.queries.UserQueriesQueries
@@ -61,16 +60,16 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalTime::class)
 class RepositoryImpl : Repository {
 
-    private var db: SqlDriver? = null
+    private var db: SqlDriver = getSqlDriver()!!
     private val currentUserId = DataStore.settings.get<String>("id") ?: ""
 
-    init {
-        db = getSqlDriver()!!
+    /*init {
 
-        /*if (db == null)
+        if (db == null)
             CoroutineScope(Dispatchers.Default).launch {
-            }*/
-    }
+                db = getSqlDriver()!!
+            }
+    }*/
 
     override suspend fun logIn(email: String, password: String) = flow<ApiResult<UserDto>> {
         emit(ApiResult.loading())
@@ -287,7 +286,7 @@ class RepositoryImpl : Repository {
                         body.ownerId,
                         "",
                         0, 0, 0,
-                    )
+                    ).await()
                     emit(ApiResult.success(body))
                 } else
                     emit(ApiResult.error(body() as String?))
@@ -599,7 +598,12 @@ class RepositoryImpl : Repository {
     }
 
     override suspend fun clearDb() = flow {
-        MiscQueriesQueries(db!!).clearData().await()
+        UserQueriesQueries(db!!).clearUserData().await()
+        SpendQueriesQueries(db!!, Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)).clearSpendData().await()
+        SpendSplitQueriesQueries(db!!, SpendSplits.Adapter(IntColumnAdapter)).clearSplitData().await()
+        GroupQueriesQueries(db!!, Groups.Adapter(EnumColumnAdapter())).clearGroup().await()
+        GroupMemberQueriesQueries(db!!).clearGroupMembers().await()
+        GroupSettleQueriesQueries(db!!, GroupSettles.Adapter(IntColumnAdapter)).clearGroupSettle().await()
         emit(true)
     }
 
@@ -840,7 +844,7 @@ class RepositoryImpl : Repository {
                 now,
                 now,
                 null,
-                SyncStatus.SYNCED.value
+                SyncStatus.LOCAL.value
             ).await()
         }
         emit(true)

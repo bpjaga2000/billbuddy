@@ -1,7 +1,0 @@
-clearData:
-DELETE FROM Users;
-DELETE FROM GroupMembers;
-DELETE FROM Groups;
-DELETE FROM GroupSettles;
-DELETE FROM SpendSplits;
-DELETE FROM Spends;

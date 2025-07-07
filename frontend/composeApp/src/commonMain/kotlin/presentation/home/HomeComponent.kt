@@ -3,6 +3,9 @@ package presentation.home
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.arkivanov.decompose.ComponentContext
+import com.arkivanov.essenty.lifecycle.doOnCreate
+import com.arkivanov.essenty.lifecycle.doOnResume
+import com.arkivanov.essenty.lifecycle.doOnStart
 import data.model.Balance
 import data.model.GroupWithOwes
 import data.remote.ApiResult
@@ -44,38 +47,47 @@ class DefaultHomeComponent(
     private val currentUserId = DataStore.settings.getString("id", "")
 
     init {
-        componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
-            RepositoryImpl().upSync().collect {upSync ->
-                when(upSync) {
-                    is ApiResult.Success -> {
-                        RepositoryImpl().sync().collect { sync ->
-                            when (sync) {
-                                is ApiResult.Success -> {
-                                    RepositoryImpl().saveSyncData(sync.data).collectLatest { isDone ->
-                                        if (isDone) {
+
+        lifecycle.doOnStart(true) {
+            componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
+                loadData()
+                RepositoryImpl().upSync().collect {upSync ->
+                    when(upSync) {
+                        is ApiResult.Success -> {
+                            RepositoryImpl().sync().collect { sync ->
+                                when (sync) {
+                                    is ApiResult.Success -> {
+                                        RepositoryImpl().saveSyncData(sync.data).collectLatest { isDone ->
+                                            if (isDone) {
 //                                    _isLoading.value = false
-                                            loadData()
+                                                loadData()
+                                            }
                                         }
                                     }
-                                }
 
-                                is ApiResult.Error -> withContext(Dispatchers.Main) {
+                                    is ApiResult.Error -> withContext(Dispatchers.Main) {
 //                        _isLoading.value = false
-                                    loadData()
-                                }
+                                        loadData()
+                                    }
 
-                                is ApiResult.Loading -> {}
+                                    is ApiResult.Loading -> {}
+                                }
                             }
                         }
-                    }
 
-                    is ApiResult.Error -> withContext(Dispatchers.Main) {
+                        is ApiResult.Error -> withContext(Dispatchers.Main) {
 //                        _isLoading.value = false
-                        loadData()
-                    }
+                            loadData()
+                        }
 
-                    is ApiResult.Loading -> {}
+                        is ApiResult.Loading -> {}
+                    }
                 }
+            }
+        }
+        lifecycle.doOnResume {
+            componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
+                loadData()
             }
         }
     }
@@ -137,8 +149,10 @@ class DefaultHomeComponent(
                     is ApiResult.Success -> {
                         withContext(Dispatchers.Main) {
                             RepositoryImpl().clearDb().collect {
+                                if(it) {
                                 DataStore.settings.clear()
                                 onLogoutClick.invoke()
+                                    }
                             }
                         }
                     }

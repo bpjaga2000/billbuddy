@@ -3,6 +3,7 @@ package presentation.groupsettings
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.arkivanov.decompose.ComponentContext
+import com.arkivanov.essenty.lifecycle.doOnResume
 import data.model.GroupMember
 import data.model.dto.GroupDto
 import data.remote.ApiResult
@@ -35,13 +36,15 @@ class DefaultGroupSettingsComponent(
     override val groupMembers get() = _groupMembers
 
     init {
-        componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
-            RepositoryImpl().getGroupById(groupId).collect {
-                group = it
-                group?.let { group -> groupName = group.name }
-            }
+        lifecycle.doOnResume {
+            componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
+                RepositoryImpl().getGroupById(groupId).collect {
+                    group = it
+                    group?.let { group -> groupName = group.name }
+                }
 
-            getGroupMembers()
+                getGroupMembers()
+            }
         }
     }
 

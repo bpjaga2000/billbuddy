@@ -10,7 +10,7 @@ fun SpendWithSplit.calculateOwes(userId: String): Double {
     val currentUserSplitValue =
         splits.find { it.userId == userId }?.value_ ?: 0.0
     //negative owe means other members owe to the user
-    return when (splits[0].splitType.toInt()) {
+    return if (splits.isEmpty()) -100090.0 else when (splits[0].splitType.toInt()) {
         SplitType.EQUAL -> {
             val userShare = currentUserSplitValue * spend.totalAmount / splits.size
             if (spend.spentBy == userId)
@@ -92,6 +92,6 @@ suspend fun checkGroupSettlesAndSync(groupId: String) = flow {
 suspend fun upSync() {
     RepositoryImpl().upSync().collect {
         if (it is ApiResult.Success)
-            RepositoryImpl().sync().collect {  }
+            RepositoryImpl().sync().collect { }
     }
 }

@@ -33,7 +33,7 @@ import kotlin.time.ExperimentalTime
 
 interface EditSpendsComponent {
 
-    val pageStack: Value<ChildPages<*, EditSpendsTabComponent>>
+    var pageStack: MutableState<Value<ChildPages<*, EditSpendsTabComponent>>?>
     var selection: MutableState<Int>
     val groupName: MutableState<String>
     val spendName: MutableState<String>
@@ -70,6 +70,8 @@ class DefaultEditSpendsComponent(
     override var isValid = false
     private var splitDetails: List<EditSpendTabDetails>? = null
     private var currentUser = DataStore.settings.get<String>("id")!!
+    override var pageStack: MutableState<Value<ChildPages<*, EditSpendsTabComponent>>?> =
+        mutableStateOf(null)
 
     init {
         componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
@@ -107,12 +109,144 @@ class DefaultEditSpendsComponent(
                             )
                         }
                     selection.value = splitDetails!![0].type - 1
+                    pageStack.value = getPageStack()
+                }
+            } else pageStack.value = getPageStack()
+        }
+    }
+
+
+    override fun onSaveClicked() {
+        pageStack.value?.let { pageStack ->
+            val payeeList =
+                pageStack.value.items[pageStack.value.selectedIndex].instance?.splitDetails?.value?.filter { f ->
+                    f.value.value.isNotBlank()
+                }.orEmpty()
+            val splitType = pageStack.value.selectedIndex + 1
+
+
+            isValid = spendName.value.isNotBlank() &&
+                    (amount.value.toDoubleOrNull() ?: 0f) != 0f &&
+                    spentBy.value.isNotBlank() &&
+                    spentAt.value != 0L &&
+                    when (splitType) {
+                        SplitType.EQUAL -> {
+                            payeeList.isNotEmpty()
+                        }
+
+                        SplitType.AMOUNT -> {
+                            var total = 0.0
+                            payeeList.forEach {
+                                total = total + (it.value.value.toDoubleOrNull() ?: 0.0)
+                            }
+                            total == (amount.value.toDoubleOrNull() ?: 0f)
+                        }
+
+                        SplitType.SHARE -> {
+                            var total = 0.0
+                            payeeList.forEach {
+                                total = total + (it.value.value.toDoubleOrNull() ?: 0.0)
+                            }
+                            total > 0.0
+                        }
+
+                        SplitType.RATIO -> {
+                            var total = 0.0
+                            payeeList.forEach {
+                                total = total + (it.value.value.toDoubleOrNull() ?: 0.0)
+                            }
+                            total == 1.0
+                        }
+
+                        SplitType.DIFFERENCE -> {
+                            true
+                        }
+
+                        else -> false
+
+                    }
+
+
+            if (!isValid)
+            //TODO toast
+                return
+
+            componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
+                if (spendId == null) {
+                    RepositoryImpl().saveSpend(
+                        spendName.value,
+                        amount.value,
+                        spendTags.value,
+                        groupId,
+                        spentAt.value,
+                        spentBy.value
+                    ).collect { id ->
+                        if (id.isNotBlank())
+                            RepositoryImpl().saveSpendSplits(
+                                payeeList,
+                                id,
+                                groupId,
+                                splitType,
+                            ).collect {
+                                if (it) {
+                                    checkGroupSettlesAndSync(groupId).collect {
+                                    }
+                                    withContext(Dispatchers.Main) {
+                                        onSaved()
+                                    }
+                                }
+                            }
+                    }
+                } else {
+
+                    var isDifferent = false
+                    if (!isDifferent)
+                        spendSplit!!.forEach { b ->
+                            if (!isDifferent) {
+                                val new = payeeList.find { it.userId == b.userId }
+                                isDifferent =
+                                    isDifferent || new == null || b.value_ != new.value.value.toDoubleOrNull() || b.splitType != splitType.toLong()
+                            }
+                        }
+                    if (isDifferent || spend!!.name != spendName.value || spend!!.totalAmount != amount.value.toDoubleOrNull() || spend!!.tag != spendTags.value || spend!!.spentAt != spentAt.value || spend!!.spentBy != spentBy.value)
+                        RepositoryImpl().updateSpend(
+                            spend!!.copy(
+                                name = spendName.value,
+                                totalAmount = amount.value.toDoubleOrNull() ?: spend!!.totalAmount,
+                                tag = spendTags.value,
+                                spentAt = spentAt.value,
+                                updatedAt = Clock.System.now().epochSeconds,
+                                updatedBy = currentUser
+                            )
+                        ).collect {
+                        }
+
+                    if (isDifferent) {
+                        RepositoryImpl().updateSpendSplits(
+                            payeeList,
+                            splitType,
+                            spend!!
+                        ).collect {
+                            if (it) {
+                                checkGroupSettlesAndSync(groupId).collect {
+                                }
+                                withContext(Dispatchers.Main) {
+                                    onSaved()
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 
-    override val pageStack: Value<ChildPages<*, EditSpendsTabComponent>> = childPages(
+    override fun onPageSelected(index: Int) {
+        selection.value = index
+        navigation.select(index)
+    }
+
+    private fun getPageStack() = childPages(
         source = navigation,
         serializer = Config.serializer(),
         initialPages = {
@@ -138,135 +272,6 @@ class DefaultEditSpendsComponent(
             amount = amount.value,
         )
 
-    }
-
-    override fun onSaveClicked() {
-        val payeeList =
-            pageStack.value.items[pageStack.value.selectedIndex].instance?.splitDetails?.value?.filter { f ->
-                f.value.value.isNotBlank()
-            }.orEmpty()
-        val splitType = pageStack.value.selectedIndex + 1
-
-
-        isValid = spendName.value.isNotBlank() &&
-                (amount.value.toDoubleOrNull() ?: 0f) != 0f &&
-                spentBy.value.isNotBlank() &&
-                spentAt.value != 0L &&
-                when (splitType) {
-                    SplitType.EQUAL -> {
-                        payeeList.isNotEmpty()
-                    }
-
-                    SplitType.AMOUNT -> {
-                        var total = 0.0
-                        payeeList.forEach {
-                            total = total + (it.value.value.toDoubleOrNull() ?: 0.0)
-                        }
-                        total == (amount.value.toDoubleOrNull() ?: 0f)
-                    }
-
-                    SplitType.SHARE -> {
-                        var total = 0.0
-                        payeeList.forEach {
-                            total = total + (it.value.value.toDoubleOrNull() ?: 0.0)
-                        }
-                        total > 0.0
-                    }
-
-                    SplitType.RATIO -> {
-                        var total = 0.0
-                        payeeList.forEach {
-                            total = total + (it.value.value.toDoubleOrNull() ?: 0.0)
-                        }
-                        total == 1.0
-                    }
-
-                    SplitType.DIFFERENCE -> {
-                        true
-                    }
-
-                    else -> false
-
-                }
-
-
-        if (!isValid)
-        //TODO toast
-            return
-
-        //TODO Group settle entry needs to be changed
-        componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
-            if (spendId == null) {
-                RepositoryImpl().saveSpend(
-                    spendName.value,
-                    amount.value,
-                    spendTags.value,
-                    groupId,
-                    spentAt.value,
-                    spentBy.value
-                ).collect { id ->
-                    if (id.isNotBlank())
-                        RepositoryImpl().saveSpendSplits(
-                            payeeList,
-                            id,
-                            groupId,
-                            splitType,
-                        ).collect {
-                            if (it) {
-                                checkGroupSettlesAndSync(groupId).collect {
-                                }
-                                withContext(Dispatchers.Main) {
-                                    onSaved()
-                                }
-                            }
-                        }
-                }
-            } else {
-
-                var isDifferent = false
-                if (!isDifferent)
-                    spendSplit!!.forEach { b ->
-                        if (!isDifferent) {
-                            val new = payeeList.find { it.userId == b.userId }
-                            isDifferent =
-                                isDifferent || new == null || b.value_ != new.value.value.toDoubleOrNull() || b.splitType != splitType.toLong()
-                        }
-                    }
-                if (isDifferent || spend!!.name != spendName.value || spend!!.totalAmount != amount.value.toDoubleOrNull() || spend!!.tag != spendTags.value || spend!!.spentAt != spentAt.value || spend!!.spentBy != spentBy.value)
-                    RepositoryImpl().updateSpend(
-                        spend!!.copy(
-                            name = spendName.value,
-                            totalAmount = amount.value.toDoubleOrNull() ?: spend!!.totalAmount,
-                            tag = spendTags.value,
-                            spentAt = spentAt.value,
-                            updatedAt = Clock.System.now().epochSeconds,
-                            updatedBy = currentUser
-                        )
-                    ).collect {
-                    }
-
-                if (isDifferent) {
-                    RepositoryImpl().updateSpendSplits(
-                        payeeList,
-                        splitType,
-                        spend!!
-                    ).collect {
-                        if (it) {
-                            checkGroupSettlesAndSync(groupId).collect {
-                            }
-                            withContext(Dispatchers.Main) {
-                                onSaved()
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    override fun onPageSelected(index: Int) {
-        selection.value = index
-        navigation.select(index)
     }
 
     @Serializable

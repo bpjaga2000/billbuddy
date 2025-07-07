@@ -67,7 +67,7 @@ fun BalanceItem(
                         modifier = Modifier.height(20.dp),
                         text = "${payees[index].name} " + (if (payees[index].amount > 0.0) "gets" else "owes") + " ₹${payees[index].amount.absoluteValue}"
                     )
-                    if (payer.userId == DataStore.settings.getStringOrNull("id"))
+                    if (payer.userId == DataStore.settings.getStringOrNull("id") && payees[index].amount != 0.0)
                         Button(
                             onClick = {
                                 onClick(

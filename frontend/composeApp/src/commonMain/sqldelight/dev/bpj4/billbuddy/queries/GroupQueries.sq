@@ -16,3 +16,6 @@ SELECT DISTINCT(Groups.id) FROM Groups
     ) AS Spends ON Spends.groupId = Groups.id
     JOIN (SELECT * FROM SpendSplits WHERE SpendSplits.userId IN :users AND deletedBy ISNULL) AS SpendSplits
     ON Spends.id = SpendSplits.spendId;
+
+clearGroup:
+DELETE FROM Groups;

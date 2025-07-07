@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.update
+import com.arkivanov.essenty.lifecycle.doOnResume
 import com.russhwolf.settings.get
 import data.model.SpendWithSplit
 import data.repository.RepositoryImpl
@@ -41,24 +42,25 @@ class DefaultGroupSpendsComponent(
     override val totalBalance = mutableDoubleStateOf(0.0)
 
     init {
-        componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
-            RepositoryImpl().getGroupMemberDetails(groupId).collect {
-                it.forEach { user ->
-                    groupUsersDetails.value =
-                        groupUsersDetails.value.plus(Pair(user.userId, user.userName))
-                }
-            }
-            RepositoryImpl().getSpendsAfterLastSettle(groupId).collect { spends ->
-                totalBalance.value = 0.0
-                spends.forEach { spend ->
-                    spend.splits.let {
-                        spend.owe = spend.calculateOwes(currentUserId)
-                        totalBalance.value = totalBalance.value + spend.calculateOwes(currentUserId)
+        lifecycle.doOnResume {
+            componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
+                RepositoryImpl().getGroupMemberDetails(groupId).collect {
+                    it.forEach { user ->
+                        groupUsersDetails.value =
+                            groupUsersDetails.value.plus(Pair(user.userId, user.userName))
                     }
                 }
-            }
-            RepositoryImpl().getSpendAndSplitForGroup(groupId).collect { spends ->
-                spendList.update { spends }
+                RepositoryImpl().getSpendAndSplitForGroup(groupId).collect { spends ->
+                    totalBalance.value = 0.0
+                    spends.forEach { spend ->
+                        spend.splits.let {
+                            spend.owe = spend.calculateOwes(currentUserId)
+                            totalBalance.value =
+                                totalBalance.value + spend.calculateOwes(currentUserId)
+                        }
+                    }
+                    spendList.update { spends }
+                }
             }
         }
     }

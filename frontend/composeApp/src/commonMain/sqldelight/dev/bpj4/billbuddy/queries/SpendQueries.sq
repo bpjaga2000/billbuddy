@@ -18,3 +18,6 @@ SELECT * FROM Spends WHERE groupId = ? AND updatedAt > ? AND deletedBy ISNULL OR
 
 getSpendsToSync:
 SELECT * FROM Spends WHERE status = ?;
+
+clearSpendData:
+DELETE FROM Spends;

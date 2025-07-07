@@ -236,7 +236,7 @@ class DefaultBottomNavigationComponent(
         Config.CreateGroup -> CreateGroup(
             DefaultCreateGroupComponent(
                 componentContext.childContext("createGroup")
-            )
+            ) { navigation.pop() }
         )
 
     }

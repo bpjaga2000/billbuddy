@@ -54,6 +54,7 @@ fun EditSpendsScreen(component: EditSpendsComponent, modifier: Modifier = Modifi
     var spentBy by remember { component.spentBy }
     val amount = remember { component.amount }
     val selection by remember { component.selection }
+    val pageStack by remember { component.pageStack }
     val datePickerState = rememberDatePickerState()
     var isSpendTagExpanded by remember { mutableStateOf(false) }
     var isDatePickerVisible by remember { mutableStateOf(false) }
@@ -116,7 +117,7 @@ fun EditSpendsScreen(component: EditSpendsComponent, modifier: Modifier = Modifi
         ) {
             Text(
                 textAlign = TextAlign.Center,
-                text = component.groupMembers.find { it.userId == spentBy }!!.userName
+                text = component.groupMembers.find { it.userId == spentBy }?.userName ?: ""
             )
             DropdownMenu(
                 isSpendByExpanded,
@@ -160,26 +161,28 @@ fun EditSpendsScreen(component: EditSpendsComponent, modifier: Modifier = Modifi
             }
         }
 
-        ScrollableTabRow(
-            selection,
-            Modifier.fillMaxWidth(),
-            edgePadding = 0.dp
-        ) {
-            types.forEachIndexed { index, title ->
-                Tab(
-                    selection == index,
-                    onClick = { component.onPageSelected(index) },
-                    text = { Text(types[index]) },
-                    modifier = Modifier.padding(0.dp).align(Alignment.CenterHorizontally)
-                )
+        pageStack?.value?.let {
+            ScrollableTabRow(
+                selection,
+                Modifier.fillMaxWidth(),
+                edgePadding = 0.dp
+            ) {
+                types.forEachIndexed { index, title ->
+                    Tab(
+                        selection == index,
+                        onClick = { component.onPageSelected(index) },
+                        text = { Text(types[index]) },
+                        modifier = Modifier.padding(0.dp).align(Alignment.CenterHorizontally)
+                    )
+                }
             }
-        }
-        ChildPages(
-            pages = component.pageStack,
-            onPageSelected = component::onPageSelected,
-            scrollAnimation = PagesScrollAnimation.Default
-        ) { _, page ->
-            EditSpendsTab(page)
+            ChildPages(
+                pages = it,
+                onPageSelected = component::onPageSelected,
+                scrollAnimation = PagesScrollAnimation.Default
+            ) { _, page ->
+                EditSpendsTab(page)
+            }
         }
     }
 

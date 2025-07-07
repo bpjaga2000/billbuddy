@@ -17,7 +17,8 @@ interface CreateGroupComponent {
 }
 
 class DefaultCreateGroupComponent(
-    private val componentContext: ComponentContext
+    private val componentContext: ComponentContext,
+    private val onGroupCreated: () -> Unit
 ) : CreateGroupComponent, ComponentContext by componentContext {
     override val isLoading: MutableState<Boolean> = mutableStateOf(false)
 
@@ -27,6 +28,7 @@ class DefaultCreateGroupComponent(
                 when (it) {
                     is ApiResult.Success -> {
                         isLoading.value = false
+                        onGroupCreated()
                     }
 
                     is ApiResult.Error -> {

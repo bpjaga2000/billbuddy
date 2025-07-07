@@ -6,3 +6,6 @@ SELECT * FROM GroupMembers WHERE groupId = ?;
 
 removeMemberFromGroup:
 UPDATE GroupMembers SET deletedBy = ?, deletedAt = ? WHERE id = ?;
+
+clearGroupMembers:
+DELETE FROM GroupMembers;

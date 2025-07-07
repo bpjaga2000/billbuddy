@@ -15,3 +15,6 @@ SELECT GroupMembers.id AS groupMemberId, Users.id, Users.name FROM Users JOIN Gr
 
 searchUsers:
 SELECT * FROM Users WHERE name LIKE :searchTag OR email LIKE :searchTag;
+
+clearUserData:
+DELETE FROM Users;
