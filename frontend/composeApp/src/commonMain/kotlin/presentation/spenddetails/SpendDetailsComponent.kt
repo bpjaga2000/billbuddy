@@ -29,10 +29,12 @@ class DefaultSpendDetailsComponent(
     override val spenderOwes = mutableStateOf(0.0)
     override var spendDetails = mutableStateOf<SpendWithSplit?>(null)
     override val userNames = mutableStateOf(mapOf<String, String>())
+    private lateinit var groupId: String
 
     init {
         componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
             RepositoryImpl().getSpendAndSplitWithSpendId(spendId).collect { spend ->
+                groupId = spend.spend.groupId
                 spendDetails.value = spend
                 spenderOwes.value = spend.calculateOwes(spend.spend.spentBy)
                 RepositoryImpl().getUserNameFromId(spend.spend.createdBy).collect {
@@ -51,11 +53,13 @@ class DefaultSpendDetailsComponent(
 
     override fun onDeleteClicked() {
         componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
-            RepositoryImpl().deleteSpend(spendId).collect {
-                if (it)
-                    withContext(Dispatchers.Main) {
-                        this@DefaultSpendDetailsComponent.onDeleteClicked.invoke()
-                    }
+            RepositoryImpl().groupSettleCorrection(spendDetails.value!!.spend.groupId, spendDetails.value!!.spend.updatedAt).collect {
+                RepositoryImpl().deleteSpend(spendId).collect {
+                    if (it)
+                        withContext(Dispatchers.Main) {
+                            this@DefaultSpendDetailsComponent.onDeleteClicked.invoke()
+                        }
+                }
             }
         }
     }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.sharp.Edit
@@ -30,6 +31,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import presentation.common.TextEdit
@@ -64,10 +66,26 @@ fun ProfileScreen(component: ProfileComponent, modifier: Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(35.dp)
         ) {
-            TextEdit(component.name, "Name", editable = editable)
-            TextEdit(component.email, "Email", editable = false)
-            TextEdit(component.password, "Password", editable = false)
-            TextEdit(component.phone, "Phone", editable = editable)
+            TextEdit(
+                component.name,
+                "Name",
+                editable = editable,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii)
+            )
+            TextEdit(
+                component.email, "Email", editable = false,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+            )
+            TextEdit(
+                component.password,
+                "Password",
+                editable = false,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii)
+            )
+            TextEdit(
+                component.phone, "Phone", editable = editable,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            )
         }
 
         if (!editable)

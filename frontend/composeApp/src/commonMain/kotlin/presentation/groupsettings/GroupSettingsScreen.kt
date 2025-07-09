@@ -2,6 +2,7 @@ package presentation.groupsettings
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -10,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import presentation.common.GroupMemberItem
 import presentation.common.TextEdit
 
@@ -21,7 +23,11 @@ fun GroupSettingsScreen(component: GroupSettingsComponent, modifier: Modifier = 
 
     Column(modifier = modifier.then(Modifier), horizontalAlignment = Alignment.CenterHorizontally) {
 
-        TextEdit(groupName, "Group Name")
+        TextEdit(
+            groupName,
+            "Group Name",
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii)
+        )
 
         LazyColumn {
             items(groupMembers.value.size, key = { it -> groupMembers.value[it].userId }) {
@@ -35,7 +41,8 @@ fun GroupSettingsScreen(component: GroupSettingsComponent, modifier: Modifier = 
         TextButton(
             onClick = {
                 component.groupName = groupName.value
-                component.onAddMemberClicked() }) { Text("Add members") }
+                component.onAddMemberClicked()
+            }) { Text("Add members") }
     }
 
 }

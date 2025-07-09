@@ -24,7 +24,6 @@ primitiveAdapters = "2.1.0"
 slf4jSimple = "2.0.17"
 sonner = "0.3.8"
 sqlDelightVersion = "2.1.0"
-securityCryptoKtx = "1.1.0-beta01"
 
 [libraries]
 android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "sqlDelightDriverVersion" }
@@ -58,7 +57,6 @@ ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4jSimple" }
 sonner = { module = "io.github.dokar3:sonner", version.ref = "sonner" }
 sqlite-driver = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqlDelightDriverVersion" }
-androidx-security-crypto-ktx = { group = "androidx.security", name = "security-crypto-ktx", version.ref = "securityCryptoKtx" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

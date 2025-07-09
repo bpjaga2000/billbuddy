@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -24,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import data.GroupTags
@@ -41,7 +43,12 @@ fun CreateGroupScreen(component: CreateGroupComponent, modifier: Modifier = Modi
             verticalArrangement = Arrangement.SpaceEvenly,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            TextEdit(groupName, "Group Name", editable = true)
+            TextEdit(
+                groupName,
+                "Group Name",
+                editable = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii)
+            )
             Column {
                 Text(
                     modifier = modifier

@@ -599,11 +599,16 @@ class RepositoryImpl : Repository {
 
     override suspend fun clearDb() = flow {
         UserQueriesQueries(db!!).clearUserData().await()
-        SpendQueriesQueries(db!!, Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)).clearSpendData().await()
-        SpendSplitQueriesQueries(db!!, SpendSplits.Adapter(IntColumnAdapter)).clearSplitData().await()
+        SpendQueriesQueries(
+            db!!,
+            Spends.Adapter(EnumColumnAdapter(), IntColumnAdapter)
+        ).clearSpendData().await()
+        SpendSplitQueriesQueries(db!!, SpendSplits.Adapter(IntColumnAdapter)).clearSplitData()
+            .await()
         GroupQueriesQueries(db!!, Groups.Adapter(EnumColumnAdapter())).clearGroup().await()
         GroupMemberQueriesQueries(db!!).clearGroupMembers().await()
-        GroupSettleQueriesQueries(db!!, GroupSettles.Adapter(IntColumnAdapter)).clearGroupSettle().await()
+        GroupSettleQueriesQueries(db!!, GroupSettles.Adapter(IntColumnAdapter)).clearGroupSettle()
+            .await()
         emit(true)
     }
 
@@ -903,6 +908,14 @@ class RepositoryImpl : Repository {
             } else
                 emit(ApiResult.error(body() as String?))
         }
+    }
+
+    override suspend fun groupSettleCorrection(groupId: String, spendUpdatedAt: Long) = flow {
+        GroupSettleQueriesQueries(
+            db,
+            GroupSettles.Adapter(IntColumnAdapter)
+        ).deleteGroupSettleAfterSpend(Clock.System.now().epochSeconds, groupId, spendUpdatedAt)
+        emit(true)
     }
 
 }

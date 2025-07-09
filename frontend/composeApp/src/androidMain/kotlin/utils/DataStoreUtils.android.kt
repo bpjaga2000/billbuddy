@@ -1,8 +1,7 @@
 package utils
 
 import android.content.Context
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
+import android.content.Context.MODE_PRIVATE
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.SharedPreferencesSettings
 
@@ -13,10 +12,9 @@ actual fun createSettings(): Settings = settings
 
 fun makeSettings(context: Context) {
     settings = SharedPreferencesSettings(
-        EncryptedSharedPreferences(
-            context,
+        context.getSharedPreferences(
             "billBuddyPrefs",
-            MasterKey(context)
+            MODE_PRIVATE
         )
     )
 }

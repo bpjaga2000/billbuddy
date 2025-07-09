@@ -16,7 +16,7 @@ plugins {
 
 kotlin {
     wasmJs {
-        moduleName = "composeApp"
+        outputModuleName = "composeApp"
         browser {
             commonWebpackConfig {
                 outputFileName = "composeApp.js"
@@ -66,7 +66,6 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.decompose)
             implementation(libs.android.driver)
-            implementation(libs.androidx.security.crypto.ktx)
             implementation(libs.androidx.multidex)
         }
         commonMain.dependencies {

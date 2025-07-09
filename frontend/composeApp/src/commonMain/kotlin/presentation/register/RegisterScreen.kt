@@ -1,7 +1,6 @@
 package presentation.register
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -28,7 +27,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -44,11 +42,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import data.remote.ApiResult
-import kotlinproject.composeapp.generated.resources.Res
-import kotlinproject.composeapp.generated.resources.compose_multiplatform
+import billbuddy.composeapp.generated.resources.Res
+import billbuddy.composeapp.generated.resources.compose_multiplatform
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 
 @Composable

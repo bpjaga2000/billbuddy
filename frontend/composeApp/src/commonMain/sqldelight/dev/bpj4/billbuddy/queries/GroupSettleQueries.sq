@@ -9,3 +9,6 @@ SELECT * FROM GroupSettles WHERE status = ?;
 
 clearGroupSettle:
 DELETE FROM GroupSettles;
+
+deleteGroupSettleAfterSpend:
+UPDATE GroupSettles SET deletedAt = ? WHERE groupId = ? AND settledAt > ?;

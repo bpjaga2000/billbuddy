@@ -39,9 +39,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import billbuddy.composeapp.generated.resources.Res
+import billbuddy.composeapp.generated.resources.compose_multiplatform
 import data.remote.ApiResult
-import kotlinproject.composeapp.generated.resources.Res
-import kotlinproject.composeapp.generated.resources.compose_multiplatform
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collectLatest

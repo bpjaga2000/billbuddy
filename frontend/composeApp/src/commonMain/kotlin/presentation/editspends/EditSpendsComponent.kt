@@ -208,30 +208,33 @@ class DefaultEditSpendsComponent(
                                     isDifferent || new == null || b.value_ != new.value.value.toDoubleOrNull() || b.splitType != splitType.toLong()
                             }
                         }
-                    if (isDifferent || spend!!.name != spendName.value || spend!!.totalAmount != amount.value.toDoubleOrNull() || spend!!.tag != spendTags.value || spend!!.spentAt != spentAt.value || spend!!.spentBy != spentBy.value)
-                        RepositoryImpl().updateSpend(
-                            spend!!.copy(
-                                name = spendName.value,
-                                totalAmount = amount.value.toDoubleOrNull() ?: spend!!.totalAmount,
-                                tag = spendTags.value,
-                                spentAt = spentAt.value,
-                                updatedAt = Clock.System.now().epochSeconds,
-                                updatedBy = currentUser
-                            )
-                        ).collect {
-                        }
-
-                    if (isDifferent) {
-                        RepositoryImpl().updateSpendSplits(
-                            payeeList,
-                            splitType,
-                            spend!!
-                        ).collect {
-                            if (it) {
-                                checkGroupSettlesAndSync(groupId).collect {
-                                }
-                                withContext(Dispatchers.Main) {
-                                    onSaved()
+                    if (isDifferent || spend!!.name != spendName.value || spend!!.totalAmount != amount.value.toDoubleOrNull() || spend!!.tag != spendTags.value || spend!!.spentAt != spentAt.value || spend!!.spentBy != spentBy.value) {
+                        RepositoryImpl().groupSettleCorrection(groupId, spend!!.updatedAt).collect {
+                            RepositoryImpl().updateSpend(
+                                spend!!.copy(
+                                    name = spendName.value,
+                                    totalAmount = amount.value.toDoubleOrNull()
+                                        ?: spend!!.totalAmount,
+                                    tag = spendTags.value,
+                                    spentAt = spentAt.value,
+                                    updatedAt = Clock.System.now().epochSeconds,
+                                    updatedBy = currentUser
+                                )
+                            ).collect {
+                                if (isDifferent) {
+                                    RepositoryImpl().updateSpendSplits(
+                                        payeeList,
+                                        splitType,
+                                        spend!!
+                                    ).collect {
+                                        if (it) {
+                                            checkGroupSettlesAndSync(groupId).collect {
+                                            }
+                                            withContext(Dispatchers.Main) {
+                                                onSaved()
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }

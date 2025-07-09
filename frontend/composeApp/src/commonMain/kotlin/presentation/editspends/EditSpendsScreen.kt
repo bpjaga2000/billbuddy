@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
@@ -30,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.ExperimentalDecomposeApi
@@ -66,8 +68,14 @@ fun EditSpendsScreen(component: EditSpendsComponent, modifier: Modifier = Modifi
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(groupName)
-        TextEdit(spendName, "Spend name")
-        TextEdit(amount, "Amount")
+        TextEdit(spendName, "Spend name",
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii)
+        )
+        TextEdit(
+            amount,
+            "Amount",
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal)
+        )
         Column(
             Modifier
                 .width(300.dp)

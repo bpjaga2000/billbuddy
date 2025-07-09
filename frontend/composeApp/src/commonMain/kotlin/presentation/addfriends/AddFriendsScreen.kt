@@ -4,11 +4,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import presentation.common.SearchMemberItem
 import presentation.common.TextEdit
 
@@ -22,7 +24,9 @@ fun AddFriendsScreen(component: AddFriendsComponent, modifier: Modifier = Modifi
     ) {
         TextEdit(
             text = component.searchTag,
-            onValueChange = { component.onAddFriendsClicked(it) })
+            onValueChange = { component.onAddFriendsClicked(it) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+        )
         LazyColumn {
             items(
                 component.addFriendsResults.value.size,

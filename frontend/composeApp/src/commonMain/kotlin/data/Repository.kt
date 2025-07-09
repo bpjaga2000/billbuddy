@@ -83,4 +83,5 @@ interface Repository {
     ): Flow<Boolean>
 
     suspend fun upSync(): Flow<ApiResult<String>>
+    suspend fun groupSettleCorrection(groupId: String, spendUpdatedAt: Long): Flow<Boolean>
 }
