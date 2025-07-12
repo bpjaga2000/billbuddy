@@ -42,6 +42,7 @@ kotlin {
     jvm()
     wasmJs {
         browser()
+        nodejs()
     }
 
     listOf(

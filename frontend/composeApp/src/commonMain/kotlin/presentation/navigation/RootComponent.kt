@@ -68,7 +68,6 @@ class DefaultRootComponent(
             is Config.Register -> RootComponent.Child.RegisterChild(
                 DefaultRegisterComponent(
                     componentContext.childContext(key = "register"), {
-                        DataStore.settings["token"] =
                             navigation.replaceAll(Config.BottomNavigation)
                     }
                 ) {

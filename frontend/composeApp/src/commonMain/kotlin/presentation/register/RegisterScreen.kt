@@ -41,10 +41,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import data.remote.ApiResult
 import billbuddy.composeapp.generated.resources.Res
 import billbuddy.composeapp.generated.resources.compose_multiplatform
-import kotlinx.coroutines.flow.collectLatest
+import data.remote.ApiResult
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 
@@ -60,11 +59,6 @@ fun RegisterScreen(component: RegisterComponent, modifier: Modifier = Modifier) 
     val coroutine = rememberCoroutineScope()
     val isLoading = remember { mutableStateOf(false) }
 
-    coroutine.launch {
-        component.userRegisterResponse.collectLatest {
-            isLoading.value = it is ApiResult.Loading
-        }
-    }
 
     Box {
         Column(
@@ -232,7 +226,7 @@ fun RegisterScreen(component: RegisterComponent, modifier: Modifier = Modifier) 
 
             }
         }
-        if (component.userRegisterResponse is ApiResult.Loading<*>)
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center).size(50.dp))
+//        if (userRegisterResponse is ApiResult.Loading<*>)
+//            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center).size(50.dp))
     }
 }

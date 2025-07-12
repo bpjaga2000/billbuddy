@@ -1,5 +1,6 @@
 package presentation.login
 
+import androidx.compose.runtime.mutableStateOf
 import com.arkivanov.decompose.ComponentContext
 import com.russhwolf.settings.set
 import data.model.dto.UserDto
@@ -27,8 +28,6 @@ class DefaultLoginComponent(
     private val onRegisterClicked: () -> Unit
 ) : LoginComponent, ComponentContext by componentContext {
 
-    private var _userLoginResponse = MutableStateFlow<ApiResult<UserDto>?>(null)
-
     private val coroutineScope = componentContext.componentCoroutineScope()
     private var _isLoading: MutableStateFlow<Boolean> = MutableStateFlow(false)
     override val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -41,7 +40,6 @@ class DefaultLoginComponent(
                     is ApiResult.Success -> {
                         _isLoading.value = false
                         withContext(Dispatchers.Main) {
-                            _userLoginResponse.value = it
                             DataStore.settings["token"] = it.data.token
                             DataStore.settings["email"] = it.data.email
                             DataStore.settings["id"] = it.data.id

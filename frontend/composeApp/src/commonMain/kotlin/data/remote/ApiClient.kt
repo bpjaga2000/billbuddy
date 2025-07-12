@@ -18,7 +18,7 @@ import utils.DataStore
 
 object ApiClient {
 
-    val httpClient = HttpClient(CIO) {
+    val httpClient = HttpClient {
         install(ContentNegotiation) {
             json(Json {
                 prettyPrint = true
@@ -33,10 +33,10 @@ object ApiClient {
             }
             headers {
                 append("Content-Type", "application/json")
-                print("Bearer ${DataStore.settings["token"] ?: ""}")
                 DataStore.settings.get<String>("token")?.let {
                     append("Authorization", "Bearer $it")
                 }
+                append("Access-Control-Allow-Origin", "http:////92.119.126.127:8090");
             }
         }
         Logging {
