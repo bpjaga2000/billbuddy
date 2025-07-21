@@ -25,7 +25,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,10 +39,10 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import billbuddy.composeapp.generated.resources.Res
 import billbuddy.composeapp.generated.resources.compose_multiplatform
-import data.remote.ApiResult
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 
@@ -164,7 +163,8 @@ fun RegisterScreen(component: RegisterComponent, modifier: Modifier = Modifier) 
                         .width(300.dp)
                         .padding(vertical = 8.dp, horizontal = 30.dp)
                         .height(40.dp),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    visualTransformation = PasswordVisualTransformation()
                 )
 
                 Spacer(modifier = Modifier.weight(0.1f))
@@ -198,7 +198,8 @@ fun RegisterScreen(component: RegisterComponent, modifier: Modifier = Modifier) 
                             email,
                             password
                         )
-                    })
+                    }),
+                    visualTransformation = PasswordVisualTransformation()
                 )
 
                 Spacer(modifier = Modifier.weight(0.1f))

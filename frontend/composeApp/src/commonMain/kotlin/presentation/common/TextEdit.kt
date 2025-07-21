@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import utils.allRegex
 import utils.amountRegex
@@ -32,6 +33,7 @@ fun TextEdit(
     onValueChange: (String) -> Unit = {},
     editable: Boolean = true,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
     modifier: Modifier = Modifier,
 ) {
     BasicTextField(
@@ -63,6 +65,7 @@ fun TextEdit(
                 it()
             }
         },
+        visualTransformation = visualTransformation,
         modifier = modifier.then(
             Modifier
                 .border(

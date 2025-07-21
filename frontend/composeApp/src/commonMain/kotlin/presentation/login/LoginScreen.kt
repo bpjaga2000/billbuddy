@@ -1,7 +1,6 @@
 package presentation.login
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -37,18 +36,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import billbuddy.composeapp.generated.resources.Res
 import billbuddy.composeapp.generated.resources.compose_multiplatform
-import data.remote.ApiResult
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
-import utils.DataStore
 
 @Composable
 fun LoginScreen(component: LoginComponent, modifier: Modifier = Modifier) {
@@ -168,7 +162,8 @@ fun LoginScreen(component: LoginComponent, modifier: Modifier = Modifier) {
                         )
                         .width(300.dp)
                         .padding(vertical = 8.dp, horizontal = 30.dp)
-                        .height(40.dp)
+                        .height(40.dp),
+                    visualTransformation = PasswordVisualTransformation()
                 )
                 Row(
                     modifier = Modifier
