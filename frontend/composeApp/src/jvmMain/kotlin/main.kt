@@ -5,13 +5,16 @@ import androidx.compose.ui.window.rememberWindowState
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.decompose.extensions.compose.lifecycle.LifecycleController
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
+import di.koin
 import presentation.navigation.DefaultRootComponent
+import presentation.navigation.RootComponent
 import presentation.navigation.RootContent
 
 fun main() = application {
     val lifecycle = LifecycleRegistry()
     val windowState = rememberWindowState()
-    val root = DefaultRootComponent(DefaultComponentContext(lifecycle))
+    val rootComponentFactory: RootComponent.Factory by koin.inject()
+    val root = rootComponentFactory.invoke(DefaultComponentContext(lifecycle))
 
     Window(onCloseRequest = ::exitApplication, state = windowState, title = "Billbuddy") {
 

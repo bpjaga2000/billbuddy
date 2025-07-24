@@ -3,7 +3,7 @@ package presentation.settleup
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.arkivanov.decompose.ComponentContext
-import data.repository.RepositoryImpl
+import data.Repository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -19,6 +19,15 @@ interface SettleUpComponent {
     var amount: Double
     val amountToPay: MutableState<String>
     fun onSettleClicked()
+    fun interface Factory {
+        operator fun invoke(
+            componentContext: ComponentContext,
+            groupId: String?,
+            payerId: String,
+            payeeId: String,
+            onSettleClick: () -> Unit
+        ): SettleUpComponent
+    }
 }
 
 class DefaultSettleUpComponent(
@@ -26,7 +35,8 @@ class DefaultSettleUpComponent(
     override val groupId: String?,
     private val payerId: String,
     private val payeeId: String,
-    val onSettleClick: () -> Unit
+    val onSettleClick: () -> Unit,
+    private val repository: Repository
 ) : SettleUpComponent, ComponentContext by componentContext {
 
     private val groupIds = arrayListOf<String>()
@@ -39,23 +49,23 @@ class DefaultSettleUpComponent(
 
     init {
         componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
-            RepositoryImpl().getUserNameFromId(payerId).collect {
+            repository.getUserNameFromId(payerId).collect {
                 payerName.value = it
             }
-            RepositoryImpl().getUserNameFromId(payeeId).collect {
+            repository.getUserNameFromId(payeeId).collect {
                 payeeName.value = it
             }
             groupId?.let {
                 groupIds.add(groupId)
             } ?: run {
-                RepositoryImpl().getGroupsWithPendingBalances(payerId, payeeId).collect {
+                repository.getGroupsWithPendingBalances(payerId, payeeId).collect {
                     groupIds.addAll(it)
                 }
             }
             groupIds.forEach { gId ->
                 var amountPerGroup = 0.0
-                RepositoryImpl().getSpendsAfterLastSettle(gId).collect {
-                    RepositoryImpl().getSpendsAfterLastSettle(gId)
+                repository.getSpendsAfterLastSettle(gId).collect {
+                    repository.getSpendsAfterLastSettle(gId)
                         .collect { spendWithSplit ->
                             spendWithSplit.forEach { sp ->
                                 if ((sp.spend.spentBy == payerId && sp.splits.find { it.userId == payeeId } != null)
@@ -73,14 +83,14 @@ class DefaultSettleUpComponent(
 
     override fun onSettleClicked() {
         componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
-            RepositoryImpl().settleUp(
+            repository.settleUp(
                 payerId,
                 payeeId,
                 groupWiseAmount
             ).collect { r ->
                 if (r) {
                     groupWiseAmount.keys.forEach {
-                        checkGroupSettlesAndSync(it).collect {
+                        checkGroupSettlesAndSync(repository, it).collect {
                         }
                     }
                     withContext(Dispatchers.Main) {
@@ -88,6 +98,26 @@ class DefaultSettleUpComponent(
                     }
                 }
             }
+        }
+    }
+
+    class Factory(
+        val repository: Repository,
+    ) : SettleUpComponent.Factory {
+        override fun invoke(
+            componentContext: ComponentContext, groupId: String?,
+            payerId: String,
+            payeeId: String,
+            onSettleClick: () -> Unit
+        ): SettleUpComponent {
+            return DefaultSettleUpComponent(
+                componentContext,
+                groupId,
+                payerId,
+                payeeId,
+                onSettleClick,
+                repository
+            )
         }
     }
 

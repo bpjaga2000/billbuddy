@@ -9,16 +9,12 @@ import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.push
 import com.arkivanov.decompose.router.stack.replaceAll
 import com.arkivanov.decompose.value.Value
-import com.russhwolf.settings.set
-import data.repository.RepositoryImpl
+import data.Repository
+import di.koin
 import kotlinx.serialization.Serializable
 import presentation.bottomnavigation.BottomNavigationComponent
-import presentation.bottomnavigation.DefaultBottomNavigationComponent
-import presentation.login.DefaultLoginComponent
 import presentation.login.LoginComponent
-import presentation.register.DefaultRegisterComponent
 import presentation.register.RegisterComponent
-import utils.DataStore
 
 interface RootComponent {
     val childStack: Value<ChildStack<*, Child>>
@@ -28,21 +24,27 @@ interface RootComponent {
         class RegisterChild(val component: RegisterComponent) : Child()
         class BottomNavigationChild(val component: BottomNavigationComponent) : Child()
     }
+
+    fun interface Factory {
+        operator fun invoke(
+            componentContext: ComponentContext,
+        ): RootComponent
+    }
 }
 
 class DefaultRootComponent(
-    componentContext: ComponentContext
+    componentContext: ComponentContext,
+    repository: Repository
 ) : RootComponent, ComponentContext by componentContext {
 
-    init {
-        RepositoryImpl()
-    }
     private val navigation = StackNavigation<Config>()
 
     override val childStack: Value<ChildStack<*, RootComponent.Child>> = childStack(
         source = navigation,
         serializer = Config.serializer(),
-        initialConfiguration = if (!(DataStore.settings.getStringOrNull("token").isNullOrEmpty()))
+        initialConfiguration = if (!(repository.getSettings().getStringOrNull("token")
+                .isNullOrEmpty())
+        )
             Config.BottomNavigation
         else
             Config.Login,
@@ -56,7 +58,7 @@ class DefaultRootComponent(
     ): RootComponent.Child {
         return when (config) {
             is Config.Login -> RootComponent.Child.LoginChild(
-                DefaultLoginComponent(
+                (koin.inject<LoginComponent.Factory>()).value.invoke(
                     componentContext.childContext(key = "login"), {
                         navigation.replaceAll(Config.BottomNavigation)
                     }
@@ -66,9 +68,9 @@ class DefaultRootComponent(
             )
 
             is Config.Register -> RootComponent.Child.RegisterChild(
-                DefaultRegisterComponent(
+                (koin.inject<RegisterComponent.Factory>()).value.invoke(
                     componentContext.childContext(key = "register"), {
-                            navigation.replaceAll(Config.BottomNavigation)
+                        navigation.replaceAll(Config.BottomNavigation)
                     }
                 ) {
                     navigation.pop()
@@ -76,7 +78,7 @@ class DefaultRootComponent(
             )
 
             is Config.BottomNavigation -> RootComponent.Child.BottomNavigationChild(
-                DefaultBottomNavigationComponent(
+                (koin.inject<BottomNavigationComponent.Factory>()).value.invoke(
                     componentContext.childContext(key = "bottomNavigation")
                 ) {
                     navigation.replaceAll(Config.Login)
@@ -95,6 +97,13 @@ class DefaultRootComponent(
 
         @Serializable
         data object BottomNavigation : Config()
+    }
+
+    class Factory(
+        val repository: Repository,
+    ) : RootComponent.Factory {
+        override fun invoke(componentContext: ComponentContext): RootComponent =
+            DefaultRootComponent(componentContext, repository)
     }
 
 }

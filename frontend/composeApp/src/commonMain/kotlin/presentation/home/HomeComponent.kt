@@ -5,15 +5,14 @@ import androidx.compose.runtime.mutableStateOf
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.essenty.lifecycle.doOnResume
 import com.arkivanov.essenty.lifecycle.doOnStart
+import data.Repository
 import data.model.Balance
 import data.model.GroupWithOwes
 import data.remote.ApiResult
-import data.repository.RepositoryImpl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import utils.DataStore
 import utils.DispatcherUtils.componentCoroutineScope
 import utils.calculateOwes
 import utils.checkGroupSettlesAndSync
@@ -26,6 +25,15 @@ interface HomeComponent {
     fun onGroupClick(groupId: String)
     fun onCreateGroupClicked()
     fun onLogoutClick()
+    fun interface Factory {
+        operator fun invoke(
+            componentContext: ComponentContext,
+            onSpendClicked: (groupId: String) -> Unit,
+            onCreateGroupClicked: () -> Unit,
+            onLogoutClick: () -> Unit,
+            onFriendBalanceClick: (String, String) -> Unit
+        ): HomeComponent
+    }
 }
 
 class DefaultHomeComponent(
@@ -33,7 +41,8 @@ class DefaultHomeComponent(
     private val onSpendClicked: (groupId: String) -> Unit,
     private val onCreateGroupClicked: () -> Unit,
     private val onLogoutClick: () -> Unit,
-    private val onFriendBalanceClick: (String, String) -> Unit
+    private val onFriendBalanceClick: (String, String) -> Unit,
+    private val repository: Repository
 ) : HomeComponent, ComponentContext by componentContext {
 
     override var groups: MutableState<List<GroupWithOwes>> = mutableStateOf(listOf())
@@ -43,20 +52,20 @@ class DefaultHomeComponent(
         onFriendBalanceClick(currentUserId, payeeId)
     }
 
-    private val currentUserId = DataStore.settings.getString("id", "")
+    private val currentUserId = repository.getSettings().getString("id", "")
 
     init {
 
         lifecycle.doOnStart(true) {
             componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
                 loadData()
-                RepositoryImpl().upSync().collect { upSync ->
+                repository.upSync().collect { upSync ->
                     when (upSync) {
                         is ApiResult.Success -> {
-                            RepositoryImpl().sync().collect { sync ->
+                            repository.sync().collect { sync ->
                                 when (sync) {
                                     is ApiResult.Success -> {
-                                        RepositoryImpl().saveSyncData(sync.data)
+                                        repository.saveSyncData(sync.data)
                                             .collectLatest { isDone ->
                                                 if (isDone) {
 //                                    _isLoading.value = false
@@ -103,15 +112,15 @@ class DefaultHomeComponent(
     suspend fun loadData() {
         val groupsList = arrayListOf<GroupWithOwes>()
         val balances = arrayListOf<Balance>()
-        RepositoryImpl().getAllGroups().collect { g ->
+        repository.getAllGroups().collect { g ->
             groupsList.addAll(g.map { GroupWithOwes(it, 0.0) })
             g.forEach { gId ->
-                checkGroupSettlesAndSync(gId.id).collect {
+                checkGroupSettlesAndSync(repository, gId.id).collect {
 
                 }
             }
         }
-        RepositoryImpl().getAllUsers().collect {
+        repository.getAllUsers().collect {
             balances.addAll(
                 it.map { user ->
                     Balance(
@@ -124,7 +133,7 @@ class DefaultHomeComponent(
                 }.filter { f -> f.userId != currentUserId }
             )
             groupsList.forEach { group ->
-                RepositoryImpl().getSpendsAfterLastSettle(group.group.id)
+                repository.getSpendsAfterLastSettle(group.group.id)
                     .collect { spendWithSplit ->
                         spendWithSplit.forEach { sp ->
                             group.owe = group.owe + sp.calculateOwes(currentUserId)
@@ -144,15 +153,15 @@ class DefaultHomeComponent(
 
     override fun onLogoutClick() {
         componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
-            RepositoryImpl().upSync().collect {
+            repository.upSync().collect {
                 if (it !is ApiResult.Loading)
-                    RepositoryImpl().logout().collect {
+                    repository.logout().collect {
                         when (it) {
                             is ApiResult.Success -> {
                                 withContext(Dispatchers.Main) {
-                                    RepositoryImpl().clearDb().collect {
+                                    repository.clearDb().collect {
                                         if (it) {
-                                            DataStore.settings.clear()
+                                            repository.getSettings().clear()
                                             onLogoutClick.invoke()
                                         }
                                     }
@@ -163,6 +172,26 @@ class DefaultHomeComponent(
                         }
                     }
             }
+        }
+    }
+
+    class Factory(
+        val repository: Repository,
+    ) : HomeComponent.Factory {
+        override fun invoke(
+            componentContext: ComponentContext, onSpendClicked: (groupId: String) -> Unit,
+            onCreateGroupClicked: () -> Unit,
+            onLogoutClick: () -> Unit,
+            onFriendBalanceClick: (String, String) -> Unit
+        ): HomeComponent {
+            return DefaultHomeComponent(
+                componentContext,
+                onSpendClicked,
+                onCreateGroupClicked,
+                onLogoutClick,
+                onFriendBalanceClick,
+                repository
+            )
         }
     }
 

@@ -1,7 +1,6 @@
 package data
 
-import data.model.Balance
-import data.model.EditSpendDetails
+import com.russhwolf.settings.Settings
 import data.model.EditSpendTabDetails
 import data.model.GroupMember
 import data.model.SpendWithSplit
@@ -18,6 +17,7 @@ import dev.bpj4.billbuddy.tableandmigrations.Users
 import kotlinx.coroutines.flow.Flow
 
 interface Repository {
+    fun getSettings(): Settings//todo remove
     suspend fun logIn(email: String, password: String): Flow<ApiResult<UserDto>>
     suspend fun register(email: String, password: String): Flow<ApiResult<UserDto>>
     suspend fun sync(): Flow<ApiResult<SyncDto>>
@@ -84,4 +84,10 @@ interface Repository {
 
     suspend fun upSync(): Flow<ApiResult<String>>
     suspend fun groupSettleCorrection(groupId: String, spendUpdatedAt: Long): Flow<Boolean>
+    fun saveSpendSplits(
+        split: List<EditSpendTabDetails>,
+        spendId: String,
+        groupId: String,
+        splitType: Int
+    ): Flow<Boolean>
 }

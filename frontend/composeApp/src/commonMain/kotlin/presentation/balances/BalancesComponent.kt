@@ -4,8 +4,8 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.essenty.lifecycle.doOnResume
+import data.Repository
 import data.model.Balance
-import data.repository.RepositoryImpl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import utils.DispatcherUtils.componentCoroutineScope
@@ -15,12 +15,23 @@ interface BalancesComponent {
     val groupId: String
     val balances: MutableState<LinkedHashMap<String, Balance>>
     fun onSettleUpClicked(groupId: String, payerId: String, payeeId: String)
+
+    fun interface Factory {
+        operator fun invoke(
+            componentContext: ComponentContext,
+            groupId: String,
+            onSettleUpClick: (String, String, String) -> Unit,
+        ): BalancesComponent
+    }
+
+    fun getCurrentUserId(): String
 }
 
 class DefaultBalancesComponent(
     private val componentContext: ComponentContext,
     override val groupId: String,
-    private val onSettleUpClick: (String, String, String) -> Unit
+    private val onSettleUpClick: (String, String, String) -> Unit,
+    private val repository: Repository
 ) : BalancesComponent, ComponentContext by componentContext {
     override val balances = mutableStateOf(linkedMapOf<String, Balance>())
 
@@ -28,7 +39,7 @@ class DefaultBalancesComponent(
         lifecycle.doOnResume {
             componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
                 val balanceList = linkedMapOf<String, Balance>()
-                RepositoryImpl().getGroupMemberDetails(groupId).collect {
+                repository.getGroupMemberDetails(groupId).collect {
                     balanceList.putAll(
                         it.map { user ->
                             Pair(
@@ -48,7 +59,7 @@ class DefaultBalancesComponent(
                             linkedMapOf<String, Balance>().apply { putAll(temp.filter { t -> t.key != inner.key }) }
                     }
                 }
-                RepositoryImpl().getSpendsAfterLastSettle(groupId).collect {
+                repository.getSpendsAfterLastSettle(groupId).collect {
                     balanceList.iterator().forEach { (k, v) ->
                         it.forEach { sp ->
                             v.amount = v.amount + sp.calculateOwes(k)
@@ -78,6 +89,19 @@ class DefaultBalancesComponent(
         payeeId: String
     ) {
         onSettleUpClick(groupId, payerId, payeeId)
+    }
+
+    override fun getCurrentUserId() = repository.getSettings().getString("id", "")
+
+    class Factory(
+        val repository: Repository,
+    ) : BalancesComponent.Factory {
+        override fun invoke(
+            componentContext: ComponentContext, groupId: String,
+            onSettleUpClick: (String, String, String) -> Unit,
+        ): BalancesComponent {
+            return DefaultBalancesComponent(componentContext, groupId, onSettleUpClick, repository)
+        }
     }
 
 }

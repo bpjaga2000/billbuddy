@@ -49,7 +49,6 @@ import presentation.search.SearchScreen
 import presentation.settleup.SettleUpScreen
 import presentation.spenddetails.SpendDetailsScreen
 import presentation.totals.TotalsScreen
-import utils.DataStore
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,7 +57,7 @@ fun BottomNavigationScreen(component: BottomNavigationComponent, modifier: Modif
     val configs = listOf(Constants.HOME, Constants.PROFILE)
     var selectedItem by remember {
         mutableStateOf(
-            if (DataStore.settings.getStringOrNull("token").isNullOrEmpty()) 1 else 0
+            if (component.getToken().isNullOrEmpty()) 1 else 0
         )
     }
     var title by mutableStateOf("")

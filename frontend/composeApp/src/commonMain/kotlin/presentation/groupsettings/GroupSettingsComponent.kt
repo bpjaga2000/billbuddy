@@ -4,10 +4,10 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.essenty.lifecycle.doOnResume
+import data.Repository
 import data.model.GroupMember
 import data.model.dto.GroupDto
 import data.remote.ApiResult
-import data.repository.RepositoryImpl
 import dev.bpj4.billbuddy.tableandmigrations.Groups
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -21,13 +21,24 @@ interface GroupSettingsComponent {
     fun onRemoveMemberClicked(groupMemberId: String)
     fun onAddMemberClicked()
     fun onSaveClicked()
+    fun interface Factory {
+        operator fun invoke(
+            componentContext: ComponentContext,
+            groupId: String,
+            onAddMemberClick: (String, String) -> Unit,
+            popScreen: () -> Unit,
+        ): GroupSettingsComponent
+    }
+
+    fun getCurrentUserId(): String
 }
 
 class DefaultGroupSettingsComponent(
     private val componentContext: ComponentContext,
     override val groupId: String,
     private val onAddMemberClick: (String, String) -> Unit,
-    private val popScreen: () -> Unit
+    private val popScreen: () -> Unit,
+    private val repository: Repository
 ) : GroupSettingsComponent, ComponentContext by componentContext {
     private var group: Groups? = null
     override var groupName: String = ""
@@ -38,7 +49,7 @@ class DefaultGroupSettingsComponent(
     init {
         lifecycle.doOnResume {
             componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
-                RepositoryImpl().getGroupById(groupId).collect {
+                repository.getGroupById(groupId).collect {
                     group = it
                     group?.let { group -> groupName = group.name }
                 }
@@ -50,7 +61,7 @@ class DefaultGroupSettingsComponent(
 
     override fun onRemoveMemberClicked(groupMemberId: String) {
         componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
-            RepositoryImpl().removeMemberFromGroup(listOf(groupMemberId), groupId).collect {
+            repository.removeMemberFromGroup(listOf(groupMemberId), groupId).collect {
                 when (it) {
                     is ApiResult.Success -> {
                         getGroupMembers()
@@ -72,7 +83,7 @@ class DefaultGroupSettingsComponent(
 
     override fun onSaveClicked() {
         componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
-            RepositoryImpl().updateGroup(
+            repository.updateGroup(
                 groupId, GroupDto(
                     groupName,
                     group!!.tag,
@@ -89,8 +100,28 @@ class DefaultGroupSettingsComponent(
     }
 
     private suspend fun getGroupMembers() {
-        RepositoryImpl().getGroupMemberDetails(groupId).collect {
+        repository.getGroupMemberDetails(groupId).collect {
             _groupMembers.value = it
+        }
+    }
+
+    override fun getCurrentUserId() = repository.getSettings().getString("id", "")
+
+    class Factory(
+        val repository: Repository,
+    ) : GroupSettingsComponent.Factory {
+        override fun invoke(
+            componentContext: ComponentContext, groupId: String,
+            onAddMemberClick: (String, String) -> Unit,
+            popScreen: () -> Unit,
+        ): GroupSettingsComponent {
+            return DefaultGroupSettingsComponent(
+                componentContext,
+                groupId,
+                onAddMemberClick,
+                popScreen,
+                repository
+            )
         }
     }
 

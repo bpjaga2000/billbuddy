@@ -1,7 +1,5 @@
 package di
 
-import org.koin.dsl.module
+import org.koin.core.module.Module
 
-fun platformModule() = module {
-
-}
+expect val platformModule: Module

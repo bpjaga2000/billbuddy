@@ -1,11 +1,9 @@
 package presentation.login
 
-import androidx.compose.runtime.mutableStateOf
 import com.arkivanov.decompose.ComponentContext
 import com.russhwolf.settings.set
-import data.model.dto.UserDto
+import data.Repository
 import data.remote.ApiResult
-import data.repository.RepositoryImpl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,19 +11,26 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import utils.DataStore
 import utils.DispatcherUtils.componentCoroutineScope
 
 interface LoginComponent {
     val isLoading: StateFlow<Boolean>
     fun onLoginClicked(email: String, password: String)
     fun onRegisterClicked()
+    fun interface Factory {
+        operator fun invoke(
+            componentContext: ComponentContext,
+            onLoginSuccessful: () -> Unit,
+            onRegisterClicked: () -> Unit
+        ): LoginComponent
+    }
 }
 
 class DefaultLoginComponent(
     private val componentContext: ComponentContext,
     private val onLoginSuccessful: () -> Unit,
-    private val onRegisterClicked: () -> Unit
+    private val onRegisterClicked: () -> Unit,
+    private val repository: Repository
 ) : LoginComponent, ComponentContext by componentContext {
 
     private val coroutineScope = componentContext.componentCoroutineScope()
@@ -35,14 +40,14 @@ class DefaultLoginComponent(
     override fun onLoginClicked(email: String, password: String) {
         _isLoading.value = true
         coroutineScope.launch(Dispatchers.Default) {
-            RepositoryImpl().logIn(email, password).collect {
+            repository.logIn(email, password).collect {
                 when (it) {
                     is ApiResult.Success -> {
                         _isLoading.value = false
                         withContext(Dispatchers.Main) {
-                            DataStore.settings["token"] = it.data.token
-                            DataStore.settings["email"] = it.data.email
-                            DataStore.settings["id"] = it.data.id
+                            repository.getSettings()["token"] = it.data.token
+                            repository.getSettings()["email"] = it.data.email
+                            repository.getSettings()["id"] = it.data.id
                             syncData()
                         }
                     }
@@ -58,11 +63,11 @@ class DefaultLoginComponent(
     private fun syncData() {
         _isLoading.value = true
         coroutineScope.launch(Dispatchers.Default) {
-            RepositoryImpl().sync()
+            repository.sync()
                 .collect {
                     when (it) {
                         is ApiResult.Success -> {
-                            RepositoryImpl().saveSyncData(it.data).collectLatest { isDone ->
+                            repository.saveSyncData(it.data).collectLatest { isDone ->
                                 if (isDone)
                                     withContext(Dispatchers.Main) {
                                         _isLoading.value = false
@@ -84,6 +89,23 @@ class DefaultLoginComponent(
 
     override fun onRegisterClicked() {
         onRegisterClicked.invoke()
+    }
+
+    class Factory(
+        val repository: Repository
+    ) : LoginComponent.Factory {
+        override fun invoke(
+            componentContext: ComponentContext,
+            onLoginSuccessful: () -> Unit,
+            onRegisterClicked: () -> Unit
+        ): LoginComponent {
+            return DefaultLoginComponent(
+                componentContext,
+                onLoginSuccessful,
+                onRegisterClicked,
+                repository
+            )
+        }
     }
 
 }

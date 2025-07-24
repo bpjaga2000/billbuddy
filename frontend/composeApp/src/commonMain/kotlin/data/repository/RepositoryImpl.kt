@@ -3,6 +3,7 @@ package data.repository
 import app.cash.sqldelight.EnumColumnAdapter
 import app.cash.sqldelight.adapter.primitive.IntColumnAdapter
 import app.cash.sqldelight.db.SqlDriver
+import com.russhwolf.settings.Settings
 import com.russhwolf.settings.get
 import com.russhwolf.settings.set
 import constants.SplitType
@@ -48,8 +49,6 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.contentType
 import io.voxkit.kotlin.nanoid.NanoId
 import kotlinx.coroutines.flow.flow
-import utils.DataStore
-import utils.getSqlDriver
 import utils.mapToGroupSettlesDto
 import utils.mapToSpendDto
 import utils.mapToSpendSplitDto
@@ -58,19 +57,13 @@ import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
-class RepositoryImpl : Repository {
+class RepositoryImpl(
+    private var db: SqlDriver,
+    private var settings: Settings
+) : Repository {
+    private val currentUserId = settings.get<String>("id") ?: ""
 
-    private var db: SqlDriver = getSqlDriver()!!
-    private val currentUserId = DataStore.settings.get<String>("id") ?: ""
-
-    /*init {
-
-        if (db == null)
-            CoroutineScope(Dispatchers.Default).launch {
-                db = getSqlDriver()!!
-            }
-    }*/
-
+    override fun getSettings(): Settings = settings
     override suspend fun logIn(email: String, password: String) = flow<ApiResult<UserDto>> {
         emit(ApiResult.loading())
         with(ApiClient.httpClient.post {
@@ -103,19 +96,19 @@ class RepositoryImpl : Repository {
         emit(ApiResult.loading())
         with(ApiClient.httpClient.get {
             headers {
-                append(HttpHeaders.Authorization, "Bearer ${DataStore.settings["token"] ?: " "}")
+                append(HttpHeaders.Authorization, "Bearer ${settings["token"] ?: " "}")
             }
             contentType(ContentType.Application.Json)
             url("http", "92.119.126.127", 8090, "api/v1/sync") {
                 parameters.append("id", currentUserId)
-                DataStore.settings.get<Long>("lastSyncTime")?.let { lastSyncTime ->
+                settings.get<Long>("lastSyncTime")?.let { lastSyncTime ->
                     parameters.append("lastSyncTime", lastSyncTime.toString())
                 }
             }
         }) {
             if (status.value in 200..299) {
                 emit(ApiResult.success(body()))
-                DataStore.settings.set<Long>("lastSyncTime", Clock.System.now().epochSeconds)
+                settings.set<Long>("lastSyncTime", Clock.System.now().epochSeconds)
             } else
                 emit(ApiResult.error(body() as String?))
         }
@@ -265,12 +258,12 @@ class RepositoryImpl : Repository {
                 headers {
                     append(
                         HttpHeaders.Authorization,
-                        "Bearer ${DataStore.settings["token"] ?: " "}"
+                        "Bearer ${settings["token"] ?: " "}"
                     )
                 }
                 contentType(ContentType.Application.Json)
                 url("http", "92.119.126.127", 8090, "api/v1/group")
-                setBody(GroupDto(groupName, groupTag, DataStore.settings.get<String>("id")!!))
+                setBody(GroupDto(groupName, groupTag, settings.get<String>("id")!!))
             }) {
                 if (status.value in 200..299) {
                     val body = body<GroupResponseDto>()
@@ -300,7 +293,7 @@ class RepositoryImpl : Repository {
                 headers {
                     append(
                         HttpHeaders.Authorization,
-                        "Bearer ${DataStore.settings["token"] ?: " "}"
+                        "Bearer ${settings["token"] ?: " "}"
                     )
                 }
                 contentType(ContentType.Application.Json)
@@ -406,7 +399,7 @@ class RepositoryImpl : Repository {
                 headers {
                     append(
                         HttpHeaders.Authorization,
-                        "Bearer ${DataStore.settings["token"] ?: " "}"
+                        "Bearer ${settings["token"] ?: " "}"
                     )
                 }
                 contentType(ContentType.Application.Json)
@@ -458,7 +451,7 @@ class RepositoryImpl : Repository {
             headers {
                 append(
                     HttpHeaders.Authorization,
-                    "Bearer ${DataStore.settings["token"] ?: " "}"
+                    "Bearer ${settings["token"] ?: " "}"
                 )
             }
             contentType(ContentType.Application.Json)
@@ -502,7 +495,7 @@ class RepositoryImpl : Repository {
             headers {
                 append(
                     HttpHeaders.Authorization,
-                    "Bearer ${DataStore.settings["token"] ?: " "}"
+                    "Bearer ${settings["token"] ?: " "}"
                 )
             }
             contentType(ContentType.Application.Json)
@@ -544,7 +537,7 @@ class RepositoryImpl : Repository {
                 headers {
                     append(
                         HttpHeaders.Authorization,
-                        "Bearer ${DataStore.settings["token"] ?: " "}"
+                        "Bearer ${settings["token"] ?: " "}"
                     )
                 }
                 contentType(ContentType.Application.Json)
@@ -578,7 +571,7 @@ class RepositoryImpl : Repository {
             headers {
                 append(
                     HttpHeaders.Authorization,
-                    "Bearer ${DataStore.settings["token"] ?: " "}"
+                    "Bearer ${settings["token"] ?: " "}"
                 )
             }
             contentType(ContentType.Application.Json)
@@ -586,7 +579,7 @@ class RepositoryImpl : Repository {
                 "http",
                 "92.119.126.127",
                 8090,
-                "api/v1/auth/logout/${DataStore.settings["id"] ?: " "}"
+                "api/v1/auth/logout/${settings["id"] ?: " "}"
             )
         }) {
             if (status.value in 200..299) {
@@ -645,7 +638,7 @@ class RepositoryImpl : Repository {
         emit(spendId)
     }
 
-    fun saveSpendSplits(
+    override fun saveSpendSplits(
         split: List<EditSpendTabDetails>,
         spendId: String,
         groupId: String,
@@ -895,7 +888,7 @@ class RepositoryImpl : Repository {
 
         with(ApiClient.httpClient.post {
             headers {
-                append(HttpHeaders.Authorization, "Bearer ${DataStore.settings["token"] ?: " "}")
+                append(HttpHeaders.Authorization, "Bearer ${settings["token"] ?: " "}")
             }
             contentType(ContentType.Application.Json)
             url("http", "92.119.126.127", 8090, "api/v1/sync") {

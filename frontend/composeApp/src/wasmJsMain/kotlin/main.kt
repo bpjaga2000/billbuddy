@@ -5,19 +5,17 @@ import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import com.arkivanov.essenty.lifecycle.resume
 import com.arkivanov.essenty.lifecycle.stop
+import di.koin
 import kotlinx.browser.document
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.w3c.dom.Document
-import presentation.navigation.DefaultRootComponent
+import presentation.navigation.RootComponent
 import presentation.navigation.RootContent
-import utils.getSqlDriver
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalDecomposeApi::class)
 fun main() {
     val lifecycle = LifecycleRegistry()
-    val rootComponent = DefaultRootComponent(DefaultComponentContext(lifecycle))
+    val rootComponentFactory: RootComponent.Factory by koin.inject()
+    val rootComponent = rootComponentFactory.invoke(DefaultComponentContext(lifecycle))
 
     lifecycle.attachToDocument()
 

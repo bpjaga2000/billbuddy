@@ -20,7 +20,9 @@ fun BalancesScreen(component: BalancesComponent, modifier: Modifier = Modifier) 
                 balances[keys[it]]!!.userSettles!!.values.toList(),
                 { groupId, payerId, payeeId ->
                     component.onSettleUpClicked(groupId, payerId, payeeId)
-                })
+                },
+                component.getCurrentUserId()
+            )
         }
     }
 

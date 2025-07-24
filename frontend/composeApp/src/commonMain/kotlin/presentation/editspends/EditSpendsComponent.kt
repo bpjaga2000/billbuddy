@@ -13,10 +13,10 @@ import com.arkivanov.decompose.router.pages.select
 import com.arkivanov.decompose.value.Value
 import com.russhwolf.settings.get
 import constants.SplitType
+import data.Repository
 import data.SpendTags
 import data.model.EditSpendTabDetails
 import data.model.GroupMemberSplit
-import data.repository.RepositoryImpl
 import dev.bpj4.billbuddy.tableandmigrations.SpendSplits
 import dev.bpj4.billbuddy.tableandmigrations.Spends
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +25,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import presentation.editspends.editspendstab.DefaultEditSpendsTabComponent
 import presentation.editspends.editspendstab.EditSpendsTabComponent
-import utils.DataStore
 import utils.DispatcherUtils.componentCoroutineScope
 import utils.checkGroupSettlesAndSync
 import kotlin.time.Clock
@@ -47,6 +46,16 @@ interface EditSpendsComponent {
     var spendSplit: List<SpendSplits>?
     fun onSaveClicked()
     fun onPageSelected(index: Int)
+
+    fun interface Factory {
+        operator fun invoke(
+            componentContext: ComponentContext,
+            groupId: String,
+            spendId: String?,
+            selection: MutableState<Int>,
+            onSaved: () -> Unit,
+        ): EditSpendsComponent
+    }
 }
 
 class DefaultEditSpendsComponent(
@@ -54,7 +63,8 @@ class DefaultEditSpendsComponent(
     private val groupId: String,
     private val spendId: String?,
     override var selection: MutableState<Int> = mutableStateOf(0),
-    private val onSaved: () -> Unit
+    private val onSaved: () -> Unit,
+    private val repository: Repository
 ) : EditSpendsComponent, ComponentContext by componentContext {
 
     override val spendName = mutableStateOf("")
@@ -69,16 +79,16 @@ class DefaultEditSpendsComponent(
     override val groupName = mutableStateOf("")
     override var isValid = false
     private var splitDetails: List<EditSpendTabDetails>? = null
-    private var currentUser = DataStore.settings.get<String>("id")!!
+    private var currentUser = repository.getSettings().get<String>("id")!!
     override var pageStack: MutableState<Value<ChildPages<*, EditSpendsTabComponent>>?> =
         mutableStateOf(null)
 
     init {
         componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
-            RepositoryImpl().getGroupById(groupId).collect {
+            repository.getGroupById(groupId).collect {
                 groupName.value = it.name
             }
-            RepositoryImpl().getGroupMemberDetails(groupId).collect {
+            repository.getGroupMemberDetails(groupId).collect {
                 groupMembers = it.map { member ->
                     GroupMemberSplit(
                         member.userId,
@@ -91,7 +101,7 @@ class DefaultEditSpendsComponent(
             spentBy.value = currentUser
             spentAt.value = Clock.System.now().epochSeconds
             if (spendId != null) {
-                RepositoryImpl().getSpendAndSplitWithSpendId(spendId).collect {
+                repository.getSpendAndSplitWithSpendId(spendId).collect {
                     spend = it.spend
                     spendSplit = it.splits
                     spendName.value = it.spend.name
@@ -173,7 +183,7 @@ class DefaultEditSpendsComponent(
 
             componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
                 if (spendId == null) {
-                    RepositoryImpl().saveSpend(
+                    repository.saveSpend(
                         spendName.value,
                         amount.value,
                         spendTags.value,
@@ -182,14 +192,14 @@ class DefaultEditSpendsComponent(
                         spentBy.value
                     ).collect { id ->
                         if (id.isNotBlank())
-                            RepositoryImpl().saveSpendSplits(
+                            repository.saveSpendSplits(
                                 payeeList,
                                 id,
                                 groupId,
                                 splitType,
                             ).collect {
                                 if (it) {
-                                    checkGroupSettlesAndSync(groupId).collect {
+                                    checkGroupSettlesAndSync(repository, groupId).collect {
                                     }
                                     withContext(Dispatchers.Main) {
                                         onSaved()
@@ -209,8 +219,8 @@ class DefaultEditSpendsComponent(
                             }
                         }
                     if (isDifferent || spend!!.name != spendName.value || spend!!.totalAmount != amount.value.toDoubleOrNull() || spend!!.tag != spendTags.value || spend!!.spentAt != spentAt.value || spend!!.spentBy != spentBy.value) {
-                        RepositoryImpl().groupSettleCorrection(groupId, spend!!.updatedAt).collect {
-                            RepositoryImpl().updateSpend(
+                        repository.groupSettleCorrection(groupId, spend!!.updatedAt).collect {
+                            repository.updateSpend(
                                 spend!!.copy(
                                     name = spendName.value,
                                     totalAmount = amount.value.toDoubleOrNull()
@@ -222,13 +232,13 @@ class DefaultEditSpendsComponent(
                                 )
                             ).collect {
                                 if (isDifferent) {
-                                    RepositoryImpl().updateSpendSplits(
+                                    repository.updateSpendSplits(
                                         payeeList,
                                         splitType,
                                         spend!!
                                     ).collect {
                                         if (it) {
-                                            checkGroupSettlesAndSync(groupId).collect {
+                                            checkGroupSettlesAndSync(repository, groupId).collect {
                                             }
                                             withContext(Dispatchers.Main) {
                                                 onSaved()
@@ -279,4 +289,25 @@ class DefaultEditSpendsComponent(
 
     @Serializable
     private data class Config(val type: Int)
+
+    class Factory(
+        val repository: Repository,
+    ) : EditSpendsComponent.Factory {
+        override fun invoke(
+            componentContext: ComponentContext, groupId: String,
+            spendId: String?,
+            selection: MutableState<Int>,
+            onSaved: () -> Unit,
+        ): EditSpendsComponent {
+            return DefaultEditSpendsComponent(
+                componentContext = componentContext,
+                groupId,
+                spendId,
+                selection,
+                onSaved,
+                repository = repository
+            )
+        }
+
+    }
 }

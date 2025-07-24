@@ -23,7 +23,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import data.model.Balance
-import utils.DataStore
 import kotlin.math.absoluteValue
 
 @Composable
@@ -31,6 +30,7 @@ fun BalanceItem(
     payer: Balance,
     payees: List<Balance>,
     onClick: (String, String, String) -> Unit,
+    currentUserId: String,
     modifier: Modifier = Modifier
 ) {
 
@@ -67,7 +67,7 @@ fun BalanceItem(
                         modifier = Modifier.height(20.dp),
                         text = "${payees[index].name} " + (if (payees[index].amount > 0.0) "gets" else "owes") + " ₹${payees[index].amount.absoluteValue}"
                     )
-                    if (payer.userId == DataStore.settings.getStringOrNull("id") && payees[index].amount != 0.0)
+                    if (payer.userId == currentUserId && payees[index].amount != 0.0)
                         Button(
                             onClick = {
                                 onClick(

@@ -1,9 +1,9 @@
 package utils
 
 import constants.SplitType
+import data.Repository
 import data.model.SpendWithSplit
 import data.remote.ApiResult
-import data.repository.RepositoryImpl
 import kotlinx.coroutines.flow.flow
 
 fun SpendWithSplit.calculateOwes(userId: String): Double {
@@ -52,14 +52,14 @@ fun SpendWithSplit.calculateOwes(userId: String): Double {
     }
 }
 
-suspend fun checkGroupSettlesAndSync(groupId: String) = flow {
-    RepositoryImpl().getSpendsAfterLastSettle(groupId).collect {
+fun checkGroupSettlesAndSync(repository: Repository, groupId: String) = flow {
+    repository.getSpendsAfterLastSettle(groupId).collect {
         if (it.isEmpty()) {
-            upSync()
+            upSync(repository)
             emit(true)
         } else {
             val balanceList = hashMapOf<String, Double>()
-            RepositoryImpl().getGroupMemberDetails(groupId).collect {
+            repository.getGroupMemberDetails(groupId).collect {
                 balanceList.putAll(
                     it.map { user ->
                         Pair(
@@ -75,23 +75,23 @@ suspend fun checkGroupSettlesAndSync(groupId: String) = flow {
                 }
             }
             if (balanceList.values.all { ele -> ele == 0.0 })
-                RepositoryImpl().saveGroupSettle(groupId).collect {
-                    upSync()
+                repository.saveGroupSettle(groupId).collect {
+                    upSync(repository)
                     if (it) {
                         emit(true)
                     }
                 }
             else {
-                upSync()
+                upSync(repository)
                 emit(false)
             }
         }
     }
 }
 
-suspend fun upSync() {
-    RepositoryImpl().upSync().collect {
+suspend fun upSync(repository: Repository) {
+    repository.upSync().collect {
         if (it is ApiResult.Success)
-            RepositoryImpl().sync().collect { }
+            repository.sync().collect { }
     }
 }

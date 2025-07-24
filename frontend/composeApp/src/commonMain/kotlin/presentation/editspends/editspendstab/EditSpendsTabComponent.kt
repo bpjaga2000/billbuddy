@@ -1,10 +1,8 @@
 package presentation.editspends.editspendstab
 
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import com.arkivanov.decompose.ComponentContext
 import data.model.EditSpendTabDetails
-import data.model.GroupMemberSplit
 
 interface EditSpendsTabComponent {
     val type: Int

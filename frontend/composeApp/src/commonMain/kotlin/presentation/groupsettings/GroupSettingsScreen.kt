@@ -33,7 +33,8 @@ fun GroupSettingsScreen(component: GroupSettingsComponent, modifier: Modifier = 
             items(groupMembers.value.size, key = { it -> groupMembers.value[it].userId }) {
                 GroupMemberItem(
                     groupMembers.value[it],
-                    component::onRemoveMemberClicked
+                    component::onRemoveMemberClicked,
+                    component.getCurrentUserId()
                 )
             }
         }

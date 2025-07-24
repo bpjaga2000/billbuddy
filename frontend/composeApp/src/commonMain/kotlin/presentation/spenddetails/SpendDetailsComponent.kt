@@ -3,8 +3,8 @@ package presentation.spenddetails
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.arkivanov.decompose.ComponentContext
+import data.Repository
 import data.model.SpendWithSplit
-import data.repository.RepositoryImpl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -18,13 +18,22 @@ interface SpendDetailsComponent {
     fun onDeleteClicked()
     fun onEditClicked()
     fun calculateOwes(spentBy: String): Double
+    fun interface Factory {
+        operator fun invoke(
+            componentContext: ComponentContext,
+            spendId: String,
+            onDeleteClicked: () -> Unit,
+            onEditClicked: (spendId: String) -> Unit
+        ): SpendDetailsComponent
+    }
 }
 
 class DefaultSpendDetailsComponent(
     private val componentContext: ComponentContext,
     private val spendId: String,
     private val onDeleteClicked: () -> Unit,
-    private val onEditClicked: (spendId: String) -> Unit
+    private val onEditClicked: (spendId: String) -> Unit,
+    private val repository: Repository
 ) : SpendDetailsComponent, ComponentContext by componentContext {
     override val spenderOwes = mutableStateOf(0.0)
     override var spendDetails = mutableStateOf<SpendWithSplit?>(null)
@@ -33,16 +42,16 @@ class DefaultSpendDetailsComponent(
 
     init {
         componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
-            RepositoryImpl().getSpendAndSplitWithSpendId(spendId).collect { spend ->
+            repository.getSpendAndSplitWithSpendId(spendId).collect { spend ->
                 groupId = spend.spend.groupId
                 spendDetails.value = spend
                 spenderOwes.value = spend.calculateOwes(spend.spend.spentBy)
-                RepositoryImpl().getUserNameFromId(spend.spend.createdBy).collect {
+                repository.getUserNameFromId(spend.spend.createdBy).collect {
                     userNames.value = userNames.value.plus(Pair(spend.spend.createdBy, it))
                 }
                 spend.splits.forEach { split ->
                     componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
-                        RepositoryImpl().getUserNameFromId(split.userId).collect {
+                        repository.getUserNameFromId(split.userId).collect {
                             userNames.value = userNames.value.plus(Pair(split.userId, it))
                         }
                     }
@@ -53,8 +62,11 @@ class DefaultSpendDetailsComponent(
 
     override fun onDeleteClicked() {
         componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
-            RepositoryImpl().groupSettleCorrection(spendDetails.value!!.spend.groupId, spendDetails.value!!.spend.updatedAt).collect {
-                RepositoryImpl().deleteSpend(spendId).collect {
+            repository.groupSettleCorrection(
+                spendDetails.value!!.spend.groupId,
+                spendDetails.value!!.spend.updatedAt
+            ).collect {
+                repository.deleteSpend(spendId).collect {
                     if (it)
                         withContext(Dispatchers.Main) {
                             this@DefaultSpendDetailsComponent.onDeleteClicked.invoke()
@@ -71,4 +83,22 @@ class DefaultSpendDetailsComponent(
     override fun calculateOwes(spentBy: String): Double =
         spendDetails.value?.calculateOwes(spentBy) ?: 0.0
 
+
+    class Factory(
+        val repository: Repository,
+    ) : SpendDetailsComponent.Factory {
+        override fun invoke(
+            componentContext: ComponentContext, spendId: String,
+            onDeleteClicked: () -> Unit,
+            onEditClicked: (spendId: String) -> Unit
+        ): SpendDetailsComponent {
+            return DefaultSpendDetailsComponent(
+                componentContext,
+                spendId,
+                onDeleteClicked,
+                onEditClicked,
+                repository
+            )
+        }
+    }
 }

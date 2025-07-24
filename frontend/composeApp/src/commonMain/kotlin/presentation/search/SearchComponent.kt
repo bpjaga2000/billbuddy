@@ -3,9 +3,9 @@ package presentation.search
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.arkivanov.decompose.ComponentContext
+import data.Repository
 import data.model.dto.ProfileDto
 import data.remote.ApiResult
-import data.repository.RepositoryImpl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -18,6 +18,15 @@ interface SearchComponent {
     fun onSearchResultTapped(userId: String, isChecked: Boolean)
     fun onAddMoreClicked()
     fun onDoneClicked()
+    fun interface Factory {
+        operator fun invoke(
+            componentContext: ComponentContext,
+            existingMemberIds: String,
+            groupId: String,
+            onAddMoreClick: () -> Unit,
+            onDone: () -> Unit
+        ): SearchComponent
+    }
 }
 
 class DefaultSearchComponent(
@@ -26,6 +35,7 @@ class DefaultSearchComponent(
     private val groupId: String,
     private val onAddMoreClick: () -> Unit,
     private val onDone: () -> Unit,
+    private val repository: Repository
 ) : SearchComponent, ComponentContext by componentContext {
     override var searchString = mutableStateOf("")
     private var addedMembers = mutableStateOf(listOf<ProfileDto>())
@@ -35,7 +45,7 @@ class DefaultSearchComponent(
 
     override fun onSearchClicked(text: String) {
         componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
-            RepositoryImpl().searchFriends(text).collect {
+            repository.searchFriends(text).collect {
                 searchResults.value = it.filterNot { f -> existingMemberIds.contains(f.id) }
             }
         }
@@ -58,9 +68,9 @@ class DefaultSearchComponent(
 
     override fun onDoneClicked() {
         componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
-            RepositoryImpl().addUsers(addedMembers.value).collect { added ->
+            repository.addUsers(addedMembers.value).collect { added ->
                 if (added)
-                    RepositoryImpl().addGroupMembers(addedMembers.value.map { it.id }, groupId)
+                    repository.addGroupMembers(addedMembers.value.map { it.id }, groupId)
                         .collect {
                             when (it) {
                                 is ApiResult.Success -> {
@@ -73,6 +83,26 @@ class DefaultSearchComponent(
                             }
                         }
             }
+        }
+    }
+
+    class Factory(
+        val repository: Repository,
+    ) : SearchComponent.Factory {
+        override fun invoke(
+            componentContext: ComponentContext, existingMemberIds: String,
+            groupId: String,
+            onAddMoreClick: () -> Unit,
+            onDone: () -> Unit
+        ): SearchComponent {
+            return DefaultSearchComponent(
+                componentContext,
+                existingMemberIds,
+                groupId,
+                onAddMoreClick,
+                onDone,
+                repository
+            )
         }
     }
 

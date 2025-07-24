@@ -9,11 +9,10 @@ import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnResume
 import com.russhwolf.settings.get
+import data.Repository
 import data.model.SpendWithSplit
-import data.repository.RepositoryImpl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import utils.DataStore
 import utils.DispatcherUtils.componentCoroutineScope
 import utils.calculateOwes
 
@@ -26,6 +25,16 @@ interface GroupSpendsComponent {
     fun onAddSpendClicked()
     fun onGroupSpendSettingsClicked()
     fun onBalancesClicked()
+    fun interface Factory {
+        operator fun invoke(
+            componentContext: ComponentContext,
+            groupId: String,
+            onGroupSpendClick: (String) -> Unit,
+            onAddSpendClick: () -> Unit,
+            onGroupSpendSettingsClick: (groupId: String) -> Unit,
+            onBalancesClick: (groupId: String) -> Unit
+        ): GroupSpendsComponent
+    }
 }
 
 class DefaultGroupSpendsComponent(
@@ -34,23 +43,24 @@ class DefaultGroupSpendsComponent(
     val onGroupSpendClick: (String) -> Unit,
     val onAddSpendClick: () -> Unit,
     val onGroupSpendSettingsClick: (groupId: String) -> Unit,
-    val onBalancesClick: (groupId: String) -> Unit
+    val onBalancesClick: (groupId: String) -> Unit,
+    private val repository: Repository
 ) : GroupSpendsComponent, ComponentContext by componentContext {
     override val spendList: MutableValue<List<SpendWithSplit>> = MutableValue(listOf())
-    private val currentUserId = DataStore.settings.get<String>("id")!!
+    private val currentUserId = repository.getSettings().get<String>("id")!!
     override val groupUsersDetails = mutableStateOf(mapOf<String, String>())
     override val totalBalance = mutableDoubleStateOf(0.0)
 
     init {
         lifecycle.doOnResume {
             componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
-                RepositoryImpl().getGroupMemberDetails(groupId).collect {
+                repository.getGroupMemberDetails(groupId).collect {
                     it.forEach { user ->
                         groupUsersDetails.value =
                             groupUsersDetails.value.plus(Pair(user.userId, user.userName))
                     }
                 }
-                RepositoryImpl().getSpendAndSplitForGroup(groupId).collect { spends ->
+                repository.getSpendAndSplitForGroup(groupId).collect { spends ->
                     totalBalance.value = 0.0
                     spends.forEach { spend ->
                         spend.splits.let {
@@ -79,5 +89,27 @@ class DefaultGroupSpendsComponent(
 
     override fun onBalancesClicked() {
         onBalancesClick(groupId)
+    }
+
+    class Factory(
+        val repository: Repository
+    ): GroupSpendsComponent.Factory {
+        override fun invoke(
+            componentContext: ComponentContext, groupId: String,
+            onGroupSpendClick: (String) -> Unit,
+            onAddSpendClick: () -> Unit,
+            onGroupSpendSettingsClick: (groupId: String) -> Unit,
+            onBalancesClick: (groupId: String) -> Unit
+        ): GroupSpendsComponent {
+            return DefaultGroupSpendsComponent(
+                componentContext,
+                groupId,
+                onGroupSpendClick,
+                onAddSpendClick,
+                onGroupSpendSettingsClick,
+                onBalancesClick,
+                repository
+            )
+        }
     }
 }

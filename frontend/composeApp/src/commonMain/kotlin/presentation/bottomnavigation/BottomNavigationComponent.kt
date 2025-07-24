@@ -11,12 +11,12 @@ import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.push
 import com.arkivanov.decompose.router.stack.replaceAll
 import com.arkivanov.decompose.value.Value
+import data.Repository
 import dev.bpj4.billbuddy.tableandmigrations.Users
+import di.koin
 import kotlinx.serialization.Serializable
 import presentation.addfriends.AddFriendsComponent
-import presentation.addfriends.DefaultAddFriendsComponent
 import presentation.balances.BalancesComponent
-import presentation.balances.DefaultBalancesComponent
 import presentation.bottomnavigation.BottomNavigationComponent.Child.AddFriends
 import presentation.bottomnavigation.BottomNavigationComponent.Child.Balances
 import presentation.bottomnavigation.BottomNavigationComponent.Child.CreateGroup
@@ -30,26 +30,16 @@ import presentation.bottomnavigation.BottomNavigationComponent.Child.SettleUp
 import presentation.bottomnavigation.BottomNavigationComponent.Child.SpendDetails
 import presentation.bottomnavigation.BottomNavigationComponent.Child.Totals
 import presentation.creategroup.CreateGroupComponent
-import presentation.creategroup.DefaultCreateGroupComponent
-import presentation.editspends.DefaultEditSpendsComponent
 import presentation.editspends.EditSpendsComponent
-import presentation.groupsettings.DefaultGroupSettingsComponent
 import presentation.groupsettings.GroupSettingsComponent
-import presentation.groupspends.DefaultGroupSpendsComponent
 import presentation.groupspends.GroupSpendsComponent
-import presentation.home.DefaultHomeComponent
 import presentation.home.HomeComponent
-import presentation.profile.DefaultProfileComponent
 import presentation.profile.ProfileComponent
-import presentation.search.DefaultSearchComponent
 import presentation.search.SearchComponent
-import presentation.settleup.DefaultSettleUpComponent
 import presentation.settleup.SettleUpComponent
-import presentation.spenddetails.DefaultSpendDetailsComponent
 import presentation.spenddetails.SpendDetailsComponent
 import presentation.totals.DefaultTotalsComponent
 import presentation.totals.TotalsComponent
-import utils.DataStore
 
 interface BottomNavigationComponent {
     val childStack: Value<ChildStack<*, Child>>
@@ -59,6 +49,8 @@ interface BottomNavigationComponent {
     fun onProfileClicked()
 
     fun onBackClicked()
+
+    fun getToken(): String?
 
     sealed class Child {
         class Home(val component: HomeComponent) : Child()
@@ -74,18 +66,28 @@ interface BottomNavigationComponent {
         class AddFriends(val component: AddFriendsComponent) : Child()
         class CreateGroup(val component: CreateGroupComponent) : Child()
     }
+
+    fun interface Factory {
+        operator fun invoke(
+            componentContext: ComponentContext,
+            onLogout: () -> Unit
+        ): BottomNavigationComponent
+    }
 }
 
 class DefaultBottomNavigationComponent(
     private val componentContext: ComponentContext,
-    private val onLogout: () -> Unit
+    private val onLogout: () -> Unit,
+    val repository: Repository
 ) : BottomNavigationComponent, ComponentContext by componentContext {
     private val navigation = StackNavigation<Config>()
     override val childStack: Value<ChildStack<*, BottomNavigationComponent.Child>> = childStack(
         source = navigation,
         key = "bottom_navigation",
         serializer = Config.serializer(),
-        initialConfiguration = if (DataStore.settings.getStringOrNull("token").isNullOrEmpty())
+        initialConfiguration = if (repository.getSettings().getStringOrNull("token")
+                .isNullOrEmpty()
+        )
             Config.Profile
         else
             Config.Home,
@@ -108,12 +110,14 @@ class DefaultBottomNavigationComponent(
         navigation.pop()
     }
 
+    override fun getToken() = repository.getSettings().getStringOrNull("token")
+
     private fun childFactory(
         config: Config,
         componentContext: ComponentContext,
     ): BottomNavigationComponent.Child = when (config) {
         Config.Home -> Home(
-            DefaultHomeComponent(
+            (koin.inject<HomeComponent.Factory>()).value.invoke(
                 componentContext = componentContext.childContext(key = "home"),
                 { navigation.push(Config.GroupSpends(it)) },
                 {
@@ -133,7 +137,7 @@ class DefaultBottomNavigationComponent(
         )
 
         Config.Profile -> Profile(
-            DefaultProfileComponent(
+            (koin.inject<ProfileComponent.Factory>()).value.invoke(
                 componentContext = componentContext.childContext(key = "profile")
             ) {
                 onLogout()
@@ -141,7 +145,7 @@ class DefaultBottomNavigationComponent(
         )
 
         is Config.GroupSpends -> GroupSpends(
-            DefaultGroupSpendsComponent(
+            (koin.inject<GroupSpendsComponent.Factory>()).value.invoke(
                 componentContext.childContext(key = "groupSpends"),
                 config.groupId,
                 { navigation.push(Config.SpendDetails(config.groupId, it)) },
@@ -152,7 +156,7 @@ class DefaultBottomNavigationComponent(
         )
 
         is Config.GroupSettings -> GroupSettings(
-            DefaultGroupSettingsComponent(
+            (koin.inject<GroupSettingsComponent.Factory>()).value.invoke(
                 componentContext.childContext(key = "groupSettings"),
                 config.groupId,
                 { memberIds, groupId -> navigation.push(Config.Search(memberIds, groupId)) }
@@ -160,16 +164,17 @@ class DefaultBottomNavigationComponent(
         )
 
         is Config.EditSpends -> EditSpends(
-            DefaultEditSpendsComponent(
+            (koin.inject<EditSpendsComponent.Factory>()).value.invoke(
                 componentContext = componentContext.childContext(key = "editSpends"),
                 config.groupId,
                 config.spendId,
+                selection = mutableStateOf(0),
                 onSaved = { navigation.pop() }
             )
         )
 
         is Config.SpendDetails -> SpendDetails(
-            DefaultSpendDetailsComponent(
+            (koin.inject<SpendDetailsComponent.Factory>()).value.invoke(
                 componentContext.childContext(key = "spendDetails"),
                 config.spendId,
                 { navigation.pop() }
@@ -177,7 +182,7 @@ class DefaultBottomNavigationComponent(
         )
 
         is Config.Balances -> Balances(
-            DefaultBalancesComponent(
+            (koin.inject<BalancesComponent.Factory>()).value.invoke(
                 componentContext.childContext("balances"),
                 config.groupId
             ) { groupId, payerId, payeeId ->
@@ -199,7 +204,7 @@ class DefaultBottomNavigationComponent(
         )
 
         is Config.SettleUp -> SettleUp(
-            DefaultSettleUpComponent(
+            (koin.inject<SettleUpComponent.Factory>()).value.invoke(
                 componentContext.childContext("settleUp"),
                 config.groupId,
                 config.payerId,
@@ -210,7 +215,7 @@ class DefaultBottomNavigationComponent(
         )
 
         is Config.Search -> Search(
-            DefaultSearchComponent(
+            (koin.inject<SearchComponent.Factory>()).value.invoke(
                 componentContext.childContext("search"),
                 config.existingMemberIds,
                 config.groupId,
@@ -224,7 +229,7 @@ class DefaultBottomNavigationComponent(
         )
 
         is Config.AddFriends -> AddFriends(
-            DefaultAddFriendsComponent(
+            (koin.inject<AddFriendsComponent.Factory>()).value.invoke(
                 componentContext.childContext("addFriends"),
                 config.existingMemberIds,
                 config.groupId
@@ -234,7 +239,7 @@ class DefaultBottomNavigationComponent(
         )
 
         Config.CreateGroup -> CreateGroup(
-            DefaultCreateGroupComponent(
+            (koin.inject<CreateGroupComponent.Factory>()).value.invoke(
                 componentContext.childContext("createGroup")
             ) { navigation.pop() }
         )
@@ -279,6 +284,16 @@ class DefaultBottomNavigationComponent(
 
         @Serializable
         data object CreateGroup : Config()
+    }
+
+    class Factory(val repository: Repository) :
+        BottomNavigationComponent.Factory {
+        override fun invoke(
+            componentContext: ComponentContext,
+            onLogout: () -> Unit
+        ): BottomNavigationComponent {
+            return DefaultBottomNavigationComponent(componentContext, onLogout, repository)
+        }
     }
 
 }

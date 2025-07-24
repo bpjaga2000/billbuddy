@@ -1,8 +1,9 @@
 package data.remote
 
 import com.russhwolf.settings.get
+import data.Repository
+import di.koin
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.DEFAULT
 import io.ktor.client.plugins.logging.LogLevel
@@ -14,9 +15,10 @@ import io.ktor.http.encodedPath
 import io.ktor.http.headers
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
-import utils.DataStore
 
 object ApiClient {
+
+    val repository by koin.inject<Repository>()
 
     val httpClient = HttpClient {
         install(ContentNegotiation) {
@@ -33,7 +35,7 @@ object ApiClient {
             }
             headers {
                 append("Content-Type", "application/json")
-                DataStore.settings.get<String>("token")?.let {
+                repository.getSettings().get<String>("token")?.let {
                     append("Authorization", "Bearer $it")
                 }
                 append("Access-Control-Allow-Origin", "http:////92.119.126.127:8090");

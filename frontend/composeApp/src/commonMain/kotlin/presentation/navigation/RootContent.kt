@@ -8,7 +8,6 @@ import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
 import presentation.bottomnavigation.BottomNavigationScreen
 import presentation.login.LoginScreen
 import presentation.register.RegisterScreen
-import utils.DataStore
 
 @Composable
 fun RootContent(component: RootComponent, modifier: Modifier = Modifier) {

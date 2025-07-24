@@ -3,9 +3,9 @@ package presentation.addfriends
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.arkivanov.decompose.ComponentContext
+import data.Repository
 import data.model.dto.ProfileDto
 import data.remote.ApiResult
-import data.repository.RepositoryImpl
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -19,6 +19,14 @@ interface AddFriendsComponent {
     fun onAddFriendsClicked(text: String)
     fun onAddFriendsResultTapped(userId: String, isChecked: Boolean)
     fun onDoneClicked()
+    fun interface Factory {
+        operator fun invoke(
+            componentContext: ComponentContext,
+            existingFriendIds: String,
+            groupId: String,
+            onDone: () -> Unit,
+        ): AddFriendsComponent
+    }
 }
 
 class DefaultAddFriendsComponent(
@@ -26,6 +34,7 @@ class DefaultAddFriendsComponent(
     private val existingFriendIds: String,
     private val groupId: String,
     private val onDone: () -> Unit,
+    private val repository: Repository
 ) : AddFriendsComponent, ComponentContext by componentContext {
     override var searchTag = mutableStateOf("")
     private var addedFriends = mutableStateOf(listOf<ProfileDto>())
@@ -33,7 +42,7 @@ class DefaultAddFriendsComponent(
 
     override fun onAddFriendsClicked(text: String) {
         componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
-            RepositoryImpl().searchFriendsOnline(text).collect {
+            repository.searchFriendsOnline(text).collect {
                 when (it) {
                     is ApiResult.Success -> {
                         addFriendsResults.value =
@@ -61,9 +70,9 @@ class DefaultAddFriendsComponent(
 
     override fun onDoneClicked() {
         componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
-            RepositoryImpl().addUsers(addedFriends.value).collect { added ->
+            repository.addUsers(addedFriends.value).collect { added ->
                 if (added)
-                    RepositoryImpl().addGroupMembers(addedFriends.value.map { it.id }, groupId)
+                    repository.addGroupMembers(addedFriends.value.map { it.id }, groupId)
                         .collect {
                             when (it) {
                                 is ApiResult.Success -> {
@@ -77,5 +86,25 @@ class DefaultAddFriendsComponent(
                         }
             }
         }
+    }
+
+    class Factory(
+        val repository: Repository,
+    ) : AddFriendsComponent.Factory {
+        override fun invoke(
+            componentContext: ComponentContext,
+            existingFriendIds: String,
+            groupId: String,
+            onDone: () -> Unit,
+        ): AddFriendsComponent {
+            return DefaultAddFriendsComponent(
+                componentContext,
+                existingFriendIds,
+                groupId,
+                onDone,
+                repository
+            )
+        }
+
     }
 }

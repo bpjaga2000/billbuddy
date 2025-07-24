@@ -3,14 +3,13 @@ package presentation.profile
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import com.arkivanov.decompose.ComponentContext
+import data.Repository
 import data.model.dto.ProfileUpdateDto
 import data.remote.ApiResult
-import data.repository.RepositoryImpl
 import dev.bpj4.billbuddy.tableandmigrations.Users
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import utils.DataStore
 import utils.DispatcherUtils.componentCoroutineScope
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -23,12 +22,19 @@ interface ProfileComponent {
     val phone: MutableState<String>
     fun onSaveClick()
     fun onLogoutClick()
+    fun interface Factory {
+        operator fun invoke(
+            componentContext: ComponentContext,
+            onLogoutClick: () -> Unit
+        ): ProfileComponent
+    }
 }
 
 @OptIn(ExperimentalTime::class)
 class DefaultProfileComponent(
     val componentContext: ComponentContext,
-    val onLogoutClick: () -> Unit
+    val onLogoutClick: () -> Unit,
+    val repository: Repository
 ) : ProfileComponent, ComponentContext by componentContext {
     override lateinit var user: Users
     override val name = mutableStateOf("")
@@ -38,7 +44,7 @@ class DefaultProfileComponent(
 
     init {
         componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
-            RepositoryImpl().getCurrentUser().collect {
+            repository.getCurrentUser().collect {
                 user = it
                 name.value = it.name
                 email.value = it.email
@@ -57,7 +63,7 @@ class DefaultProfileComponent(
                 phone.value.toLongOrNull(),
                 Clock.System.now().epochSeconds
             )
-            RepositoryImpl().updateProfile(profileUpdateDto).collect {
+            repository.updateProfile(profileUpdateDto).collect {
                 when (it) {
                     is ApiResult.Success -> {}
 
@@ -69,13 +75,13 @@ class DefaultProfileComponent(
 
     override fun onLogoutClick() {
         componentContext.componentCoroutineScope().launch(Dispatchers.Default) {
-            RepositoryImpl().logout().collect {
+            repository.logout().collect {
                 when (it) {
                     is ApiResult.Success -> {
                         withContext(Dispatchers.Main) {
-                            RepositoryImpl().clearDb().collect {
+                            repository.clearDb().collect {
                                 if (it) {
-                                    DataStore.settings.clear()
+                                    repository.getSettings().clear()
                                     onLogoutClick.invoke()
                                 }
                             }
@@ -86,6 +92,22 @@ class DefaultProfileComponent(
                 }
             }
         }
+    }
+
+    class Factory(
+        val repository: Repository
+    ) : ProfileComponent.Factory {
+        override fun invoke(
+            componentContext: ComponentContext,
+            onLogoutClick: () -> Unit
+        ): ProfileComponent {
+            return DefaultProfileComponent(
+                componentContext,
+                onLogoutClick,
+                repository
+            )
+        }
+
     }
 
 }
