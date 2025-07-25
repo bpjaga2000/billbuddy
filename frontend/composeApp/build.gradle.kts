@@ -95,6 +95,7 @@ kotlin {
             implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
             implementation(libs.sonner)
             implementation(libs.primitive.adapters)
+            implementation("network.chaintech:cmptoast:1.0.7")
         }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
