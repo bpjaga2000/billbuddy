@@ -2,6 +2,7 @@
 
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
@@ -10,8 +11,8 @@ plugins {
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.sqldelight)
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.1.21"
-    id("de.jensklingenberg.ktorfit") version "2.5.2"
+    alias(libs.plugins.serialization)
+    alias(libs.plugins.ktorfit)
 }
 
 kotlin {
@@ -32,10 +33,8 @@ kotlin {
     }
 
     androidTarget {
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = "11"
-            }
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_11)
         }
     }
 
@@ -52,7 +51,7 @@ kotlin {
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
-            isStatic = true
+            isStatic = false
         }
     }
 
@@ -83,7 +82,7 @@ kotlin {
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.ktor.serialization.kotlinx.json)
-            implementation(libs.runtime)
+            implementation(libs.sqldelight.runtime)
             implementation(libs.id)
             implementation(libs.insert.koin.koin.core)
             implementation(libs.ktor.client.logging)
@@ -95,17 +94,15 @@ kotlin {
             implementation("org.jetbrains.compose.material:material-icons-extended:1.7.3")
             implementation(libs.sonner)
             implementation(libs.primitive.adapters)
-            implementation("network.chaintech:cmptoast:1.0.7")
+            implementation(libs.cmp.toast)
         }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.ktor.client.okhttp)
-            implementation(libs.sqlite.driver)
+            implementation(libs.sqldelight.driver)
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
-        }
-        nativeMain.dependencies {
             implementation(libs.native.driver)
         }
         wasmJsMain.dependencies {

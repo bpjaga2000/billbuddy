@@ -1,10 +1,5 @@
 [
   {
-    "moduleId": "org.jetbrains.kotlinx:atomicfu:0.23.2",
-    "file": "/Users/bpj4/Documents/billbuddy/frontend/.kotlin/metadata/kotlinTransformedCInteropMetadataLibraries/org.jetbrains.kotlinx-atomicfu-0.23.2-nativeMain-cinterop/org.jetbrains.kotlinx_atomicfu-cinterop-interop-yBS35w.klib",
-    "sourceSetName": "nativeMain"
-  },
-  {
     "moduleId": "org.jetbrains.compose.ui:ui-uikit:1.8.2",
     "file": "/Users/bpj4/Documents/billbuddy/frontend/.kotlin/metadata/kotlinTransformedCInteropMetadataLibraries/org.jetbrains.compose.ui-ui-uikit-1.8.2-uikitMain-cinterop/org.jetbrains.compose.ui_ui-uikit-cinterop-utils-RVQtSg.klib",
     "sourceSetName": "uikitMain"
@@ -15,23 +10,23 @@
     "sourceSetName": "appleMain"
   },
   {
-    "moduleId": "io.ktor:ktor-utils:3.1.0",
-    "file": "/Users/bpj4/Documents/billbuddy/frontend/.kotlin/metadata/kotlinTransformedCInteropMetadataLibraries/io.ktor-ktor-utils-3.1.0-iosMain-cinterop/io.ktor_ktor-utils-cinterop-threadUtils-KiCD0Q.klib",
+    "moduleId": "io.ktor:ktor-utils:3.2.3",
+    "file": "/Users/bpj4/Documents/billbuddy/frontend/.kotlin/metadata/kotlinTransformedCInteropMetadataLibraries/io.ktor-ktor-utils-3.2.3-iosMain-cinterop/io.ktor_ktor-utils-cinterop-threadUtils-bD5GGA.klib",
     "sourceSetName": "iosMain"
   },
   {
-    "moduleId": "io.ktor:ktor-io:3.1.0",
-    "file": "/Users/bpj4/Documents/billbuddy/frontend/.kotlin/metadata/kotlinTransformedCInteropMetadataLibraries/io.ktor-ktor-io-3.1.0-iosMain-cinterop/io.ktor_ktor-io-cinterop-mutex-VebtWA.klib",
+    "moduleId": "io.ktor:ktor-io:3.2.3",
+    "file": "/Users/bpj4/Documents/billbuddy/frontend/.kotlin/metadata/kotlinTransformedCInteropMetadataLibraries/io.ktor-ktor-io-3.2.3-iosMain-cinterop/io.ktor_ktor-io-cinterop-mutex-xZzb1w.klib",
     "sourceSetName": "iosMain"
   },
   {
-    "moduleId": "io.ktor:ktor-network:3.1.0",
-    "file": "/Users/bpj4/Documents/billbuddy/frontend/.kotlin/metadata/kotlinTransformedCInteropMetadataLibraries/io.ktor-ktor-network-3.1.0-iosMain-cinterop/io.ktor_ktor-network-cinterop-network-B693-Q.klib",
+    "moduleId": "io.ktor:ktor-network:3.2.3",
+    "file": "/Users/bpj4/Documents/billbuddy/frontend/.kotlin/metadata/kotlinTransformedCInteropMetadataLibraries/io.ktor-ktor-network-3.2.3-iosMain-cinterop/io.ktor_ktor-network-cinterop-network-oBBWEw.klib",
     "sourceSetName": "iosMain"
   },
   {
-    "moduleId": "io.ktor:ktor-network:3.1.0",
-    "file": "/Users/bpj4/Documents/billbuddy/frontend/.kotlin/metadata/kotlinTransformedCInteropMetadataLibraries/io.ktor-ktor-network-3.1.0-iosMain-cinterop/io.ktor_ktor-network-cinterop-un-B693-Q.klib",
+    "moduleId": "io.ktor:ktor-network:3.2.3",
+    "file": "/Users/bpj4/Documents/billbuddy/frontend/.kotlin/metadata/kotlinTransformedCInteropMetadataLibraries/io.ktor-ktor-network-3.2.3-iosMain-cinterop/io.ktor_ktor-network-cinterop-un-oBBWEw.klib",
     "sourceSetName": "iosMain"
   }
 ]

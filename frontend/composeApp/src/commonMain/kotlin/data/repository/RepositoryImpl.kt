@@ -61,7 +61,7 @@ class RepositoryImpl(
     private var db: SqlDriver,
     private var settings: Settings
 ) : Repository {
-    private val currentUserId = settings.get<String>("id") ?: ""
+    private var currentUserId = settings.get<String>("id") ?: ""
 
     override fun getSettings(): Settings = settings
     override suspend fun logIn(email: String, password: String) = flow<ApiResult<UserDto>> {
@@ -71,9 +71,10 @@ class RepositoryImpl(
             contentType(ContentType.Application.Json)
             setBody(LoginDto(email, password))
         }) {
-            if (status.value in 200..299)
+            if (status.value in 200..299) {
+                currentUserId = (body() as UserDto).id
                 emit(ApiResult.success(body()))
-            else
+            } else
                 emit(ApiResult.error(body() as String?))
         }
     }
@@ -85,9 +86,10 @@ class RepositoryImpl(
             contentType(ContentType.Application.Json)
             setBody(LoginDto(email, password))
         }) {
-            if (status.value in 200..299)
+            if (status.value in 200..299) {
+                currentUserId = (body() as UserDto).id
                 emit(ApiResult.success(body()))
-            else
+            } else
                 emit(ApiResult.error(body() as String?))
         }
     }
